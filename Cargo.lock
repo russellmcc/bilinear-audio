@@ -52,10 +52,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "audio"
-version = "0.1.0"
-
-[[package]]
 name = "autocfg"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -273,26 +269,68 @@ dependencies = [
 ]
 
 [[package]]
-name = "component"
+name = "component_benchmarks"
 version = "0.1.0"
 dependencies = [
- "audio",
+ "conformal_component",
+ "criterion",
+ "fxhash",
+ "itertools 0.13.0",
+ "serde",
+ "util",
+]
+
+[[package]]
+name = "conformal_component"
+version = "0.1.0"
+dependencies = [
  "fxhash",
  "itertools 0.13.0",
  "serde",
 ]
 
 [[package]]
-name = "component_benchmarks"
+name = "conformal_macos_bundle"
 version = "0.1.0"
 dependencies = [
- "audio",
- "component",
- "criterion",
- "fxhash",
- "itertools 0.13.0",
+ "objc",
+ "process_path",
+]
+
+[[package]]
+name = "conformal_preferences"
+version = "0.1.0"
+dependencies = [
+ "objc",
  "serde",
- "util",
+ "serde_json",
+]
+
+[[package]]
+name = "conformal_ui"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "conformal_component",
+ "conformal_macos_bundle",
+ "conformal_preferences",
+ "mime_guess",
+ "rmp-serde",
+ "serde",
+ "serde_bytes",
+ "wry",
+]
+
+[[package]]
+name = "conformal_vst_wrapper"
+version = "0.1.0"
+dependencies = [
+ "conformal_component",
+ "conformal_macos_bundle",
+ "conformal_ui",
+ "rmp-serde",
+ "serde",
+ "vst3",
 ]
 
 [[package]]
@@ -1194,14 +1232,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c41e0c4fef86961ac6d6f8a82609f55f31b05e4fce149ac5710e439df7619ba4"
 
 [[package]]
-name = "macos_bundle"
-version = "0.1.0"
-dependencies = [
- "objc",
- "process_path",
-]
-
-[[package]]
 name = "malloc_buf"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1459,8 +1489,8 @@ name = "p61_component"
 version = "0.1.0"
 dependencies = [
  "assert_approx_eq",
- "component",
  "component_benchmarks",
+ "conformal_component",
  "criterion",
  "iir",
  "itertools 0.13.0",
@@ -1476,9 +1506,9 @@ dependencies = [
 name = "p61_vst"
 version = "0.1.0"
 dependencies = [
+ "conformal_vst_wrapper",
  "p61_component",
  "vst3",
- "vst_wrapper",
 ]
 
 [[package]]
@@ -1683,7 +1713,7 @@ dependencies = [
 name = "poly"
 version = "0.1.0"
 dependencies = [
- "component",
+ "conformal_component",
  "util",
 ]
 
@@ -1701,15 +1731,6 @@ name = "precomputed-hash"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "925383efa346730478fb4838dbe9137d2a47675ad789c546d150a6e1dd4ab31c"
-
-[[package]]
-name = "preferences"
-version = "0.1.0"
-dependencies = [
- "objc",
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "primal-check"
@@ -1960,8 +1981,9 @@ name = "rchorus_component"
 version = "0.1.0"
 dependencies = [
  "assert_approx_eq",
- "component",
  "component_benchmarks",
+ "conformal_component",
+ "conformal_vst_wrapper",
  "criterion",
  "iir",
  "itertools 0.13.0",
@@ -1970,16 +1992,15 @@ dependencies = [
  "snapshots",
  "util",
  "vst3",
- "vst_wrapper",
 ]
 
 [[package]]
 name = "rchorus_vst"
 version = "0.1.0"
 dependencies = [
+ "conformal_vst_wrapper",
  "rchorus_component",
  "vst3",
- "vst_wrapper",
 ]
 
 [[package]]
@@ -2509,21 +2530,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
-name = "ui"
-version = "0.1.0"
-dependencies = [
- "base64",
- "component",
- "macos_bundle",
- "mime_guess",
- "preferences",
- "rmp-serde",
- "serde",
- "serde_bytes",
- "wry",
-]
-
-[[package]]
 name = "unarray"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2597,18 +2603,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37c2c1284b0b2d0a1ddcd5ea7b1f74ea766a9a52e376f5402f02f217a629eee6"
 dependencies = [
  "com-scrape",
-]
-
-[[package]]
-name = "vst_wrapper"
-version = "0.1.0"
-dependencies = [
- "component",
- "macos_bundle",
- "rmp-serde",
- "serde",
- "ui",
- "vst3",
 ]
 
 [[package]]
