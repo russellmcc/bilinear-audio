@@ -9,9 +9,9 @@ publish = false
 [dependencies]
 num-traits = "0.2.19"
 itertools = "0.13.0"
-conformal_vst_wrapper = { path = "../../../../framework/rust/vst-wrapper" }
+conformal_vst_wrapper = "0.1.0"
 vst3 = "0.1.2"
-conformal_component = { path = "../../../../framework/rust/component" }
+conformal_component = "0.1.0"
 util = { path = "../../shared/util" }
 iir = { path = "../../shared/iir" }
 

@@ -283,6 +283,8 @@ dependencies = [
 [[package]]
 name = "conformal_component"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0822bd481bbe5923053a0a0dbed9e24994b548ee3059641ad6c1590eff442f6a"
 dependencies = [
  "fxhash",
  "itertools 0.13.0",
@@ -292,6 +294,8 @@ dependencies = [
 [[package]]
 name = "conformal_macos_bundle"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b197789a69b18c1d99e644751e7457926183b0ce93313d974d4758bcf8e1990"
 dependencies = [
  "objc",
  "process_path",
@@ -300,6 +304,8 @@ dependencies = [
 [[package]]
 name = "conformal_preferences"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a17ae5215d689e8d1915adb46a95ece2af0eec1a0aa61db6b69c94b95d5add07"
 dependencies = [
  "objc",
  "serde",
@@ -309,6 +315,8 @@ dependencies = [
 [[package]]
 name = "conformal_ui"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb64e4e7bd3e6bbcecce5a799645cdceba9e04872351ccab90bd202a38782ecf"
 dependencies = [
  "base64",
  "conformal_component",
@@ -324,6 +332,8 @@ dependencies = [
 [[package]]
 name = "conformal_vst_wrapper"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7cff1b03c7f4a7fb301e5b508745396ba5040545cbfdd64ce44b217af7821cca"
 dependencies = [
  "conformal_component",
  "conformal_macos_bundle",

@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-conformal_component = { path = "../../../../framework/rust/component" }
+conformal_component = "0.1.0"
 util = { path = "../../shared/util" }

@@ -2,6 +2,8 @@
 
 This repo contains a collection of open-source audio plug-ins written in Rust and TypeScript. This is currently alpha software with plenty of limitations and limited documentation!
 
+Right now, the plug-ins are only available in VST3 format for macOS.
+
 The working title of this collection is "Bilinear Audio".
 
 ## Plug-ins

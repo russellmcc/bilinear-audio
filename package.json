@@ -6,7 +6,6 @@
     "web/*"
   ],
   "scripts": {
-    "prepare": "cd ../framework/web/scripts && npm pack && cd ../plugin && npm pack",
     "bootstrap": "conformal-scripts bootstrap",
     "ci": "conformal-scripts ci",
     "check-lfs": "conformal-scripts check-lfs",
@@ -70,8 +69,8 @@
     "@use-gesture/react": "^10.3.1",
     "d3-shape": "^3.2.0",
     "dequal": "^2.0.3",
-    "@conformal/scripts": "../framework/web/scripts/conformal-scripts-0.0.0.tgz",
-    "@conformal/plugin": "../framework/web/plugin/conformal-plugin-0.0.0.tgz",
+    "@conformal/scripts": "^0.1.1",
+    "@conformal/plugin": "^0.1.0",
     "@types/d3-shape": "^3.1.6",
     "rollup-plugin-license": "^3.4.0"
   }
