@@ -1,8 +1,8 @@
-export interface Props {
+export type Props = {
   label: string;
   valueLabel: string;
   hover: boolean;
-}
+};
 
 const Label = ({ label, valueLabel, hover }: Props) => (
   <div className={"relative mt-[-5px] font-sans"}>

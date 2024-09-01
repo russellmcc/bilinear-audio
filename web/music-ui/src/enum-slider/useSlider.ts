@@ -2,15 +2,15 @@ import { LegacyRef, useCallback, useMemo, useRef, useState } from "react";
 import { useAnimation } from "../animation";
 import { clamp } from "../util";
 
-interface Data {
+type Data = {
   index: number | undefined;
 
   touchBottom: number | undefined;
 
   count: number;
-}
+};
 
-interface State {
+type State = {
   bottom: number | undefined;
   touch:
     | {
@@ -18,9 +18,9 @@ interface State {
         offset: number;
       }
     | undefined;
-}
+};
 
-interface Props {
+type Props = {
   ballMargin: number;
   lineSpacing: number;
   ballSize: number;
@@ -28,9 +28,9 @@ interface Props {
   count: number;
   selectIndex: (index: number) => void;
   onGrabOrRelease?: (grabbed: boolean) => void;
-}
+};
 
-export interface Output<Container extends Element, Ball extends Element> {
+export type Output<Container extends Element, Ball extends Element> = {
   containerRef: LegacyRef<Container>;
   ballRef: LegacyRef<Ball>;
   onPointerDown: (event: React.PointerEvent) => void;
@@ -38,7 +38,7 @@ export interface Output<Container extends Element, Ball extends Element> {
   onPointerUp: (event: React.PointerEvent) => void;
   onPointerCancel: (event: React.PointerEvent) => void;
   ball: { bottom: number } | undefined;
-}
+};
 
 const RATE = 10;
 

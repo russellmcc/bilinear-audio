@@ -3,7 +3,7 @@ import { useNumericParam } from "@conformal/plugin";
 import Knob, { Props } from "../../components/knob";
 import { Scale } from "../../scale";
 
-export interface ParamKnobProps {
+export type ParamKnobProps = {
   param: string;
 
   label?: string;
@@ -13,7 +13,7 @@ export interface ParamKnobProps {
   style?: Props["style"];
 
   scale?: Scale;
-}
+};
 
 export const ParamKnob = ({
   param,

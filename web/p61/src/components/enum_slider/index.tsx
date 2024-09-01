@@ -6,7 +6,7 @@ import {
   EnumSlider as EnumSliderInternal,
 } from "music-ui/enum-slider";
 
-export interface Props {
+export type Props = {
   /**
    * The possible values of the enum
    */
@@ -56,7 +56,7 @@ export interface Props {
   width?: "narrow" | "normal";
 
   textAlign?: "start" | "end";
-}
+};
 
 const useValueLabel = (textAlign: Props["textAlign"]): ValueLabel =>
   useMemo(() => {

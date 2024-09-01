@@ -2,12 +2,12 @@ import { renderHook } from "@testing-library/react";
 import { describe, expect, test } from "bun:test";
 import useAnimation from "./useAnimation";
 
-interface TestState {
+type TestState = {
   value: number;
-}
-interface TestData {
+};
+type TestData = {
   forward: boolean;
-}
+};
 
 const customTestAnimationForLimit = (limit: number) => ({
   initialState: () => ({

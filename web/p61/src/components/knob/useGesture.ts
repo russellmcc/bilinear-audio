@@ -5,12 +5,12 @@ import { clamp } from "music-ui/util";
 const KEYBOARD_STEP = 10;
 const BIG_KEYBOARD_STEP = 25;
 
-export interface GestureProps {
+export type GestureProps = {
   value: number;
   defaultValue?: number;
   onGrabOrRelease?: (grabbed: boolean) => void;
   onValue?: (value: number) => void;
-}
+};
 
 const sensitivity = 1.0;
 const shiftSensitivity = 0.1;

@@ -1,18 +1,18 @@
 import { dequal } from "dequal/lite";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 
-interface AnimationState<D, S> {
+type AnimationState<D, S> = {
   data: D;
   animating: boolean;
   lastFrame: DOMHighResTimeStamp | undefined;
   state: S;
-}
+};
 
-export interface CustomAnimation<D, S> {
+export type CustomAnimation<D, S> = {
   initialState: (data: D) => S;
   update: (elapsed: number | undefined, prev: S, data: D) => S;
   shouldAnimate: (state: S, data: D) => boolean;
-}
+};
 
 const onFrame = <D, S>(
   time: DOMHighResTimeStamp | undefined,

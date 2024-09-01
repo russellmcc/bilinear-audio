@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useEnumParam } from "@conformal/plugin";
 import EnumSlider, { Props } from "../../components/enum_slider";
 
-export interface ParamEnumSliderProps {
+export type ParamEnumSliderProps = {
   param: string;
 
   label?: string;
@@ -13,7 +13,7 @@ export interface ParamEnumSliderProps {
   textAlign?: Props["textAlign"];
 
   displayFormatter?: Props["displayFormatter"];
-}
+};
 
 export const ParamEnumSlider = ({
   param,

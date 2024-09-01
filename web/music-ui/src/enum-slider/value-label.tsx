@@ -105,7 +105,7 @@ export const ValueLabelInternal = ({
   );
 };
 
-export interface LabelGroupProps {
+export type LabelGroupProps = {
   accessibilityLabel: string;
   values: string[];
   value: string;
@@ -113,7 +113,7 @@ export interface LabelGroupProps {
   valueLabel: ValueLabel;
   radios: React.MutableRefObject<Record<number, HTMLDivElement>>;
   selectIndex: (i: number) => void;
-}
+};
 
 export const LabelGroup = ({
   accessibilityLabel,

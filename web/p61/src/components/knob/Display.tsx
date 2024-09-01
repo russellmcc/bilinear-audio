@@ -2,29 +2,29 @@ import { useId, useMemo } from "react";
 import * as d3shape from "d3-shape";
 import { easeIn, fade, useAnimation } from "music-ui/animation";
 
-interface ResolvedProps {
+type ResolvedProps = {
   size: number;
   innerRadiusRatio: number;
-}
+};
 
 const defaultProps: ResolvedProps = {
   size: 61,
   innerRadiusRatio: 18 / 30.5,
 };
 
-export interface Data {
+export type Data = {
   value: number;
 
   hover: boolean;
 
   grabbed: boolean;
-}
+};
 
-interface State {
+type State = {
   hoverEase: number;
   grabbedEase: number;
   phases: number[];
-}
+};
 
 const TAU = Math.PI * 2;
 const startAngle = -TAU * (3 / 8);
@@ -149,7 +149,7 @@ const getEdgePath = ({ innerRadiusRatio, size }: ResolvedProps) => {
       Z`;
 };
 
-export interface Props {
+export type Props = {
   /** Knobs always have square dimension, this represents one side. */
   size?: number;
 
@@ -164,7 +164,7 @@ export interface Props {
 
   /** True if the knob is hovered */
   hover: boolean;
-}
+};
 
 const animation = {
   initialState: (data: Data): State => ({

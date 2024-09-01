@@ -1,11 +1,11 @@
 import useSlider from "music-ui/enum-slider/useSlider";
 
-export interface Props {
+export type Props = {
   index: number | undefined;
   count: number;
   selectIndex: (index: number) => void;
   onGrabOrRelease?: (grabbed: boolean) => void;
-}
+};
 
 const BALL_SIZE = 12;
 

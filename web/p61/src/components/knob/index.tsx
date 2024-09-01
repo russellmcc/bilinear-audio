@@ -3,7 +3,7 @@ import Display from "./Display.tsx";
 import Label from "./Label.tsx";
 import { useMemo } from "react";
 
-export interface Props {
+export type Props = {
   /**
    * The current value of the knob (scaled to 0-100)
    */
@@ -55,7 +55,7 @@ export interface Props {
    * Value to reset the knob to on reset-to-default gesture (double click)
    */
   defaultValue?: number;
-}
+};
 
 const PRIMARY_KNOB_SIZE = 61;
 const SECONDARY_KNOB_SIZE = 31;

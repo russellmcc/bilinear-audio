@@ -2,17 +2,17 @@ import { useCallback, useEffect, useRef } from "react";
 import { indexOf } from "../util";
 import { LabelGroup, ValueLabel } from "./value-label";
 export type { ValueLabel, ValueLabelProps } from "./value-label";
-export interface SliderProps {
+export type SliderProps = {
   index: number | undefined;
   count: number;
   selectIndex: (index: number) => void;
   onGrabOrRelease?: (grabbed: boolean) => void;
   grabbed: boolean;
-}
+};
 
 export type Slider = React.FC<SliderProps>;
 
-export interface Props {
+export type Props = {
   /**
    * The possible values of the enum
    */
@@ -51,7 +51,7 @@ export interface Props {
 
   ValueLabel: ValueLabel;
   Slider: Slider;
-}
+};
 
 export const EnumSlider = ({
   value,

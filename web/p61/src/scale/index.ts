@@ -6,10 +6,10 @@
  * and the "Dest" to be the _raw_ exposed by the plug-in,
  *
  */
-export interface Scale {
+export type Scale = {
   to: (value: number) => number;
   from: (value: number) => number;
-}
+};
 
 /**  An exponential scale is represented by a single break point representing the dest value at 0.5 source value
  *
@@ -47,10 +47,10 @@ export const exponentialScale = (fromBreak: number, toBreak: number): Scale => {
   // See derivation in exponential_scale.ipynb
   const getTScale = (): number => {
     // Define our dual numbers
-    interface Dual {
+    type Dual = {
       val: number;
       slope: number;
-    }
+    };
     const add = (a: Dual, b: number): Dual => ({
       val: a.val + b,
       slope: a.slope,
