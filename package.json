@@ -1,6 +1,5 @@
 {
   "name": "poly-81",
-  "version": "0.0.0",
   "private": true,
   "workspaces": [
     "web/*"
