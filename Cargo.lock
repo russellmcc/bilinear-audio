@@ -270,7 +270,7 @@ dependencies = [
 
 [[package]]
 name = "component_benchmarks"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "conformal_component",
  "criterion",
@@ -1060,7 +1060,7 @@ dependencies = [
 
 [[package]]
 name = "iir"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "assert_approx_eq",
  "more-asserts",
@@ -1496,7 +1496,7 @@ checksum = "b410bbe7e14ab526a0e86877eb47c6996a2bd7746f027ba551028c925390e4e9"
 
 [[package]]
 name = "p61_component"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "assert_approx_eq",
  "component_benchmarks",
@@ -1514,7 +1514,7 @@ dependencies = [
 
 [[package]]
 name = "p61_vst"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "conformal_vst_wrapper",
  "p61_component",
@@ -1721,7 +1721,7 @@ dependencies = [
 
 [[package]]
 name = "poly"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "conformal_component",
  "util",
@@ -1988,12 +1988,11 @@ dependencies = [
 
 [[package]]
 name = "rchorus_component"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "assert_approx_eq",
  "component_benchmarks",
  "conformal_component",
- "conformal_vst_wrapper",
  "criterion",
  "iir",
  "itertools 0.13.0",
@@ -2001,12 +2000,11 @@ dependencies = [
  "num-traits",
  "snapshots",
  "util",
- "vst3",
 ]
 
 [[package]]
 name = "rchorus_vst"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "conformal_vst_wrapper",
  "rchorus_component",
@@ -2288,7 +2286,7 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "snapshots"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "wavers",
 ]
@@ -2574,7 +2572,7 @@ checksum = "09cc8ee72d2a9becf2f2febe0205bbed8fc6615b7cb429ad062dc7b7ddd036a9"
 
 [[package]]
 name = "util"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "num",
  "num-traits",

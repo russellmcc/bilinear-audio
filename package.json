@@ -1,6 +1,5 @@
 {
   "name": "poly-81",
-  "version": "0.0.0",
   "private": true,
   "workspaces": [
     "web/*"
@@ -47,7 +46,6 @@
     "@vitejs/plugin-react-swc": "^3.6.0",
     "autoprefixer": "^10.4.19",
     "eslint": "^8.57.0",
-    "eslint-config-custom": "workspace:*",
     "eslint-plugin-prefer-arrow-functions": "^3.3.2",
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.0",
@@ -69,7 +67,7 @@
     "@use-gesture/react": "^10.3.1",
     "d3-shape": "^3.2.0",
     "dequal": "^2.0.3",
-    "@conformal/scripts": "^0.1.1",
+    "@conformal/scripts": "^0.1.2",
     "@conformal/plugin": "^0.1.0",
     "@types/d3-shape": "^3.1.6",
     "rollup-plugin-license": "^3.4.0"

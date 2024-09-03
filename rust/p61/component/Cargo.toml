@@ -1,6 +1,5 @@
 [package]
 name = "p61_component"
-version = "0.1.0"
 edition = "2021"
 rust-version = "1.79.0"
 license = "ISC"
