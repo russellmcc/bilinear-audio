@@ -70,17 +70,17 @@ export const EnumSlider = ({
       if (values[index]) {
         onValue?.(values[index]);
       }
-      setTimeout(() => radios.current[index]?.focus(), 0);
+      setTimeout(() => radios.current.get(index)?.focus(), 0);
     },
     [onValue, values],
   );
-  const radios = useRef<Record<number, HTMLDivElement>>({});
+  const radios = useRef<Map<number, HTMLDivElement>>(new Map());
   useEffect(() => {
-    const anyFocused = Object.values(radios.current).some(
+    const anyFocused = [...radios.current.values()].some(
       (r) => document.activeElement === r || r.contains(document.activeElement),
     );
     if (anyFocused) {
-      radios.current[index ?? 0]?.focus();
+      radios.current.get(index ?? 0)?.focus();
     }
   }, [index]);
   return (

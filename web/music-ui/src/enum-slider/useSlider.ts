@@ -197,7 +197,7 @@ export const useSlider = <Container extends Element, Ball extends Element>({
 
   const onPointerDown = useCallback(
     (event: React.PointerEvent) => {
-      containerRef.current!.setPointerCapture?.(event.pointerId);
+      containerRef.current!.setPointerCapture(event.pointerId);
       const bottom = eventBottom(event);
       event.preventDefault();
       selectIndex(bottomToIndex(bottom));
