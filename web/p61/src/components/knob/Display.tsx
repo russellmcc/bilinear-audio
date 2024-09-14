@@ -195,7 +195,8 @@ const animation = {
                 ? 0
                 : (() => {
                     let newPhase =
-                      phase + elapsed * baseSpeed * speeds[index] * grabbedEase;
+                      phase +
+                      elapsed * baseSpeed * speeds[index]! * grabbedEase;
                     // Wrap to ensure we're within [-0.5, 0.5] - NOTE that we can only
                     // do this if grabbedEase is 1, otherwise we're fading in the contribution of
                     // `state.phases` so we'll jump if we wrap.
@@ -282,7 +283,7 @@ const Display = ({
           fill={borderColor}
         />
         {...state.phases.map((phaseRaw, index) => {
-          const phase = TAU * (restPhases[index] + phaseRaw * grabbedEase);
+          const phase = TAU * (restPhases[index]! + phaseRaw * grabbedEase);
 
           return (
             <g
@@ -293,11 +294,11 @@ const Display = ({
                 fill={index % 2 ? borderColor : bgColor}
                 cx={
                   outerRadius +
-                  hoverEase * Math.cos(phase) * innerRadius * radii[index]
+                  hoverEase * Math.cos(phase) * innerRadius * radii[index]!
                 }
                 cy={
                   outerRadius -
-                  hoverEase * Math.sin(phase) * innerRadius * radii[index]
+                  hoverEase * Math.sin(phase) * innerRadius * radii[index]!
                 }
                 r={outerRadius}
                 opacity={baseOpacity + hoverEase * (hoverOpacity - baseOpacity)}

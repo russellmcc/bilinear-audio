@@ -17,7 +17,7 @@ describe("EnumSlider", () => {
       (el) => el.getAttribute("aria-checked") === "true",
     );
     expect(checkedRadioElements).toHaveLength(1);
-    expect(checkedRadioElements[0].getAttribute("aria-label")).toBe("b");
+    expect(checkedRadioElements[0]!.getAttribute("aria-label")).toBe("b");
   });
   test("Basic keyboard interactions", async () => {
     const testValues = ["a", "b", "c"];

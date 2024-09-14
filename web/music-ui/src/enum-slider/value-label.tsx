@@ -58,7 +58,7 @@ export const ValueLabelInternal = ({
       };
       const direction = directions[e.key];
       if (direction !== undefined) {
-        const newIndex = (index + directions[e.key] + numValues) % numValues;
+        const newIndex = (index + direction + numValues) % numValues;
         doSelect(newIndex);
       }
 

@@ -67,7 +67,9 @@ export const EnumSlider = ({
   const index = indexOf(value, values);
   const selectIndex = useCallback(
     (index: number) => {
-      onValue?.(values[index]);
+      if (values[index]) {
+        onValue?.(values[index]);
+      }
       setTimeout(() => radios.current[index]?.focus(), 0);
     },
     [onValue, values],
