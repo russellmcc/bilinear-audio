@@ -27,7 +27,7 @@ export const ValueLabelInternal = ({
   selectedIndex: number | undefined;
   numValues: number;
   selectIndex?: (i: number) => void;
-  radios: React.MutableRefObject<Record<number, HTMLDivElement>>;
+  radios: React.MutableRefObject<Map<number, HTMLDivElement>>;
   displayFormatter?: (value: string) => string;
   ClientComponent: ValueLabel;
 }) => {
@@ -58,7 +58,7 @@ export const ValueLabelInternal = ({
       };
       const direction = directions[e.key];
       if (direction !== undefined) {
-        const newIndex = (index + directions[e.key] + numValues) % numValues;
+        const newIndex = (index + direction + numValues) % numValues;
         doSelect(newIndex);
       }
 
@@ -79,9 +79,9 @@ export const ValueLabelInternal = ({
   const onRef = useCallback(
     (el: HTMLDivElement | null) => {
       if (el === null) {
-        delete radios.current[index];
+        radios.current.delete(index);
       } else {
-        radios.current[index] = el;
+        radios.current.set(index, el);
       }
     },
     [index, radios],
@@ -111,7 +111,7 @@ export type LabelGroupProps = {
   value: string;
   displayFormatter?: (value: string) => string;
   valueLabel: ValueLabel;
-  radios: React.MutableRefObject<Record<number, HTMLDivElement>>;
+  radios: React.MutableRefObject<Map<number, HTMLDivElement>>;
   selectIndex: (i: number) => void;
 };
 

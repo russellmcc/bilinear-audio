@@ -26,6 +26,9 @@ describe("exponentialScale", () => {
     [0.75, 0.01],
     [0.9, 0.001],
   ]) {
+    if (fromBreak === undefined || toBreak === undefined) {
+      continue;
+    }
     test(`exponentialScale(${fromBreak}, ${toBreak})`, () => {
       testExpFor(fromBreak, toBreak);
     });
@@ -74,6 +77,10 @@ describe("exponentialScale", () => {
     [0.01, 0.75],
     [0.001, 0.9],
   ]) {
+    if (fromBreak === undefined || toBreak === undefined) {
+      continue;
+    }
+
     test(`exponentialScale(${fromBreak}, ${toBreak})`, () => {
       testLogFor(fromBreak, toBreak);
     });

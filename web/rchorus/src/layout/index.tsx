@@ -8,7 +8,9 @@ const Layout = () => {
   const { value: bypassed, set: setBypassed } = useSwitchParam("bypass");
   const enabled = !bypassed;
   const setEnabled = useCallback(
-    (enabled: boolean) => setBypassed(!enabled),
+    (enabled: boolean) => {
+      setBypassed(!enabled);
+    },
     [setBypassed],
   );
   return (

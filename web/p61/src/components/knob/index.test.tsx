@@ -25,10 +25,10 @@ describe("Knob", () => {
     await user.tab();
     await user.keyboard("{ArrowUp}");
     expect(onValue).toHaveBeenCalled();
-    expect(onValue.mock.calls[0][0]).toBeGreaterThan(testValue);
+    expect(onValue.mock.calls[0]![0]).toBeGreaterThan(testValue);
     await user.keyboard("{ArrowDown}");
     expect(onValue).toHaveBeenCalledTimes(2);
-    expect(onValue.mock.calls[1][0]).toBeLessThan(testValue);
+    expect(onValue.mock.calls[1]![0]).toBeLessThan(testValue);
   });
 
   test("Knob aria valuetext", () => {

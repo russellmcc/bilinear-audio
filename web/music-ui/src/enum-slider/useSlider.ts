@@ -197,6 +197,8 @@ export const useSlider = <Container extends Element, Ball extends Element>({
 
   const onPointerDown = useCallback(
     (event: React.PointerEvent) => {
+      // happy-dom which we use for testing doesn't support setPointerCapture
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       containerRef.current!.setPointerCapture?.(event.pointerId);
       const bottom = eventBottom(event);
       event.preventDefault();
