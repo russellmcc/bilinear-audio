@@ -25,7 +25,7 @@ const fn percentage(default: f32) -> TypeSpecificInfoRef<'static, &'static str> 
     TypeSpecificInfoRef::Numeric {
         default,
         valid_range: 0.0..=100.0,
-        units: "%",
+        units: Some("%"),
     }
 }
 
@@ -102,7 +102,7 @@ static PARAMETERS: [InfoRef<'static, &'static str>; 26] = [
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 64.0,
             valid_range: 0.0..=128.0,
-            units: "",
+            units: None,
         },
     },
     InfoRef {
@@ -141,7 +141,7 @@ static PARAMETERS: [InfoRef<'static, &'static str>; 26] = [
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 0.001,
             valid_range: 0.001..=10.0,
-            units: "s",
+            units: Some("s"),
         },
     },
     InfoRef {
@@ -152,7 +152,7 @@ static PARAMETERS: [InfoRef<'static, &'static str>; 26] = [
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 0.001,
             valid_range: 0.001..=10.0,
-            units: "s",
+            units: Some("s"),
         },
     },
     InfoRef {
@@ -170,7 +170,7 @@ static PARAMETERS: [InfoRef<'static, &'static str>; 26] = [
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 0.001,
             valid_range: 0.001..=10.0,
-            units: "s",
+            units: Some("s"),
         },
     },
     InfoRef {
@@ -212,7 +212,7 @@ static PARAMETERS: [InfoRef<'static, &'static str>; 26] = [
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 0.0,
             valid_range: 0.0..=10.0,
-            units: "s",
+            units: Some("s"),
         },
     },
     InfoRef {

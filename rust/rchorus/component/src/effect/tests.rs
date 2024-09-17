@@ -6,7 +6,7 @@ use super::*;
 use assert_approx_eq::assert_approx_eq;
 use conformal_component::{
     audio::BufferData,
-    parameters::test_utils::{override_defaults, ConstantBufferStates, StatesMap},
+    parameters::{override_defaults, ConstantBufferStates, StatesMap},
     ProcessingMode,
 };
 use snapshots::assert_snapshot;
@@ -14,7 +14,7 @@ use snapshots::assert_snapshot;
 fn params_map() -> StatesMap {
     StatesMap::from(override_defaults(
         PARAMETERS.iter().cloned(),
-        &HashMap::from_iter([]),
+        &HashMap::new(),
     ))
 }
 

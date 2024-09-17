@@ -2,10 +2,7 @@ use crate::PARAMETERS;
 use assert_approx_eq::assert_approx_eq;
 use conformal_component::{
     events::{Data, Event, NoteData, NoteID},
-    parameters::{
-        test_utils::{override_synth_defaults, ConstantBufferStates, StatesMap},
-        InternalValue,
-    },
+    parameters::{override_synth_defaults, ConstantBufferStates, InternalValue, StatesMap},
 };
 use poly::Voice as VoiceT;
 use snapshots::assert_snapshot;
@@ -37,7 +34,7 @@ fn dummy_params() -> ConstantBufferStates<StatesMap> {
 fn dummy_params_with(extra_params: &[(&str, InternalValue)]) -> ConstantBufferStates<StatesMap> {
     ConstantBufferStates::new(StatesMap::from(override_synth_defaults(
         PARAMETERS.iter().cloned(),
-        &HashMap::from_iter(
+        &HashMap::<_, _>::from_iter(
             [
                 ("dco1_width", InternalValue::Numeric(25.0)),
                 ("dco2_shape", InternalValue::Enum(Dco2Shape::Saw as u32)),
