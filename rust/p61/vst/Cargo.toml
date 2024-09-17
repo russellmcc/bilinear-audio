@@ -10,5 +10,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 p61_component = { path = "../component" }
-conformal_vst_wrapper = "0.1.0"
+conformal_vst_wrapper = "0.2.1"
 vst3 = "0.1.2"

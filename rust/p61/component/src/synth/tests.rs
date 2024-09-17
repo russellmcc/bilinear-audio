@@ -4,12 +4,9 @@ use super::{voice, Synth};
 use crate::PARAMETERS;
 use assert_approx_eq::assert_approx_eq;
 use conformal_component::{
-    audio::{util::slice_buffer_mut, Buffer as _, BufferData, ChannelLayout},
+    audio::{slice_buffer_mut, Buffer as _, BufferData, ChannelLayout},
     events::{Data, Event, Events, NoteData, NoteID},
-    parameters::{
-        test_utils::{override_synth_defaults, ConstantBufferStates, StatesMap},
-        InternalValue,
-    },
+    parameters::{override_synth_defaults, ConstantBufferStates, InternalValue, StatesMap},
     synth::Synth as _,
     ProcessingEnvironment, ProcessingMode, Processor as _,
 };
@@ -18,7 +15,7 @@ use snapshots::assert_snapshot;
 fn dummy_params_map() -> StatesMap {
     StatesMap::from(override_synth_defaults(
         PARAMETERS.iter().cloned(),
-        &HashMap::from_iter([
+        &HashMap::from([
             ("dco1_width", InternalValue::Numeric(25.0)),
             (
                 "dco2_shape",
@@ -135,7 +132,7 @@ fn snapshot_pwm() {
             48000,
             ConstantBufferStates::new(StatesMap::from(override_synth_defaults(
                 PARAMETERS.iter().cloned(),
-                &HashMap::from_iter([
+                &HashMap::from([
                     (
                         "dco1_shape",
                         InternalValue::Enum(voice::Dco1Shape::Pwm as u32),

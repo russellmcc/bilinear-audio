@@ -25,7 +25,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 4] = [
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 0.35,
             valid_range: 0.08..=10.1,
-            units: "hz",
+            units: Some("hz"),
         },
     },
     InfoRef {
@@ -36,7 +36,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 4] = [
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 100.,
             valid_range: 0f32..=100.,
-            units: "%",
+            units: Some("%"),
         },
     },
     InfoRef {
@@ -47,7 +47,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 4] = [
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 100.,
             valid_range: 0f32..=100.,
-            units: "%",
+            units: Some("%"),
         },
     },
     InfoRef {

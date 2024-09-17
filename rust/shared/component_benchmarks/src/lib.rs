@@ -4,11 +4,7 @@ use conformal_component::{
     audio::{BufferData, BufferMut, ChannelLayout},
     effect::Effect,
     events,
-    parameters::{
-        self,
-        test_utils::{override_defaults, RampedStatesMap, StatesMap},
-        InternalValue,
-    },
+    parameters::{self, override_defaults, InternalValue, RampedStatesMap, StatesMap},
     synth::{Synth, CONTROLLER_PARAMETERS},
     Component, ProcessingEnvironment, ProcessingMode, Processor,
 };
