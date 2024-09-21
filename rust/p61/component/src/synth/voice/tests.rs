@@ -63,7 +63,6 @@ fn reset_basics() {
         sample_offset: 0,
         data: Data::NoteOn {
             data: NoteData {
-                channel: 0,
                 id: NoteID::from_pitch(60),
                 pitch: 60,
                 velocity: 1.0,
@@ -104,7 +103,6 @@ fn snapshot_for_data_and_params(
             sample_offset: 0,
             data: Data::NoteOn {
                 data: NoteData {
-                    channel: 0,
                     id: NoteID::from_pitch(60),
                     pitch: 60,
                     velocity: 1.0,
@@ -116,7 +114,6 @@ fn snapshot_for_data_and_params(
             sample_offset: 40000,
             data: Data::NoteOff {
                 data: NoteData {
-                    channel: 0,
                     id: NoteID::from_pitch(60),
                     pitch: 60,
                     velocity: 1.0,

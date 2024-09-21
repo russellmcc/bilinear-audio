@@ -72,7 +72,6 @@ fn synthetic_note_off(sample_offset: usize, id: NoteID, pitch: u8) -> Event {
         sample_offset,
         data: Data::NoteOff {
             data: NoteData {
-                channel: 0,
                 id,
                 pitch,
                 velocity: 1.0,

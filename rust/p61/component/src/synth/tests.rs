@@ -49,7 +49,6 @@ fn generate_snapshot_with_params(
             sample_offset: 0,
             data: Data::NoteOn {
                 data: NoteData {
-                    channel: 0,
                     id: NoteID::from_pitch(60),
                     pitch: 60,
                     velocity: 1.0,
@@ -61,7 +60,6 @@ fn generate_snapshot_with_params(
             sample_offset: (num_samples as f32 * 0.8) as usize,
             data: Data::NoteOff {
                 data: NoteData {
-                    channel: 0,
                     id: NoteID::from_pitch(60),
                     pitch: 60,
                     velocity: 1.0,
@@ -198,7 +196,6 @@ fn snapshot_separate_events() {
     synth.handle_events(
         vec![Data::NoteOn {
             data: NoteData {
-                channel: 0,
                 id: NoteID::from_pitch(60),
                 pitch: 60,
                 velocity: 1.0,
@@ -215,7 +212,6 @@ fn snapshot_separate_events() {
     synth.handle_events(
         vec![Data::NoteOff {
             data: NoteData {
-                channel: 0,
                 id: NoteID::from_pitch(60),
                 pitch: 60,
                 velocity: 1.0,
