@@ -1,10 +1,10 @@
 use crate::PARAMETERS;
 use assert_approx_eq::assert_approx_eq;
 use conformal_component::{
-    events::{Data, Event, NoteData, NoteID},
+    events::{NoteData, NoteID},
     parameters::{override_synth_defaults, ConstantBufferStates, InternalValue, StatesMap},
 };
-use poly::Voice as VoiceT;
+use poly::{Event, EventData, Voice as VoiceT};
 use snapshots::assert_snapshot;
 use std::collections::HashMap;
 
@@ -61,7 +61,7 @@ fn reset_basics() {
     let mut output = vec![0f32; 100];
     let events = vec![Event {
         sample_offset: 0,
-        data: Data::NoteOn {
+        data: EventData::NoteOn {
             data: NoteData {
                 id: NoteID::from_pitch(60),
                 pitch: 60,
@@ -101,7 +101,7 @@ fn snapshot_for_data_and_params(
     let events = vec![
         Event {
             sample_offset: 0,
-            data: Data::NoteOn {
+            data: EventData::NoteOn {
                 data: NoteData {
                     id: NoteID::from_pitch(60),
                     pitch: 60,
@@ -112,7 +112,7 @@ fn snapshot_for_data_and_params(
         },
         Event {
             sample_offset: 40000,
-            data: Data::NoteOff {
+            data: EventData::NoteOff {
                 data: NoteData {
                     id: NoteID::from_pitch(60),
                     pitch: 60,

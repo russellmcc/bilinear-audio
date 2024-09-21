@@ -1,10 +1,7 @@
-use poly::Voice as VoiceT;
+use poly::{Event, EventData, Voice as VoiceT};
 use util::f32::{lerp, rescale};
 
-use conformal_component::{
-    events::{Data, Event},
-    parameters, pzip,
-};
+use conformal_component::{parameters, pzip};
 
 #[cfg(test)]
 mod tests;
@@ -503,9 +500,9 @@ impl VoiceT for Voice {
         self.vcf.reset();
     }
 
-    fn handle_event(&mut self, event: &Data) {
+    fn handle_event(&mut self, event: &EventData) {
         match event {
-            Data::NoteOn { data } => {
+            EventData::NoteOn { data } => {
                 let midi_pitch = f32::from(data.pitch);
                 self.note = Note {
                     midi_number: midi_pitch,
@@ -514,7 +511,7 @@ impl VoiceT for Voice {
                 self.adsr.on();
                 self.gate.on();
             }
-            Data::NoteOff { .. } => {
+            EventData::NoteOff { .. } => {
                 self.adsr.off();
                 self.gate.off();
             }

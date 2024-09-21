@@ -92,6 +92,7 @@ impl SynthT for Synth {
                 Data::NoteOff { .. } => {
                     self.mg_env.off();
                 }
+                Data::NoteExpression { .. } => {}
             }
         }
     }
@@ -133,6 +134,7 @@ impl SynthT for Synth {
                     Data::NoteOff { .. } => {
                         self.mg_env.off();
                     }
+                    Data::NoteExpression { .. } => {}
                 }
                 mg_events.next();
             }

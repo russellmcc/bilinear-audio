@@ -15,11 +15,37 @@
 use self::state::State;
 use conformal_component::{
     audio::{channels_mut, BufferMut},
-    events::{Data, Event},
+    events::{Data, Event as CEvent, NoteData},
     parameters, ProcessingEnvironment,
 };
 
 use util::slice_ops::{add_in_place, mul_constant_in_place};
+
+#[derive(Debug, Clone, Copy)]
+pub enum EventData {
+    NoteOn { data: NoteData },
+    NoteOff { data: NoteData },
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Event {
+    pub sample_offset: usize,
+    pub data: EventData,
+}
+
+fn cevent_to_event(cevent: CEvent) -> Option<Event> {
+    match cevent.data {
+        Data::NoteOn { data } => Some(Event {
+            sample_offset: cevent.sample_offset,
+            data: EventData::NoteOn { data },
+        }),
+        Data::NoteOff { data } => Some(Event {
+            sample_offset: cevent.sample_offset,
+            data: EventData::NoteOff { data },
+        }),
+        _ => None,
+    }
+}
 
 // Optimization opportunity - allow `Voice` to indicate that not all output
 // was filled. This will let us skip rendering until a voice is playing
@@ -28,7 +54,7 @@ use util::slice_ops::{add_in_place, mul_constant_in_place};
 pub trait Voice {
     type SharedData<'a>: Clone;
     fn new(max_samples_per_process_call: usize, sampling_rate: f32) -> Self;
-    fn handle_event(&mut self, event: &Data);
+    fn handle_event(&mut self, event: &EventData);
     fn render_audio(
         &mut self,
         events: impl IntoIterator<Item = Event>,
@@ -83,15 +109,17 @@ impl<V: Voice> Poly<V> {
         for (v, ev) in self
             .state
             .clone()
-            .dispatch_events(events.clone().into_iter().map(|data| Event {
+            .dispatch_events(events.clone().into_iter().map(|data| CEvent {
                 sample_offset: 0,
                 data,
             }))
         {
-            self.voices[v].handle_event(&ev.data);
+            if let Some(ev) = cevent_to_event(ev) {
+                self.voices[v].handle_event(&ev.data);
+            }
         }
 
-        self.state.update(events.into_iter().map(|data| Event {
+        self.state.update(events.into_iter().map(|data| CEvent {
             sample_offset: 0,
             data,
         }));
@@ -99,7 +127,7 @@ impl<V: Voice> Poly<V> {
 
     pub fn render_audio(
         &mut self,
-        events: impl IntoIterator<Item = Event> + Clone,
+        events: impl IntoIterator<Item = CEvent> + Clone,
         params: &impl parameters::BufferStates,
         shared_data: &V::SharedData<'_>,
         output: &mut impl BufferMut,
@@ -114,7 +142,13 @@ impl<V: Voice> Poly<V> {
                     .clone()
                     .dispatch_events(events.clone())
                     .into_iter()
-                    .filter_map(|(i, event)| if i == index { Some(event) } else { None })
+                    .filter_map(|(i, event)| {
+                        if i == index {
+                            cevent_to_event(event)
+                        } else {
+                            None
+                        }
+                    })
             };
             if voice_events().next().is_none() && voice.quiescent() {
                 voice.skip_samples(buffer_size);
