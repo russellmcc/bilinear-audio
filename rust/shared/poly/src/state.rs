@@ -213,7 +213,7 @@ impl State {
                 MaybeDoubleEvent::new0()
             }
             Data::NoteExpression { data } => {
-                println!("Note expression: {:?}", data);
+                println!("Note expression: {data:?}");
                 MaybeDoubleEvent::new0()
             }
         }

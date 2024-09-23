@@ -33,7 +33,7 @@ pub struct Event {
     pub data: EventData,
 }
 
-fn cevent_to_event(cevent: CEvent) -> Option<Event> {
+fn cevent_to_event(cevent: &CEvent) -> Option<Event> {
     match cevent.data {
         Data::NoteOn { data } => Some(Event {
             sample_offset: cevent.sample_offset,
@@ -114,7 +114,7 @@ impl<V: Voice> Poly<V> {
                 data,
             }))
         {
-            if let Some(ev) = cevent_to_event(ev) {
+            if let Some(ev) = cevent_to_event(&ev) {
                 self.voices[v].handle_event(&ev.data);
             }
         }
@@ -144,7 +144,7 @@ impl<V: Voice> Poly<V> {
                     .into_iter()
                     .filter_map(|(i, event)| {
                         if i == index {
-                            cevent_to_event(event)
+                            cevent_to_event(&event)
                         } else {
                             None
                         }
