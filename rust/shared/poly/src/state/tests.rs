@@ -1,5 +1,6 @@
 use super::State;
-use conformal_component::events::{Data, Event, NoteData, NoteID};
+use crate::{Event, EventData};
+use conformal_component::events::{self as events, NoteData, NoteID};
 
 fn example_note_data(pitch: u8) -> NoteData {
     NoteData {
@@ -10,19 +11,37 @@ fn example_note_data(pitch: u8) -> NoteData {
     }
 }
 
-fn example_note_on(time: usize, pitch: u8) -> Event {
-    Event {
+fn example_note_on(time: usize, pitch: u8) -> events::Event {
+    events::Event {
         sample_offset: time,
-        data: Data::NoteOn {
+        data: events::Data::NoteOn {
             data: example_note_data(pitch),
         },
     }
 }
 
-fn example_note_off(time: usize, pitch: u8) -> Event {
+fn example_note_off(time: usize, pitch: u8) -> events::Event {
+    events::Event {
+        sample_offset: time,
+        data: events::Data::NoteOff {
+            data: example_note_data(pitch),
+        },
+    }
+}
+
+fn expected_note_on(time: usize, pitch: u8) -> Event {
     Event {
         sample_offset: time,
-        data: Data::NoteOff {
+        data: EventData::NoteOn {
+            data: example_note_data(pitch),
+        },
+    }
+}
+
+fn expected_note_off(time: usize, pitch: u8) -> Event {
+    Event {
+        sample_offset: time,
+        data: EventData::NoteOff {
             data: example_note_data(pitch),
         },
     }
@@ -42,7 +61,11 @@ fn assert_events_match(expected: Vec<Vec<Event>>, mut actual: Vec<Vec<Event>>) {
     }
 }
 
-fn gather_events(state: &State, num_voices: usize, events: Vec<Event>) -> Vec<Vec<Event>> {
+fn gather_events(
+    state: &State,
+    num_voices: usize,
+    events: Vec<events::Event>,
+) -> Vec<Vec<crate::Event>> {
     (0..num_voices)
         .into_iter()
         .map(|voice_index| {
@@ -66,8 +89,8 @@ fn gather_events(state: &State, num_voices: usize, events: Vec<Event>) -> Vec<Ve
 fn two_notes_go_to_two_voices() {
     assert_events_match(
         vec![
-            vec![example_note_on(1, 61), example_note_off(3, 61)],
-            vec![example_note_on(0, 60), example_note_off(2, 60)],
+            vec![expected_note_on(1, 61), expected_note_off(3, 61)],
+            vec![expected_note_on(0, 60), expected_note_off(2, 60)],
         ],
         gather_events(
             &State::new(2),
@@ -105,8 +128,8 @@ fn two_notes_go_to_two_voices_across_buffers() {
     );
     assert_events_match(
         vec![
-            vec![example_note_on(0, 60), example_note_off(2, 60)],
-            vec![example_note_on(1, 61), example_note_off(3, 61)],
+            vec![expected_note_on(0, 60), expected_note_off(2, 60)],
+            vec![expected_note_on(1, 61), expected_note_off(3, 61)],
         ],
         cat_events(a, b),
     );
@@ -116,11 +139,11 @@ fn two_notes_go_to_two_voices_across_buffers() {
 fn new_note_goes_to_longest_off_voice() {
     assert_events_match(
         vec![
-            vec![example_note_on(0, 61), example_note_off(3, 61)],
+            vec![expected_note_on(0, 61), expected_note_off(3, 61)],
             vec![
-                example_note_on(0, 60),
-                example_note_off(2, 60),
-                example_note_on(5, 62),
+                expected_note_on(0, 60),
+                expected_note_off(2, 60),
+                expected_note_on(5, 62),
             ],
         ],
         gather_events(
@@ -155,11 +178,11 @@ fn new_note_goes_to_longest_off_across_buffers() {
     assert_events_match(
         vec![
             vec![
-                example_note_on(0, 60),
-                example_note_off(66, 60),
-                example_note_on(5, 62),
+                expected_note_on(0, 60),
+                expected_note_off(66, 60),
+                expected_note_on(5, 62),
             ],
-            vec![example_note_on(0, 61), example_note_off(0, 61)],
+            vec![expected_note_on(0, 61), expected_note_off(0, 61)],
         ],
         cat_events(a, b),
     );
@@ -169,11 +192,11 @@ fn new_note_goes_to_longest_off_across_buffers() {
 fn drops_from_oldest_note() {
     assert_events_match(
         vec![
-            vec![example_note_on(1, 61)],
+            vec![expected_note_on(1, 61)],
             vec![
-                example_note_on(0, 60),
-                example_note_off(2, 60),
-                example_note_on(2, 62),
+                expected_note_on(0, 60),
+                expected_note_off(2, 60),
+                expected_note_on(2, 62),
             ],
         ],
         gather_events(
@@ -198,11 +221,11 @@ fn drops_from_oldest_note_across_buffers() {
     assert_events_match(
         vec![
             vec![
-                example_note_on(0, 60),
-                example_note_off(0, 60),
-                example_note_on(0, 62),
+                expected_note_on(0, 60),
+                expected_note_off(0, 60),
+                expected_note_on(0, 62),
             ],
-            vec![example_note_on(1, 61)],
+            vec![expected_note_on(1, 61)],
         ],
         cat_events(a, b),
     );
@@ -214,7 +237,7 @@ fn reset_restors_state() {
     state.update(vec![example_note_on(0, 60), example_note_on(1, 61)]);
     state.reset();
     assert_events_match(
-        vec![vec![example_note_on(0, 62)], vec![example_note_on(1, 63)]],
+        vec![vec![expected_note_on(0, 62)], vec![expected_note_on(1, 63)]],
         gather_events(
             &state,
             2,

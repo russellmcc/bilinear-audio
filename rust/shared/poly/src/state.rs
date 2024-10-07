@@ -1,39 +1,99 @@
-use conformal_component::events::{Data, Event, NoteData, NoteID};
+use super::{Event, EventData, NoteExpressionCurve};
+use conformal_component::{
+    audio::approx_eq,
+    events::{self as events, NoteData, NoteID},
+};
+
+use crate::{NoteExpressionPoint, NoteExpressionState};
 
 #[derive(Clone, Debug, PartialEq)]
-enum VoiceState {
+enum VoicePlayingState {
     Idle { order: usize },
     Note { order: usize, id: NoteID, pitch: u8 },
 }
 
+impl NoteExpressionState {
+    fn update_note_expression(&mut self, new: NoteExpressionState) -> Option<NoteExpressionState> {
+        const EPSILON: f32 = 1e-6;
+
+        let mut any_change = false;
+        let mut update =
+            |field: fn(&NoteExpressionState) -> f32,
+             field_mut: fn(&mut NoteExpressionState) -> &mut f32| {
+                if !approx_eq(field(&new), field(self), EPSILON) {
+                    any_change = true;
+                }
+                *field_mut(self) = field(&new);
+            };
+        update(|x| x.pitch_bend, |x| &mut x.pitch_bend);
+        update(|x| x.aftertouch, |x| &mut x.aftertouch);
+        update(|x| x.timbre, |x| &mut x.timbre);
+        if any_change {
+            Some(new)
+        } else {
+            None
+        }
+    }
+
+    fn update_with(&self, event: events::NoteExpression) -> NoteExpressionState {
+        let mut ret = *self;
+        match event {
+            events::NoteExpression::PitchBend(x) => ret.pitch_bend = x,
+            events::NoteExpression::Aftertouch(x) => ret.aftertouch = x,
+            events::NoteExpression::Timbre(x) => ret.timbre = x,
+        }
+        ret
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Voice {
+    playing: VoicePlayingState,
+    expression: NoteExpressionState,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct State {
-    voices: Vec<VoiceState>,
+    voices: Vec<Voice>,
 
     voices_compress_order_scratch: Vec<(usize, usize)>,
 }
 
-struct MaybeDoubleEvent {
+struct EventStreamStep {
     voice: usize,
-    first: Option<Event>,
-    second: Option<Event>,
+    sample_offset: usize,
+    first: Option<EventData>,
+    second: Option<EventData>,
+    expression: Option<NoteExpressionState>,
 }
 
-impl Iterator for MaybeDoubleEvent {
-    type Item = (usize, Event);
+impl Iterator for EventStreamStep {
+    type Item = (usize, super::Event);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let first = self.first.take();
+        let first: Option<EventData> = self.first.take();
         let second = self.second.take();
         match (first, second) {
             (Some(first), Some(second)) => {
                 self.first = Some(second);
                 self.second = None;
-                Some((self.voice, first))
+                Some((
+                    self.voice,
+                    Event {
+                        sample_offset: self.sample_offset,
+                        data: first,
+                    },
+                ))
             }
             (Some(first), None) => {
                 self.first = None;
-                Some((self.voice, first))
+                Some((
+                    self.voice,
+                    Event {
+                        sample_offset: self.sample_offset,
+                        data: first,
+                    },
+                ))
             }
             (None, Some(_)) => {
                 panic!("Invariant violation")
@@ -43,40 +103,61 @@ impl Iterator for MaybeDoubleEvent {
     }
 }
 
-impl MaybeDoubleEvent {
-    fn new1(voice: usize, first: Event) -> Self {
+impl EventStreamStep {
+    fn new1(voice: usize, first: Event, expression: Option<NoteExpressionState>) -> Self {
         Self {
             voice,
-            first: Some(first),
+            sample_offset: first.sample_offset,
+            first: Some(first.data),
             second: None,
+            expression,
         }
     }
-    fn new2(voice: usize, first: Event, second: Event) -> Self {
+    fn new2(
+        voice: usize,
+        first: Event,
+        second: EventData,
+        expression: Option<NoteExpressionState>,
+    ) -> Self {
         Self {
             voice,
-            first: Some(first),
+            sample_offset: first.sample_offset,
+            first: Some(first.data),
             second: Some(second),
+            expression,
         }
     }
     fn new0() -> Self {
         Self {
             voice: 0,
+            sample_offset: 0,
             first: None,
             second: None,
+            expression: None,
+        }
+    }
+    fn new_expression(
+        voice: usize,
+        sample_offset: usize,
+        expression: Option<NoteExpressionState>,
+    ) -> Self {
+        Self {
+            voice,
+            sample_offset,
+            first: None,
+            second: None,
+            expression,
         }
     }
 }
 
-fn synthetic_note_off(sample_offset: usize, id: NoteID, pitch: u8) -> Event {
-    Event {
-        sample_offset,
-        data: Data::NoteOff {
-            data: NoteData {
-                id,
-                pitch,
-                velocity: 1.0,
-                tuning: 0.0,
-            },
+fn synthetic_note_off(id: NoteID, pitch: u8) -> EventData {
+    EventData::NoteOff {
+        data: NoteData {
+            id,
+            pitch,
+            velocity: 1.0,
+            tuning: 0.0,
         },
     }
 }
@@ -86,7 +167,10 @@ impl State {
         assert!(max_voices > 0);
         Self {
             voices: (0..max_voices)
-                .map(|i| VoiceState::Idle { order: i })
+                .map(|i| Voice {
+                    playing: VoicePlayingState::Idle { order: i },
+                    expression: NoteExpressionState::default(),
+                })
                 .collect(),
             voices_compress_order_scratch: Vec::with_capacity(max_voices),
         }
@@ -95,24 +179,45 @@ impl State {
     pub fn reset(&mut self) {
         let num_voices = self.voices.len();
         self.voices.clear();
-        self.voices
-            .extend((0..num_voices).map(|i| VoiceState::Idle { order: i }));
+        self.voices.extend((0..num_voices).map(|i| Voice {
+            playing: VoicePlayingState::Idle { order: i },
+            expression: NoteExpressionState::default(),
+        }));
     }
 
     /// Note that the events must be sorted by time!
     pub fn dispatch_events(
         mut self,
-        events: impl IntoIterator<Item = Event>,
+        events: impl IntoIterator<Item = events::Event>,
     ) -> impl IntoIterator<Item = (usize, Event)> {
         events
             .into_iter()
-            .flat_map(move |event| self.update_single_and_dispatch(event))
+            .flat_map(move |event| self.update_single_and_dispatch(&event))
     }
 
-    fn update_single_and_dispatch(&mut self, event: Event) -> MaybeDoubleEvent {
+    pub fn note_expressions_for_voice(
+        mut self,
+        voice: usize,
+        events: impl Iterator<Item = events::Event> + Clone,
+    ) -> NoteExpressionCurve<impl IntoIterator<Item = NoteExpressionPoint> + Clone> {
+        let raw = std::iter::once(NoteExpressionPoint {
+            time: 0,
+            state: self.voices[voice].expression,
+        })
+        .chain(events.filter_map(move |event| {
+            let time = event.sample_offset;
+            self.update_single_and_dispatch(&event)
+                .expression
+                .map(|state| NoteExpressionPoint { time, state })
+        }));
+
+        NoteExpressionCurve::new(raw).unwrap()
+    }
+
+    fn update_single_and_dispatch(&mut self, event: &events::Event) -> EventStreamStep {
         match event.data {
-            Data::NoteOn {
-                data: NoteData {
+            events::Data::NoteOn {
+                data: data @ NoteData {
                     id: note_id, pitch, ..
                 },
             } => {
@@ -121,24 +226,38 @@ impl State {
                 let mut old_voice_index = None;
                 let mut old_voice_order = None;
                 let mut new_voice_order = None;
-                for (index, voice_state) in self.voices.iter().enumerate() {
-                    match (voice_state, open_index_order) {
-                        (VoiceState::Idle { order }, None) => {
+                for (
+                    index,
+                    Voice {
+                        playing,
+                        expression,
+                    },
+                ) in self.voices.iter_mut().enumerate()
+                {
+                    match (playing, open_index_order) {
+                        (VoicePlayingState::Idle { order }, None) => {
                             open_index = Some(index);
                             open_index_order = Some(*order);
                         }
-                        (VoiceState::Idle { order }, Some(open_index_order_))
-                            if order < &open_index_order_ =>
+                        (VoicePlayingState::Idle { order }, Some(open_index_order_))
+                            if *order < open_index_order_ =>
                         {
                             open_index = Some(index);
                             open_index_order = Some(*order);
                         }
-                        (VoiceState::Note { id, .. }, _) if note_id == *id => {
-                            return MaybeDoubleEvent::new1(index, event);
+                        (VoicePlayingState::Note { id, .. }, _) if note_id == *id => {
+                            return EventStreamStep::new1(
+                                index,
+                                Event {
+                                    sample_offset: event.sample_offset,
+                                    data: EventData::NoteOn { data },
+                                },
+                                expression.update_note_expression(Default::default()),
+                            );
                         }
-                        (VoiceState::Note { order, .. }, _) => {
+                        (VoicePlayingState::Note { order, .. }, _) => {
                             if let Some(old_voice_order_) = old_voice_order {
-                                if order < &old_voice_order_ {
+                                if *order < old_voice_order_ {
                                     old_voice_index = Some(index);
                                     old_voice_order = Some(*order);
                                 }
@@ -147,7 +266,7 @@ impl State {
                                 old_voice_order = Some(*order);
                             }
                             if let Some(new_voice_order_) = new_voice_order {
-                                if order > &new_voice_order_ {
+                                if *order > new_voice_order_ {
                                     new_voice_order = Some(*order);
                                 }
                             } else {
@@ -164,36 +283,54 @@ impl State {
                     // We always steal the oldest note.
 
                     // Make a synthetic note off event for the oldest note
-                    if let VoiceState::Note { id, pitch, .. } =
-                        self.voices[old_voice_index.unwrap()]
+                    if let VoicePlayingState::Note { id, pitch, .. } =
+                        self.voices[old_voice_index.unwrap()].playing
                     {
-                        extra_off = Some(synthetic_note_off(event.sample_offset, id, pitch));
+                        extra_off = Some(synthetic_note_off(id, pitch));
                     } else {
                         panic!("Internal error");
                     }
                     old_voice_index.unwrap()
                 });
 
-                self.voices[open_index] = VoiceState::Note {
+                self.voices[open_index].playing = VoicePlayingState::Note {
                     id: note_id,
                     order: new_voice_order.map_or(0, |x| x + 1),
                     pitch,
                 };
+                let expression_point = self.voices[open_index]
+                    .expression
+                    .update_note_expression(Default::default());
 
                 if let Some(extra_off) = extra_off {
-                    MaybeDoubleEvent::new2(open_index, extra_off, event)
+                    EventStreamStep::new2(
+                        open_index,
+                        Event {
+                            sample_offset: event.sample_offset,
+                            data: extra_off,
+                        },
+                        EventData::NoteOn { data },
+                        expression_point,
+                    )
                 } else {
-                    MaybeDoubleEvent::new1(open_index, event)
+                    EventStreamStep::new1(
+                        open_index,
+                        Event {
+                            sample_offset: event.sample_offset,
+                            data: EventData::NoteOn { data },
+                        },
+                        expression_point,
+                    )
                 }
             }
-            Data::NoteOff {
-                data: NoteData { id: note_id, .. },
+            events::Data::NoteOff {
+                data: data @ NoteData { id: note_id, .. },
             } => {
                 let order = self
                     .voices
                     .iter()
                     .filter_map(|x| {
-                        if let VoiceState::Idle { order } = x {
+                        if let VoicePlayingState::Idle { order } = x.playing {
                             Some(order)
                         } else {
                             None
@@ -202,19 +339,52 @@ impl State {
                     .max()
                     .map_or(0, |x| x + 1);
                 for (index, voice_state) in self.voices.iter_mut().enumerate() {
-                    match voice_state.clone() {
-                        VoiceState::Note { id, .. } if note_id == id => {
-                            *voice_state = VoiceState::Idle { order };
-                            return MaybeDoubleEvent::new1(index, event);
+                    match voice_state.playing {
+                        VoicePlayingState::Note { id, .. } if note_id == id => {
+                            voice_state.playing = VoicePlayingState::Idle { order };
+                            return EventStreamStep::new1(
+                                index,
+                                Event {
+                                    sample_offset: event.sample_offset,
+                                    data: EventData::NoteOff { data },
+                                },
+                                Default::default(),
+                            );
                         }
                         _ => {}
                     }
                 }
-                MaybeDoubleEvent::new0()
+                EventStreamStep::new0()
             }
-            Data::NoteExpression { data } => {
-                println!("Note expression: {data:?}");
-                MaybeDoubleEvent::new0()
+            events::Data::NoteExpression {
+                data:
+                    events::NoteExpressionData {
+                        id: note_id,
+                        expression: expression_data,
+                    },
+            } => {
+                for (
+                    index,
+                    Voice {
+                        playing,
+                        expression,
+                    },
+                ) in self.voices.iter_mut().enumerate()
+                {
+                    match playing {
+                        VoicePlayingState::Note { id, .. } if note_id == *id => {
+                            return EventStreamStep::new_expression(
+                                index,
+                                event.sample_offset,
+                                expression.update_note_expression(
+                                    expression.update_with(expression_data),
+                                ),
+                            );
+                        }
+                        _ => {}
+                    }
+                }
+                EventStreamStep::new0()
             }
         }
     }
@@ -225,8 +395,8 @@ impl State {
             self.voices
                 .iter()
                 .filter_map(|voice_state| {
-                    if let VoiceState::Idle { order } = voice_state {
-                        Some(*order)
+                    if let VoicePlayingState::Idle { order } = voice_state.playing {
+                        Some(order)
                     } else {
                         None
                     }
@@ -241,7 +411,7 @@ impl State {
         self.voices
             .iter_mut()
             .filter_map(|voice_state| {
-                if let VoiceState::Idle { order } = voice_state {
+                if let VoicePlayingState::Idle { ref mut order } = voice_state.playing {
                     Some(order)
                 } else {
                     None
@@ -255,9 +425,9 @@ impl State {
         self.voices_compress_order_scratch.clear();
         self.voices_compress_order_scratch.extend(
             self.voices
-                .iter()
+                .iter_mut()
                 .filter_map(|voice_state| {
-                    if let VoiceState::Note { order, .. } = voice_state {
+                    if let VoicePlayingState::Note { ref mut order, .. } = voice_state.playing {
                         Some(*order)
                     } else {
                         None
@@ -273,7 +443,7 @@ impl State {
         self.voices
             .iter_mut()
             .filter_map(|voice_state| {
-                if let VoiceState::Note { order, .. } = voice_state {
+                if let VoicePlayingState::Note { ref mut order, .. } = voice_state.playing {
                     Some(order)
                 } else {
                     None
@@ -284,9 +454,9 @@ impl State {
     }
 
     /// Note that the events must be sorted by time!
-    pub fn update(&mut self, events: impl IntoIterator<Item = Event>) {
+    pub fn update(&mut self, events: impl IntoIterator<Item = events::Event>) {
         for event in events {
-            self.update_single_and_dispatch(event);
+            self.update_single_and_dispatch(&event);
         }
 
         // compress orders - this keeps the `order` member bounded between buffers.

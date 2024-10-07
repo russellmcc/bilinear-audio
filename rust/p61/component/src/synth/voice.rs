@@ -1,4 +1,4 @@
-use poly::{Event, EventData, Voice as VoiceT};
+use poly::{Event, EventData, NoteExpressionCurve, NoteExpressionPoint, Voice as VoiceT};
 use util::f32::{lerp, rescale};
 
 use conformal_component::{parameters, pzip};
@@ -384,6 +384,7 @@ impl VoiceT for Voice {
         &mut self,
         events: impl IntoIterator<Item = Event>,
         params: &impl parameters::BufferStates,
+        _: &NoteExpressionCurve<impl IntoIterator<Item = NoteExpressionPoint> + Clone>,
         shared_data: Self::SharedData<'_>,
         output: &mut [f32],
     ) {

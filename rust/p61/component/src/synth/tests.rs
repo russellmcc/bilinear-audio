@@ -201,11 +201,12 @@ fn snapshot_separate_events() {
                 velocity: 1.0,
                 tuning: 0.0,
             },
-        }],
+        }]
+        .into_iter(),
         dummy_params_map(),
     );
     synth.process(
-        Events::new([], note_on_samples).unwrap(),
+        Events::new([].into_iter(), note_on_samples).unwrap(),
         dummy_params(),
         &mut slice_buffer_mut(&mut output, ..note_on_samples),
     );
@@ -217,12 +218,13 @@ fn snapshot_separate_events() {
                 velocity: 1.0,
                 tuning: 0.0,
             },
-        }],
+        }]
+        .into_iter(),
         dummy_params_map(),
     );
 
     synth.process(
-        Events::new([], num_samples - note_on_samples).unwrap(),
+        Events::new([].into_iter(), num_samples - note_on_samples).unwrap(),
         dummy_params(),
         &mut slice_buffer_mut(&mut output, note_on_samples..),
     );

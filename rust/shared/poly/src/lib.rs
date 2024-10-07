@@ -21,29 +21,89 @@ use conformal_component::{
 
 use util::slice_ops::{add_in_place, mul_constant_in_place};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum EventData {
     NoteOn { data: NoteData },
     NoteOff { data: NoteData },
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Event {
     pub sample_offset: usize,
     pub data: EventData,
 }
 
-fn cevent_to_event(cevent: &CEvent) -> Option<Event> {
-    match cevent.data {
-        Data::NoteOn { data } => Some(Event {
-            sample_offset: cevent.sample_offset,
-            data: EventData::NoteOn { data },
-        }),
-        Data::NoteOff { data } => Some(Event {
-            sample_offset: cevent.sample_offset,
-            data: EventData::NoteOff { data },
-        }),
-        _ => None,
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct NoteExpressionState {
+    pub pitch_bend: f32,
+    pub timbre: f32,
+    pub aftertouch: f32,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct NoteExpressionPoint {
+    /// The time, relative to the start of the buffer.
+    time: usize,
+
+    // The current value of the expressions.
+    state: NoteExpressionState,
+}
+
+/// A note expression is a series of points. Note that the following invariants
+/// hold:
+///   - The number of points is at least 1
+///   - The points are sorted by time
+///   - The time of the first point is 0
+///
+/// Between points, the value the expression is constant - this makes it
+/// different from [`conformal_component::parameters::PiecewiseLinearCurve`],
+/// where the value is linearly interpolated between points.
+#[derive(Debug, Clone)]
+pub struct NoteExpressionCurve<I> {
+    points: I,
+}
+
+impl<I: IntoIterator<Item = NoteExpressionPoint>> IntoIterator for NoteExpressionCurve<I> {
+    type Item = NoteExpressionPoint;
+    type IntoIter = I::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.points.into_iter()
+    }
+}
+
+/// Return a note expression curve that is constant, with all expressions set to zero.
+#[must_use]
+#[allow(clippy::missing_panics_doc)]
+pub fn default_note_expression_curve(
+) -> NoteExpressionCurve<impl IntoIterator<Item = NoteExpressionPoint> + Clone> {
+    NoteExpressionCurve::new(std::iter::once(NoteExpressionPoint {
+        time: 0,
+        state: Default::default(),
+    }))
+    .unwrap()
+}
+
+impl<I: IntoIterator<Item = NoteExpressionPoint> + Clone> NoteExpressionCurve<I> {
+    pub fn new(points: I) -> Option<Self> {
+        let points_iter = points.clone().into_iter().peekable();
+        let mut contains_zero = false;
+        let mut last_time = None;
+        // Check invariants
+        for point in points_iter {
+            if !contains_zero {
+                if point.time != 0 {
+                    return None;
+                }
+                contains_zero = true;
+            } else if let Some(last_time) = last_time {
+                if point.time <= last_time {
+                    return None;
+                }
+            }
+            last_time = Some(point.time);
+        }
+        Some(Self { points })
     }
 }
 
@@ -59,6 +119,9 @@ pub trait Voice {
         &mut self,
         events: impl IntoIterator<Item = Event>,
         params: &impl parameters::BufferStates,
+        note_expressions: &NoteExpressionCurve<
+            impl IntoIterator<Item = NoteExpressionPoint> + Clone,
+        >,
         data: Self::SharedData<'_>,
         output: &mut [f32],
     );
@@ -114,9 +177,7 @@ impl<V: Voice> Poly<V> {
                 data,
             }))
         {
-            if let Some(ev) = cevent_to_event(&ev) {
-                self.voices[v].handle_event(&ev.data);
-            }
+            self.voices[v].handle_event(&ev.data);
         }
 
         self.state.update(events.into_iter().map(|data| CEvent {
@@ -127,7 +188,7 @@ impl<V: Voice> Poly<V> {
 
     pub fn render_audio(
         &mut self,
-        events: impl IntoIterator<Item = CEvent> + Clone,
+        events: impl Iterator<Item = CEvent> + Clone,
         params: &impl parameters::BufferStates,
         shared_data: &V::SharedData<'_>,
         output: &mut impl BufferMut,
@@ -142,13 +203,7 @@ impl<V: Voice> Poly<V> {
                     .clone()
                     .dispatch_events(events.clone())
                     .into_iter()
-                    .filter_map(|(i, event)| {
-                        if i == index {
-                            cevent_to_event(&event)
-                        } else {
-                            None
-                        }
-                    })
+                    .filter_map(|(i, event)| if i == index { Some(event) } else { None })
             };
             if voice_events().next().is_none() && voice.quiescent() {
                 voice.skip_samples(buffer_size);
@@ -157,6 +212,10 @@ impl<V: Voice> Poly<V> {
             voice.render_audio(
                 voice_events(),
                 params,
+                &self
+                    .state
+                    .clone()
+                    .note_expressions_for_voice(index, events.clone()),
                 shared_data.clone(),
                 &mut self.voice_scratch_buffer[0..output.num_frames()],
             );

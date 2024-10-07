@@ -4,7 +4,7 @@ use conformal_component::{
     events::{NoteData, NoteID},
     parameters::{override_synth_defaults, ConstantBufferStates, InternalValue, StatesMap},
 };
-use poly::{Event, EventData, Voice as VoiceT};
+use poly::{default_note_expression_curve, Event, EventData, Voice as VoiceT};
 use snapshots::assert_snapshot;
 use std::collections::HashMap;
 
@@ -75,6 +75,7 @@ fn reset_basics() {
     voice.render_audio(
         events.iter().cloned(),
         &params,
+        &default_note_expression_curve(),
         get_shared_data_from_mg(&get_silent_mg(output.len()), &get_silent_mg(output.len())),
         &mut output,
     );
@@ -83,6 +84,7 @@ fn reset_basics() {
     voice.render_audio(
         events.iter().cloned(),
         &params,
+        &default_note_expression_curve(),
         get_shared_data_from_mg(&get_silent_mg(output.len()), &get_silent_mg(output.len())),
         &mut reset,
     );
@@ -123,7 +125,13 @@ fn snapshot_for_data_and_params(
         },
     ];
 
-    voice.render_audio(events.iter().cloned(), &params, data, &mut output);
+    voice.render_audio(
+        events.iter().cloned(),
+        &params,
+        &default_note_expression_curve(),
+        data,
+        &mut output,
+    );
     output
 }
 
