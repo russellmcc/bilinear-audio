@@ -43,10 +43,10 @@ pub struct NoteExpressionState {
 #[derive(Debug, Clone, PartialEq)]
 pub struct NoteExpressionPoint {
     /// The time, relative to the start of the buffer.
-    time: usize,
+    pub time: usize,
 
     // The current value of the expressions.
-    state: NoteExpressionState,
+    pub state: NoteExpressionState,
 }
 
 /// A note expression is a series of points. Note that the following invariants
@@ -63,12 +63,32 @@ pub struct NoteExpressionCurve<I> {
     points: I,
 }
 
-impl<I: IntoIterator<Item = NoteExpressionPoint>> IntoIterator for NoteExpressionCurve<I> {
+impl<I: Iterator<Item = NoteExpressionPoint>> IntoIterator for NoteExpressionCurve<I> {
     type Item = NoteExpressionPoint;
-    type IntoIter = I::IntoIter;
+    type IntoIter = I;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.points.into_iter()
+        self.points
+    }
+}
+
+impl<I: Iterator<Item = NoteExpressionPoint> + Clone> NoteExpressionCurve<I> {
+    /// Create an iterator that yields the note expression state for each sample
+    #[allow(clippy::missing_panics_doc)]
+    pub fn iter_by_sample(self) -> impl Iterator<Item = NoteExpressionState> + Clone {
+        let mut iter = self.points.peekable();
+        let mut last_state = None;
+        (0..).map(move |sample_index| {
+            while let Some(point) = iter.peek() {
+                if point.time > sample_index {
+                    break;
+                }
+                last_state = Some(point.state);
+                iter.next();
+            }
+            // Note that this will never panic, since the curve is guaranteed to have a point at time 0
+            last_state.unwrap()
+        })
     }
 }
 
@@ -76,7 +96,7 @@ impl<I: IntoIterator<Item = NoteExpressionPoint>> IntoIterator for NoteExpressio
 #[must_use]
 #[allow(clippy::missing_panics_doc)]
 pub fn default_note_expression_curve(
-) -> NoteExpressionCurve<impl IntoIterator<Item = NoteExpressionPoint> + Clone> {
+) -> NoteExpressionCurve<impl Iterator<Item = NoteExpressionPoint> + Clone> {
     NoteExpressionCurve::new(std::iter::once(NoteExpressionPoint {
         time: 0,
         state: Default::default(),
@@ -84,9 +104,9 @@ pub fn default_note_expression_curve(
     .unwrap()
 }
 
-impl<I: IntoIterator<Item = NoteExpressionPoint> + Clone> NoteExpressionCurve<I> {
+impl<I: Iterator<Item = NoteExpressionPoint> + Clone> NoteExpressionCurve<I> {
     pub fn new(points: I) -> Option<Self> {
-        let points_iter = points.clone().into_iter().peekable();
+        let points_iter = points.clone().peekable();
         let mut contains_zero = false;
         let mut last_time = None;
         // Check invariants
@@ -119,9 +139,7 @@ pub trait Voice {
         &mut self,
         events: impl IntoIterator<Item = Event>,
         params: &impl parameters::BufferStates,
-        note_expressions: &NoteExpressionCurve<
-            impl IntoIterator<Item = NoteExpressionPoint> + Clone,
-        >,
+        note_expressions: NoteExpressionCurve<impl Iterator<Item = NoteExpressionPoint> + Clone>,
         data: Self::SharedData<'_>,
         output: &mut [f32],
     );
@@ -212,8 +230,7 @@ impl<V: Voice> Poly<V> {
             voice.render_audio(
                 voice_events(),
                 params,
-                &self
-                    .state
+                self.state
                     .clone()
                     .note_expressions_for_voice(index, events.clone()),
                 shared_data.clone(),

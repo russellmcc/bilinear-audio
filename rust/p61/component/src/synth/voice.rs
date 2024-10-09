@@ -339,7 +339,7 @@ fn vcf_incr(
     let vcf_mg = lerp(0.0, 12.0, mg_vcf * 0.01) * mg;
     let vcf_wheel = wheel_mg * wheel * lerp(0.0, MAX_WHEEL_DEPTH, wheel_vcf * 0.01);
     let vcf_env = lerp(vcf_env, vcf_env * velocity, vcf_velocity * 0.01);
-    let vcf_midi_number = PITCH_BEND_WIDTH * pitch_bend + midi_number;
+    let vcf_midi_number = pitch_bend + midi_number;
     {
         const MIDI_TRACKING_BASE: f32 = 60.0;
         increment(
@@ -384,7 +384,7 @@ impl VoiceT for Voice {
         &mut self,
         events: impl IntoIterator<Item = Event>,
         params: &impl parameters::BufferStates,
-        _: &NoteExpressionCurve<impl IntoIterator<Item = NoteExpressionPoint> + Clone>,
+        note_expression: NoteExpressionCurve<impl Iterator<Item = NoteExpressionPoint> + Clone>,
         shared_data: Self::SharedData<'_>,
         output: &mut [f32],
     ) {
@@ -409,18 +409,20 @@ impl VoiceT for Voice {
                 vca_level,
                 mg_pitch,
                 mg_vcf,
-                pitch_bend,
+                pitch_bend: global_pitch_bend,
                 wheel,
                 wheel_dco,
                 wheel_vcf,
             },
             mg,
             wheel_mg,
+            expression,
         ) in izip!(
             output.iter_mut().enumerate(),
             per_sample_params(params),
             shared_data.mg_data,
-            shared_data.wheel_data
+            shared_data.wheel_data,
+            note_expression.iter_by_sample(),
         ) {
             while let Some(Event {
                 sample_offset,
@@ -449,10 +451,9 @@ impl VoiceT for Voice {
             );
 
             let osc_wheel = wheel_mg * wheel * lerp(0.0, MAX_WHEEL_DEPTH, wheel_dco * 0.01);
-            let osc_midi_number = lerp(0.0, 12.0, mg_pitch * 0.01) * mg
-                + PITCH_BEND_WIDTH * pitch_bend
-                + midi_number
-                + osc_wheel;
+            let pitch_bend = global_pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
+            let osc_midi_number =
+                lerp(0.0, 12.0, mg_pitch * 0.01) * mg + pitch_bend + midi_number + osc_wheel;
 
             let osc = self.osc_section_sample(&osc, osc_midi_number, *mg);
 

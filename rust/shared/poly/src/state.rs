@@ -199,7 +199,7 @@ impl State {
         mut self,
         voice: usize,
         events: impl Iterator<Item = events::Event> + Clone,
-    ) -> NoteExpressionCurve<impl IntoIterator<Item = NoteExpressionPoint> + Clone> {
+    ) -> NoteExpressionCurve<impl Iterator<Item = NoteExpressionPoint> + Clone> {
         let raw = std::iter::once(NoteExpressionPoint {
             time: 0,
             state: self.voices[voice].expression,
