@@ -1,7 +1,7 @@
 use super::{Event, EventData, NoteExpressionCurve};
 use conformal_component::{
     audio::approx_eq,
-    events::{self as events, NoteData, NoteID},
+    events::{self as events, NoteData, NoteExpressionData, NoteID},
 };
 
 use crate::{NoteExpressionPoint, NoteExpressionState};
@@ -192,7 +192,7 @@ impl State {
     ) -> impl IntoIterator<Item = (usize, Event)> {
         events
             .into_iter()
-            .flat_map(move |event| self.update_single_and_dispatch(&event))
+            .flat_map(move |event| self.update_state_and_dispatch_for_event(&event))
     }
 
     pub fn note_expressions_for_voice(
@@ -206,7 +206,7 @@ impl State {
         })
         .chain(events.filter_map(move |event| {
             let time = event.sample_offset;
-            self.update_single_and_dispatch(&event)
+            self.update_state_and_dispatch_for_event(&event)
                 .expression
                 .map(|state| NoteExpressionPoint { time, state })
         }));
@@ -214,179 +214,189 @@ impl State {
         NoteExpressionCurve::new(raw).unwrap()
     }
 
-    fn update_single_and_dispatch(&mut self, event: &events::Event) -> EventStreamStep {
-        match event.data {
-            events::Data::NoteOn {
-                data: data @ NoteData {
-                    id: note_id, pitch, ..
-                },
-            } => {
-                let mut open_index = None;
-                let mut open_index_order = None;
-                let mut old_voice_index = None;
-                let mut old_voice_order = None;
-                let mut new_voice_order = None;
-                for (
-                    index,
-                    Voice {
-                        playing,
-                        expression,
-                    },
-                ) in self.voices.iter_mut().enumerate()
-                {
-                    match (playing, open_index_order) {
-                        (VoicePlayingState::Idle { order }, None) => {
-                            open_index = Some(index);
-                            open_index_order = Some(*order);
-                        }
-                        (VoicePlayingState::Idle { order }, Some(open_index_order_))
-                            if *order < open_index_order_ =>
-                        {
-                            open_index = Some(index);
-                            open_index_order = Some(*order);
-                        }
-                        (VoicePlayingState::Note { id, .. }, _) if note_id == *id => {
-                            return EventStreamStep::new1(
-                                index,
-                                Event {
-                                    sample_offset: event.sample_offset,
-                                    data: EventData::NoteOn { data },
-                                },
-                                expression.update_note_expression(Default::default()),
-                            );
-                        }
-                        (VoicePlayingState::Note { order, .. }, _) => {
-                            if let Some(old_voice_order_) = old_voice_order {
-                                if *order < old_voice_order_ {
-                                    old_voice_index = Some(index);
-                                    old_voice_order = Some(*order);
-                                }
-                            } else {
-                                old_voice_index = Some(index);
-                                old_voice_order = Some(*order);
-                            }
-                            if let Some(new_voice_order_) = new_voice_order {
-                                if *order > new_voice_order_ {
-                                    new_voice_order = Some(*order);
-                                }
-                            } else {
-                                new_voice_order = Some(*order);
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-
-                let mut extra_off = None;
-                let open_index = open_index.unwrap_or_else(|| {
-                    // If we got here, no notes are open - we have to steal one!
-                    // We always steal the oldest note.
-
-                    // Make a synthetic note off event for the oldest note
-                    if let VoicePlayingState::Note { id, pitch, .. } =
-                        self.voices[old_voice_index.unwrap()].playing
-                    {
-                        extra_off = Some(synthetic_note_off(id, pitch));
-                    } else {
-                        panic!("Internal error");
-                    }
-                    old_voice_index.unwrap()
-                });
-
-                self.voices[open_index].playing = VoicePlayingState::Note {
-                    id: note_id,
-                    order: new_voice_order.map_or(0, |x| x + 1),
-                    pitch,
-                };
-                let expression_point = self.voices[open_index]
-                    .expression
-                    .update_note_expression(Default::default());
-
-                if let Some(extra_off) = extra_off {
-                    EventStreamStep::new2(
-                        open_index,
-                        Event {
-                            sample_offset: event.sample_offset,
-                            data: extra_off,
-                        },
-                        EventData::NoteOn { data },
-                        expression_point,
-                    )
-                } else {
-                    EventStreamStep::new1(
-                        open_index,
-                        Event {
-                            sample_offset: event.sample_offset,
-                            data: EventData::NoteOn { data },
-                        },
-                        expression_point,
-                    )
-                }
+    fn update_state_and_dispatch_for_event(&mut self, event: &events::Event) -> EventStreamStep {
+        match &event.data {
+            events::Data::NoteOn { data } => {
+                self.update_state_and_dispatch_for_note_on(event.sample_offset, data)
             }
-            events::Data::NoteOff {
-                data: data @ NoteData { id: note_id, .. },
-            } => {
-                let order = self
-                    .voices
-                    .iter()
-                    .filter_map(|x| {
-                        if let VoicePlayingState::Idle { order } = x.playing {
-                            Some(order)
-                        } else {
-                            None
-                        }
-                    })
-                    .max()
-                    .map_or(0, |x| x + 1);
-                for (index, voice_state) in self.voices.iter_mut().enumerate() {
-                    match voice_state.playing {
-                        VoicePlayingState::Note { id, .. } if note_id == id => {
-                            voice_state.playing = VoicePlayingState::Idle { order };
-                            return EventStreamStep::new1(
-                                index,
-                                Event {
-                                    sample_offset: event.sample_offset,
-                                    data: EventData::NoteOff { data },
-                                },
-                                Default::default(),
-                            );
-                        }
-                        _ => {}
-                    }
-                }
-                EventStreamStep::new0()
+            events::Data::NoteOff { data } => {
+                self.update_state_and_dispatch_for_note_off(event.sample_offset, data)
             }
-            events::Data::NoteExpression {
-                data:
-                    events::NoteExpressionData {
-                        id: note_id,
-                        expression: expression_data,
-                    },
-            } => {
-                for (
-                    index,
-                    Voice {
-                        playing,
-                        expression,
-                    },
-                ) in self.voices.iter_mut().enumerate()
-                {
-                    match playing {
-                        VoicePlayingState::Note { id, .. } if note_id == *id => {
-                            return EventStreamStep::new_expression(
-                                index,
-                                event.sample_offset,
-                                expression.update_note_expression(
-                                    expression.update_with(expression_data),
-                                ),
-                            );
-                        }
-                        _ => {}
-                    }
-                }
-                EventStreamStep::new0()
+            events::Data::NoteExpression { data } => {
+                self.update_state_and_dispatch_for_note_expression(event.sample_offset, data)
             }
         }
+    }
+
+    fn update_state_and_dispatch_for_note_on(
+        &mut self,
+        sample_offset: usize,
+        data: &NoteData,
+    ) -> EventStreamStep {
+        let mut open_index = None;
+        let mut open_index_order = None;
+        let mut old_voice_index = None;
+        let mut old_voice_order = None;
+        let mut new_voice_order = None;
+        for (
+            index,
+            Voice {
+                playing,
+                expression,
+            },
+        ) in self.voices.iter_mut().enumerate()
+        {
+            match (playing, open_index_order) {
+                (VoicePlayingState::Idle { order }, None) => {
+                    open_index = Some(index);
+                    open_index_order = Some(*order);
+                }
+                (VoicePlayingState::Idle { order }, Some(open_index_order_))
+                    if *order < open_index_order_ =>
+                {
+                    open_index = Some(index);
+                    open_index_order = Some(*order);
+                }
+                (VoicePlayingState::Note { id, .. }, _) if data.id == *id => {
+                    return EventStreamStep::new1(
+                        index,
+                        Event {
+                            sample_offset,
+                            data: EventData::NoteOn { data: *data },
+                        },
+                        expression.update_note_expression(Default::default()),
+                    );
+                }
+                (VoicePlayingState::Note { order, .. }, _) => {
+                    if let Some(old_voice_order_) = old_voice_order {
+                        if *order < old_voice_order_ {
+                            old_voice_index = Some(index);
+                            old_voice_order = Some(*order);
+                        }
+                    } else {
+                        old_voice_index = Some(index);
+                        old_voice_order = Some(*order);
+                    }
+                    if let Some(new_voice_order_) = new_voice_order {
+                        if *order > new_voice_order_ {
+                            new_voice_order = Some(*order);
+                        }
+                    } else {
+                        new_voice_order = Some(*order);
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        let mut extra_off = None;
+        let open_index = open_index.unwrap_or_else(|| {
+            // If we got here, no notes are open - we have to steal one!
+            // We always steal the oldest note.
+
+            // Make a synthetic note off event for the oldest note
+            if let VoicePlayingState::Note { id, pitch, .. } =
+                self.voices[old_voice_index.unwrap()].playing
+            {
+                extra_off = Some(synthetic_note_off(id, pitch));
+            } else {
+                panic!("Internal error");
+            }
+            old_voice_index.unwrap()
+        });
+
+        self.voices[open_index].playing = VoicePlayingState::Note {
+            id: data.id,
+            order: new_voice_order.map_or(0, |x| x + 1),
+            pitch: data.pitch,
+        };
+        let expression_point = self.voices[open_index]
+            .expression
+            .update_note_expression(Default::default());
+
+        if let Some(extra_off) = extra_off {
+            EventStreamStep::new2(
+                open_index,
+                Event {
+                    sample_offset,
+                    data: extra_off,
+                },
+                EventData::NoteOn { data: *data },
+                expression_point,
+            )
+        } else {
+            EventStreamStep::new1(
+                open_index,
+                Event {
+                    sample_offset,
+                    data: EventData::NoteOn { data: *data },
+                },
+                expression_point,
+            )
+        }
+    }
+
+    fn update_state_and_dispatch_for_note_off(
+        &mut self,
+        sample_offset: usize,
+        data: &NoteData,
+    ) -> EventStreamStep {
+        let order = self
+            .voices
+            .iter()
+            .filter_map(|x| {
+                if let VoicePlayingState::Idle { order } = x.playing {
+                    Some(order)
+                } else {
+                    None
+                }
+            })
+            .max()
+            .map_or(0, |x| x + 1);
+        for (index, voice_state) in self.voices.iter_mut().enumerate() {
+            match voice_state.playing {
+                VoicePlayingState::Note { id, .. } if data.id == id => {
+                    voice_state.playing = VoicePlayingState::Idle { order };
+                    return EventStreamStep::new1(
+                        index,
+                        Event {
+                            sample_offset,
+                            data: EventData::NoteOff { data: *data },
+                        },
+                        Default::default(),
+                    );
+                }
+                _ => {}
+            }
+        }
+        EventStreamStep::new0()
+    }
+
+    fn update_state_and_dispatch_for_note_expression(
+        &mut self,
+        sample_offset: usize,
+        data: &NoteExpressionData,
+    ) -> EventStreamStep {
+        for (
+            index,
+            Voice {
+                playing,
+                expression,
+            },
+        ) in self.voices.iter_mut().enumerate()
+        {
+            match playing {
+                VoicePlayingState::Note { id, .. } if data.id == *id => {
+                    return EventStreamStep::new_expression(
+                        index,
+                        sample_offset,
+                        expression.update_note_expression(expression.update_with(data.expression)),
+                    );
+                }
+                _ => {}
+            }
+        }
+        EventStreamStep::new0()
     }
 
     fn compress_idle_order(&mut self) {
@@ -456,7 +466,7 @@ impl State {
     /// Note that the events must be sorted by time!
     pub fn update(&mut self, events: impl IntoIterator<Item = events::Event>) {
         for event in events {
-            self.update_single_and_dispatch(&event);
+            self.update_state_and_dispatch_for_event(&event);
         }
 
         // compress orders - this keeps the `order` member bounded between buffers.
