@@ -117,7 +117,7 @@ impl<I: Iterator<Item = NoteExpressionPoint> + Clone> NoteExpressionCurve<I> {
                 }
                 contains_zero = true;
             } else if let Some(last_time) = last_time {
-                if point.time <= last_time {
+                if point.time < last_time {
                     return None;
                 }
             }
