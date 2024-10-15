@@ -305,7 +305,7 @@ impl Voice {
 
 const PITCH_BEND_WIDTH: f32 = 2.0;
 const MAX_WHEEL_DEPTH: f32 = 12.0;
-const MAX_TIMBRE_DEPTH: f32 = 36.0;
+const MAX_TIMBRE_DEPTH: f32 = 60.0;
 
 struct VcfIncrParams {
     midi_number: f32,
