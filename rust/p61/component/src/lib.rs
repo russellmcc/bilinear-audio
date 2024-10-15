@@ -29,7 +29,7 @@ const fn percentage(default: f32) -> TypeSpecificInfoRef<'static, &'static str> 
     }
 }
 
-static PARAMETERS: [InfoRef<'static, &'static str>; 26] = [
+static PARAMETERS: [InfoRef<'static, &'static str>; 27] = [
     InfoRef {
         title: "DCO1 Shape",
         short_title: "DCO1Shape",
@@ -130,6 +130,13 @@ static PARAMETERS: [InfoRef<'static, &'static str>; 26] = [
         title: "VCF Velocity",
         short_title: "VCFVelocity",
         unique_id: "vcf_velocity",
+        flags: Flags { automatable: true },
+        type_specific: percentage(0.0),
+    },
+    InfoRef {
+        title: "VCF Timbre Control",
+        short_title: "VCF Timbre",
+        unique_id: "timbre_vcf",
         flags: Flags { automatable: true },
         type_specific: percentage(0.0),
     },

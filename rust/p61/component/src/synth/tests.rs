@@ -44,7 +44,7 @@ fn generate_snapshot_with_params(
     params: ConstantBufferStates<StatesMap>,
 ) -> Vec<f32> {
     let mut output = BufferData::new(ChannelLayout::Mono, num_samples);
-    let events = vec![
+    let events = [
         Event {
             sample_offset: 0,
             data: Data::NoteOn {
