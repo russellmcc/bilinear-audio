@@ -206,9 +206,14 @@ impl State {
         })
         .chain(events.filter_map(move |event| {
             let time = event.sample_offset;
-            self.update_state_and_dispatch_for_event(&event)
-                .expression
-                .map(|state| NoteExpressionPoint { time, state })
+            let dispatched = self.update_state_and_dispatch_for_event(&event);
+            if dispatched.voice == voice {
+                dispatched
+                    .expression
+                    .map(|state| NoteExpressionPoint { time, state })
+            } else {
+                None
+            }
         }));
 
         NoteExpressionCurve::new(raw).unwrap()
@@ -387,11 +392,15 @@ impl State {
         {
             match playing {
                 VoicePlayingState::Note { id, .. } if data.id == *id => {
-                    return EventStreamStep::new_expression(
-                        index,
-                        sample_offset,
-                        expression.update_note_expression(expression.update_with(data.expression)),
-                    );
+                    if let Some(new_expression) =
+                        expression.update_note_expression(expression.update_with(data.expression))
+                    {
+                        return EventStreamStep::new_expression(
+                            index,
+                            sample_offset,
+                            Some(new_expression),
+                        );
+                    }
                 }
                 _ => {}
             }
