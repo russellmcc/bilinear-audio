@@ -1,10 +1,7 @@
-use poly::Voice as VoiceT;
+use poly::{Event, EventData, NoteExpressionCurve, NoteExpressionPoint, Voice as VoiceT};
 use util::f32::{lerp, rescale};
 
-use conformal_component::{
-    events::{Data, Event},
-    parameters, pzip,
-};
+use conformal_component::{parameters, pzip};
 
 #[cfg(test)]
 mod tests;
@@ -114,6 +111,9 @@ struct Params {
     wheel: f32,
     wheel_dco: f32,
     wheel_vcf: f32,
+
+    timbre: f32,
+    timbre_vcf: f32,
 }
 
 fn per_sample_params(params: &impl parameters::BufferStates) -> impl Iterator<Item = Params> + '_ {
@@ -141,7 +141,9 @@ fn per_sample_params(params: &impl parameters::BufferStates) -> impl Iterator<It
                  numeric "pitch_bend",
                  numeric "mod_wheel",
                  numeric "wheel_dco",
-                 numeric "wheel_vcf"
+                 numeric "wheel_vcf",
+                 numeric "timbre",
+                 numeric "timbre_vcf"
     ])
     .map(
         |(
@@ -170,6 +172,8 @@ fn per_sample_params(params: &impl parameters::BufferStates) -> impl Iterator<It
             wheel,
             wheel_dco,
             wheel_vcf,
+            timbre,
+            timbre_vcf,
         )| Params {
             osc: OscSectionParams {
                 dco1_shape: FromPrimitive::from_u32(dco1_shape).unwrap(),
@@ -202,6 +206,9 @@ fn per_sample_params(params: &impl parameters::BufferStates) -> impl Iterator<It
             wheel,
             wheel_dco,
             wheel_vcf,
+
+            timbre,
+            timbre_vcf,
         },
     )
 }
@@ -298,6 +305,7 @@ impl Voice {
 
 const PITCH_BEND_WIDTH: f32 = 2.0;
 const MAX_WHEEL_DEPTH: f32 = 12.0;
+const MAX_TIMBRE_DEPTH: f32 = 60.0;
 
 struct VcfIncrParams {
     midi_number: f32,
@@ -319,6 +327,9 @@ struct VcfIncrParams {
     wheel: f32,
     wheel_vcf: f32,
 
+    timbre: f32,
+    timbre_vcf: f32,
+
     sampling_rate: f32,
 }
 fn vcf_incr(
@@ -336,19 +347,23 @@ fn vcf_incr(
         wheel_mg,
         wheel,
         wheel_vcf,
+        timbre,
+        timbre_vcf,
         sampling_rate,
     }: VcfIncrParams,
 ) -> f32 {
     let vcf_mg = lerp(0.0, 12.0, mg_vcf * 0.01) * mg;
     let vcf_wheel = wheel_mg * wheel * lerp(0.0, MAX_WHEEL_DEPTH, wheel_vcf * 0.01);
+    let vcf_timbre = lerp(0.0, MAX_TIMBRE_DEPTH, timbre_vcf * 0.01) * timbre;
     let vcf_env = lerp(vcf_env, vcf_env * velocity, vcf_velocity * 0.01);
-    let vcf_midi_number = PITCH_BEND_WIDTH * pitch_bend + midi_number;
+    let vcf_midi_number = pitch_bend + midi_number;
     {
         const MIDI_TRACKING_BASE: f32 = 60.0;
         increment(
             vcf_mg
                 + vcf_wheel
                 + vcf_cutoff
+                + vcf_timbre
                 + 0.01
                     * (vcf_tracking * (vcf_midi_number - MIDI_TRACKING_BASE)
                         + vcf_env * env * 128.0),
@@ -387,42 +402,17 @@ impl VoiceT for Voice {
         &mut self,
         events: impl IntoIterator<Item = Event>,
         params: &impl parameters::BufferStates,
+        note_expression: NoteExpressionCurve<impl Iterator<Item = NoteExpressionPoint> + Clone>,
         shared_data: Self::SharedData<'_>,
         output: &mut [f32],
     ) {
-        // Optimization opportunity - don't calculate parameters
-        // per-sample if they are constant (i.e., we aren't automating)
         let mut events = events.into_iter().peekable();
-        for (
-            (index, sample),
-            Params {
-                osc,
-                vcf_cutoff,
-                vcf_resonance,
-                vcf_tracking,
-                vcf_env,
-                vcf_velocity,
-                attack_time,
-                decay_time,
-                sustain,
-                release_time,
-                vca_mode,
-                vca_velocity,
-                vca_level,
-                mg_pitch,
-                mg_vcf,
-                pitch_bend,
-                wheel,
-                wheel_dco,
-                wheel_vcf,
-            },
-            mg,
-            wheel_mg,
-        ) in izip!(
+        for ((index, sample), params, mg, wheel_mg, expression) in izip!(
             output.iter_mut().enumerate(),
             per_sample_params(params),
             shared_data.mg_data,
-            shared_data.wheel_data
+            shared_data.wheel_data,
+            note_expression.iter_by_sample(),
         ) {
             while let Some(Event {
                 sample_offset,
@@ -442,21 +432,22 @@ impl VoiceT for Voice {
 
             let coeffs = adsr::calc_coeffs(
                 &adsr::Params {
-                    attack_time,
-                    decay_time,
-                    sustain: sustain * 0.01,
-                    release_time,
+                    attack_time: params.attack_time,
+                    decay_time: params.decay_time,
+                    sustain: params.sustain * 0.01,
+                    release_time: params.release_time,
                 },
                 self.sampling_rate,
             );
 
-            let osc_wheel = wheel_mg * wheel * lerp(0.0, MAX_WHEEL_DEPTH, wheel_dco * 0.01);
-            let osc_midi_number = lerp(0.0, 12.0, mg_pitch * 0.01) * mg
-                + PITCH_BEND_WIDTH * pitch_bend
-                + midi_number
-                + osc_wheel;
+            let osc_wheel =
+                wheel_mg * params.wheel * lerp(0.0, MAX_WHEEL_DEPTH, params.wheel_dco * 0.01);
+            let pitch_bend = params.pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
+            let timbre = params.timbre + expression.timbre;
+            let osc_midi_number =
+                lerp(0.0, 12.0, params.mg_pitch * 0.01) * mg + pitch_bend + midi_number + osc_wheel;
 
-            let osc = self.osc_section_sample(&osc, osc_midi_number, *mg);
+            let osc = self.osc_section_sample(&params.osc, osc_midi_number, *mg);
 
             let env = self.adsr.process(&coeffs);
             let gate = self.gate.process(&self.gate_coeffs);
@@ -469,25 +460,26 @@ impl VoiceT for Voice {
                         velocity,
                         env,
                         mg: *mg,
-                        mg_vcf,
-                        vcf_cutoff,
-                        vcf_tracking,
-                        vcf_velocity,
-                        vcf_env,
+                        mg_vcf: params.mg_vcf,
+                        vcf_cutoff: params.vcf_cutoff,
+                        vcf_tracking: params.vcf_tracking,
+                        vcf_velocity: params.vcf_velocity,
+                        vcf_env: params.vcf_env,
                         pitch_bend,
                         wheel_mg: *wheel_mg,
-                        wheel,
-                        wheel_vcf,
+                        wheel: params.wheel,
+                        wheel_vcf: params.wheel_vcf,
+                        timbre,
+                        timbre_vcf: params.timbre_vcf,
                         sampling_rate: self.sampling_rate,
                     })
                     .clamp(0.0, 0.4),
-                    // Optimization opportunity - rational polyonomial approximation
-                    rescale(vcf_resonance, 0.0..=100.0, -0.5f32..=3f32).exp2(),
+                    rescale(params.vcf_resonance, 0.0..=100.0, -0.5f32..=3f32).exp2(),
                 ),
-                vca_level
+                params.vca_level
                     * 0.01
-                    * lerp(1.0, velocity, vca_velocity * 0.01)
-                    * match vca_mode {
+                    * lerp(1.0, velocity, params.vca_velocity * 0.01)
+                    * match params.vca_mode {
                         VcaMode::Gate => gate,
                         VcaMode::Envelope => env,
                     },
@@ -503,9 +495,9 @@ impl VoiceT for Voice {
         self.vcf.reset();
     }
 
-    fn handle_event(&mut self, event: &Data) {
+    fn handle_event(&mut self, event: &EventData) {
         match event {
-            Data::NoteOn { data } => {
+            EventData::NoteOn { data } => {
                 let midi_pitch = f32::from(data.pitch);
                 self.note = Note {
                     midi_number: midi_pitch,
@@ -514,7 +506,7 @@ impl VoiceT for Voice {
                 self.adsr.on();
                 self.gate.on();
             }
-            Data::NoteOff { .. } => {
+            EventData::NoteOff { .. } => {
                 self.adsr.off();
                 self.gate.off();
             }

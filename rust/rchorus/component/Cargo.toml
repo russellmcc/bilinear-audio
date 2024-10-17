@@ -8,7 +8,7 @@ publish = false
 [dependencies]
 num-traits = "0.2.19"
 itertools = "0.13.0"
-conformal_component = "0.2.1"
+conformal_component = "0.3.0"
 util = { path = "../../shared/util" }
 iir = { path = "../../shared/iir" }
 
