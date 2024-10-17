@@ -9,6 +9,6 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-conformal_vst_wrapper = "0.2.1"
+conformal_vst_wrapper = "0.3.0"
 vst3 = "0.1.2"
 rchorus_component = { path = "../component" }

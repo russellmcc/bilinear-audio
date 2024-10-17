@@ -3,5 +3,5 @@ name = "poly"
 edition = "2021"
 
 [dependencies]
-conformal_component = "0.2.1"
+conformal_component = "0.3.0"
 util = { path = "../../shared/util" }
