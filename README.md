@@ -1,14 +1,8 @@
 # A collection of open-source audio plug-ins!
 
-This repo contains a collection of open-source audio plug-ins written in Rust and TypeScript. This is currently alpha software with plenty of limitations and limited documentation!
+This repo contains a collection of open-source audio plug-ins written in Rust and TypeScript using the [Conformal framework](https://github.com/russellmcc/conformal)
 
-Right now, the plug-ins are only available in VST3 format for macOS.
+For information on how to use the plug-ins, see our [documentation website](https://russellmcc.github.io/bilinear-audio).
 
-The working title of this collection is "Bilinear Audio".
-
-## Plug-ins
-
-Currently we've implemented two plugins:
-
-- Poly-81: an analog-modeled synthesizer loosely based on a budget-conscious synthesizer from 1980s Japan.
-- Chorus-R: an analog-modeled chorus effect loosely based on the chorus circuit from a different budget-conscious synthesizer from 1980s Japan.
+This project welcomes technical and documentation contributions, but internal documentation is somewhat limited, sorry about that! If you'd
+like to contribute something specific, feel free to open a [discussion](https://github.com/russellmcc/bilinear-audio/discussions).
