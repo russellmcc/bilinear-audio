@@ -6,3 +6,5 @@
 
 /.env
 /web/**/installer_resources/license.txt
+
+_site

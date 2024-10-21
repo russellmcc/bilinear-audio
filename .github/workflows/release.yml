@@ -6,6 +6,11 @@ on:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   release:
     permissions:
@@ -54,6 +59,12 @@ jobs:
           xcrun notarytool store-credentials "$NOTARYTOOL_CREDENTIALS_KEYCHAIN_ITEM" --apple-id "$NOTARYTOOL_APPLE_ID" --team-id "$NOTARYTOOL_DEVELOPER_TEAM_ID" --password "$NOTARYTOOL_PASSWORD" --keychain "$KEYCHAIN_PATH"
       - uses: ./.github/actions/bootstrap
       - run: bun run ci
+      - name: Build docs for release
+        run: bun web/docs/src/build.ts
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
       - run: NOTARYTOOL_KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db bun run package p61 --dist
         env:
           DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
@@ -72,3 +83,13 @@ jobs:
           files: |
             target/release/Poly 81.dmg
             target/release/Chorus-R.dmg
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

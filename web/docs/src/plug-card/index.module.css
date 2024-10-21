@@ -1,0 +1,92 @@
+/* Add a new class for the container of the cards */
+.cardContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.card {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  text-decoration: none;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+  max-width: 400px;
+  width: calc(50% - 1rem);
+  margin-top: 0.5rem;
+  margin-right: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+}
+
+.card:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.logLine {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.1;
+  background-size: 200% 200%;
+
+  transition: opacity 0.3s ease;
+}
+
+.card:hover .gradient {
+  opacity: 0.2;
+  animation: gradientShift 10s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+:global(.dark) .card {
+  --background-color: #2a2a2a;
+  --text-color: #ffffff;
+}
+
+:global(.light) .card {
+  --background-color: #ffffff;
+  --text-color: #000000;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+  .card {
+    width: calc(100% - 1rem); /* Full width minus margin on smaller screens */
+  }
+}
