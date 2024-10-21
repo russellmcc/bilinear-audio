@@ -230,6 +230,15 @@ const infos = new Map<string, Info>(
         units: "%",
       },
     },
+    timbre_vcf: {
+      title: "Timbre VCF Depth",
+      type_specific: {
+        t: "numeric",
+        default: 0.0,
+        valid_range: [0.0, 100.0],
+        units: "%",
+      },
+    },
   }),
 );
 

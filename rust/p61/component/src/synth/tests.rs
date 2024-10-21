@@ -44,12 +44,11 @@ fn generate_snapshot_with_params(
     params: ConstantBufferStates<StatesMap>,
 ) -> Vec<f32> {
     let mut output = BufferData::new(ChannelLayout::Mono, num_samples);
-    let events = vec![
+    let events = [
         Event {
             sample_offset: 0,
             data: Data::NoteOn {
                 data: NoteData {
-                    channel: 0,
                     id: NoteID::from_pitch(60),
                     pitch: 60,
                     velocity: 1.0,
@@ -61,7 +60,6 @@ fn generate_snapshot_with_params(
             sample_offset: (num_samples as f32 * 0.8) as usize,
             data: Data::NoteOff {
                 data: NoteData {
-                    channel: 0,
                     id: NoteID::from_pitch(60),
                     pitch: 60,
                     velocity: 1.0,
@@ -198,35 +196,35 @@ fn snapshot_separate_events() {
     synth.handle_events(
         vec![Data::NoteOn {
             data: NoteData {
-                channel: 0,
                 id: NoteID::from_pitch(60),
                 pitch: 60,
                 velocity: 1.0,
                 tuning: 0.0,
             },
-        }],
+        }]
+        .into_iter(),
         dummy_params_map(),
     );
     synth.process(
-        Events::new([], note_on_samples).unwrap(),
+        Events::new([].into_iter(), note_on_samples).unwrap(),
         dummy_params(),
         &mut slice_buffer_mut(&mut output, ..note_on_samples),
     );
     synth.handle_events(
         vec![Data::NoteOff {
             data: NoteData {
-                channel: 0,
                 id: NoteID::from_pitch(60),
                 pitch: 60,
                 velocity: 1.0,
                 tuning: 0.0,
             },
-        }],
+        }]
+        .into_iter(),
         dummy_params_map(),
     );
 
     synth.process(
-        Events::new([], num_samples - note_on_samples).unwrap(),
+        Events::new([].into_iter(), num_samples - note_on_samples).unwrap(),
         dummy_params(),
         &mut slice_buffer_mut(&mut output, note_on_samples..),
     );

@@ -1,10 +1,13 @@
 use crate::PARAMETERS;
 use assert_approx_eq::assert_approx_eq;
 use conformal_component::{
-    events::{Data, Event, NoteData, NoteID},
+    events::{NoteData, NoteID},
     parameters::{override_synth_defaults, ConstantBufferStates, InternalValue, StatesMap},
 };
-use poly::Voice as VoiceT;
+use poly::{
+    default_note_expression_curve, Event, EventData, NoteExpressionCurve, NoteExpressionPoint,
+    NoteExpressionState, Voice as VoiceT,
+};
 use snapshots::assert_snapshot;
 use std::collections::HashMap;
 
@@ -61,9 +64,8 @@ fn reset_basics() {
     let mut output = vec![0f32; 100];
     let events = vec![Event {
         sample_offset: 0,
-        data: Data::NoteOn {
+        data: EventData::NoteOn {
             data: NoteData {
-                channel: 0,
                 id: NoteID::from_pitch(60),
                 pitch: 60,
                 velocity: 1.0,
@@ -76,6 +78,7 @@ fn reset_basics() {
     voice.render_audio(
         events.iter().cloned(),
         &params,
+        default_note_expression_curve(),
         get_shared_data_from_mg(&get_silent_mg(output.len()), &get_silent_mg(output.len())),
         &mut output,
     );
@@ -84,6 +87,7 @@ fn reset_basics() {
     voice.render_audio(
         events.iter().cloned(),
         &params,
+        default_note_expression_curve(),
         get_shared_data_from_mg(&get_silent_mg(output.len()), &get_silent_mg(output.len())),
         &mut reset,
     );
@@ -95,6 +99,7 @@ fn reset_basics() {
 fn snapshot_for_data_and_params(
     data: SharedData<'_>,
     params: ConstantBufferStates<StatesMap>,
+    expression: NoteExpressionCurve<impl Iterator<Item = NoteExpressionPoint> + Clone>,
 ) -> Vec<f32> {
     let num_samples = data.mg_data.len();
     let mut voice = Voice::new(num_samples, 48000.0);
@@ -102,9 +107,8 @@ fn snapshot_for_data_and_params(
     let events = vec![
         Event {
             sample_offset: 0,
-            data: Data::NoteOn {
+            data: EventData::NoteOn {
                 data: NoteData {
-                    channel: 0,
                     id: NoteID::from_pitch(60),
                     pitch: 60,
                     velocity: 1.0,
@@ -114,9 +118,8 @@ fn snapshot_for_data_and_params(
         },
         Event {
             sample_offset: 40000,
-            data: Data::NoteOff {
+            data: EventData::NoteOff {
                 data: NoteData {
-                    channel: 0,
                     id: NoteID::from_pitch(60),
                     pitch: 60,
                     velocity: 1.0,
@@ -126,12 +129,18 @@ fn snapshot_for_data_and_params(
         },
     ];
 
-    voice.render_audio(events.iter().cloned(), &params, data, &mut output);
+    voice.render_audio(
+        events.iter().cloned(),
+        &params,
+        expression,
+        data,
+        &mut output,
+    );
     output
 }
 
 fn snapshot_for_data(data: SharedData<'_>) -> Vec<f32> {
-    snapshot_for_data_and_params(data, dummy_params())
+    snapshot_for_data_and_params(data, dummy_params(), default_note_expression_curve())
 }
 
 #[test]
@@ -168,7 +177,43 @@ fn wheel_snapshot() {
         48000,
         snapshot_for_data_and_params(
             get_shared_data_from_mg(&get_silent_mg(48000), &get_sine_mg(4.0 / 48000.0, 48000)),
-            dummy_params_with(&[("mod_wheel", InternalValue::Numeric(1.0))])
+            dummy_params_with(&[("mod_wheel", InternalValue::Numeric(1.0))]),
+            default_note_expression_curve()
+        )
+    );
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn pitch_bend_snapshot() {
+    assert_snapshot!(
+        "pitch_bend_expression",
+        48000,
+        snapshot_for_data_and_params(
+            get_shared_data_from_mg(&get_silent_mg(48000), &get_silent_mg(48000)),
+            dummy_params(),
+            NoteExpressionCurve::new(
+                [
+                    NoteExpressionPoint {
+                        time: 0,
+                        state: NoteExpressionState {
+                            pitch_bend: 0f32,
+                            timbre: 0f32,
+                            aftertouch: 0f32,
+                        },
+                    },
+                    NoteExpressionPoint {
+                        time: 20000,
+                        state: NoteExpressionState {
+                            pitch_bend: 12f32,
+                            timbre: 0f32,
+                            aftertouch: 0f32,
+                        },
+                    },
+                ]
+                .into_iter()
+            )
+            .unwrap()
         )
     );
 }

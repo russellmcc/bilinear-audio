@@ -141,7 +141,6 @@ pub fn benchmark_synth_process<C: Component<Processor: Synth>>(
                 synth.handle_events(
                     (0..notes).map(|i| events::Data::NoteOn {
                         data: events::NoteData {
-                            channel: 0,
                             id: events::NoteID::from_id(i.into()),
                             pitch: 60 + i,
                             velocity: 0.8,

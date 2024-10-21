@@ -92,11 +92,12 @@ impl SynthT for Synth {
                 Data::NoteOff { .. } => {
                     self.mg_env.off();
                 }
+                Data::NoteExpression { .. } => {}
             }
         }
     }
 
-    fn process<E: IntoIterator<Item = Event> + Clone, P: parameters::BufferStates, O: BufferMut>(
+    fn process<E: Iterator<Item = Event> + Clone, P: parameters::BufferStates, O: BufferMut>(
         &mut self,
         events: Events<E>,
         parameters: P,
@@ -133,6 +134,7 @@ impl SynthT for Synth {
                     Data::NoteOff { .. } => {
                         self.mg_env.off();
                     }
+                    Data::NoteExpression { .. } => {}
                 }
                 mg_events.next();
             }
@@ -155,7 +157,7 @@ impl SynthT for Synth {
             *wheel_sample = self.wheel_mg.generate(wheel_incr);
         }
         self.poly.render_audio(
-            events,
+            events.into_iter(),
             &parameters,
             &SharedData {
                 mg_data: mg_scratch,

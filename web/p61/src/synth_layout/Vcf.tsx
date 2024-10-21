@@ -42,6 +42,13 @@ export const Vcf = () => (
             accessibilityLabel="Filter Velocity Sensitivity"
             style="secondary"
           />
+          <div className="w-[7px]"></div>
+          <ParamKnob
+            param="timbre_vcf"
+            label="tim"
+            accessibilityLabel="Filter Timbre Control"
+            style="secondary"
+          />
         </div>
       </div>
     </div>
