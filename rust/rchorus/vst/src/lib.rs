@@ -42,7 +42,7 @@ conformal_vst_wrapper::wrap_factory!(
     },
     Info {
         vendor: "Bilinear Audio",
-        url: "http://github.com/russellmcc/conformal",
+        url: "http://github.com/russellmcc/bilinear-audio",
         email: "test@example.com",
         version: "1.0.0",
     }
