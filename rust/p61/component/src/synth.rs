@@ -9,7 +9,7 @@ use conformal_component::{
 
 use self::{osc_utils::increment, voice::SharedData};
 
-use poly::Poly;
+use conformal_poly::Poly;
 use util::f32::rescale;
 
 mod env;
@@ -156,7 +156,7 @@ impl SynthT for Synth {
             let wheel_incr = increment(wheel_note, self.sampling_rate);
             *wheel_sample = self.wheel_mg.generate(wheel_incr);
         }
-        self.poly.render_audio(
+        self.poly.process(
             events.into_iter(),
             &parameters,
             &SharedData {

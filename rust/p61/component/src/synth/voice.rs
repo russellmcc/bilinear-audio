@@ -1,4 +1,4 @@
-use poly::{Event, EventData, NoteExpressionCurve, NoteExpressionPoint, Voice as VoiceT};
+use conformal_poly::{Event, EventData, NoteExpressionCurve, NoteExpressionPoint, Voice as VoiceT};
 use util::f32::{lerp, rescale};
 
 use conformal_component::{parameters, pzip};
@@ -398,7 +398,7 @@ impl VoiceT for Voice {
         }
     }
 
-    fn render_audio(
+    fn process(
         &mut self,
         events: impl IntoIterator<Item = Event>,
         params: &impl parameters::BufferStates,

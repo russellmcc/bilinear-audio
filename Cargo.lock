@@ -282,9 +282,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_component"
-version = "0.3.0"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4fa6bfd0b3ae9e8a92ce791d145645a7d89023e9f4c8d4cd158297180008265"
+checksum = "8fff7a71c2d5b91c62ee8b70fc764c71a3484e78d974567affb85b054d220c82"
 dependencies = [
  "fxhash",
  "itertools 0.13.0",
@@ -308,6 +308,15 @@ checksum = "4a5ee96043a85ecdf6d28ee1ab5e92ca1c4e8d18634fd324a7f0ad677645fb9e"
 dependencies = [
  "objc",
  "process_path",
+]
+
+[[package]]
+name = "conformal_poly"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ace4b8c08abd5f7cea179de9cf213df27eff973f95644caedc79e4032667770"
+dependencies = [
+ "conformal_component",
 ]
 
 [[package]]
@@ -1513,13 +1522,13 @@ dependencies = [
  "assert_approx_eq",
  "component_benchmarks",
  "conformal_component",
+ "conformal_poly",
  "criterion",
  "iir",
  "itertools 0.13.0",
  "more-asserts",
  "num-derive",
  "num-traits",
- "poly",
  "snapshots",
  "util",
 ]
@@ -1729,14 +1738,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81b30686a7d9c3e010b84284bdd26a29f2138574f52f5eb6f794fc0ad924e705"
 dependencies = [
  "plotters-backend",
-]
-
-[[package]]
-name = "poly"
-version = "0.0.0"
-dependencies = [
- "conformal_component",
- "util",
 ]
 
 [[package]]
