@@ -4,7 +4,7 @@ use conformal_component::{
     events::{NoteData, NoteID},
     parameters::{override_synth_defaults, ConstantBufferStates, InternalValue, StatesMap},
 };
-use poly::{
+use conformal_poly::{
     default_note_expression_curve, Event, EventData, NoteExpressionCurve, NoteExpressionPoint,
     NoteExpressionState, Voice as VoiceT,
 };
@@ -75,7 +75,7 @@ fn reset_basics() {
     }];
 
     let params = dummy_params();
-    voice.render_audio(
+    voice.process(
         events.iter().cloned(),
         &params,
         default_note_expression_curve(),
@@ -84,7 +84,7 @@ fn reset_basics() {
     );
     voice.reset();
     let mut reset = vec![0f32; 100];
-    voice.render_audio(
+    voice.process(
         events.iter().cloned(),
         &params,
         default_note_expression_curve(),
@@ -129,7 +129,7 @@ fn snapshot_for_data_and_params(
         },
     ];
 
-    voice.render_audio(
+    voice.process(
         events.iter().cloned(),
         &params,
         expression,
@@ -195,7 +195,7 @@ fn pitch_bend_snapshot() {
             NoteExpressionCurve::new(
                 [
                     NoteExpressionPoint {
-                        time: 0,
+                        sample_offset: 0,
                         state: NoteExpressionState {
                             pitch_bend: 0f32,
                             timbre: 0f32,
@@ -203,7 +203,7 @@ fn pitch_bend_snapshot() {
                         },
                     },
                     NoteExpressionPoint {
-                        time: 20000,
+                        sample_offset: 20000,
                         state: NoteExpressionState {
                             pitch_bend: 12f32,
                             timbre: 0f32,
