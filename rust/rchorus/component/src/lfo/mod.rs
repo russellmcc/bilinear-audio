@@ -7,20 +7,7 @@ pub struct Lfo {
     // the high speed clock, but the total delay is the delay of each tick * the length
     // of the BBD line).
     //
-    // It would be fun to write an application note about this!
-    //
-    // Here, we build this behavior into the LFO rather than the modulated
-    // delay line to make the delay line more general. This is a matter of taste!
-    // But, it's important to reproduce this somewhere, as sending a triangle
-    // wave directly to the modulated delay line will create instant frequency
-    // jumps that don't exist in BBD delays.
-    //
-    // We approximate this by using an exponential smoothing filter (rather than
-    // a moving average which would be a better approximation) just for simplicity.
-    //
-    // Another thing to mention is that on a real device, when the delay is higher,
-    // the smoothing is over a longer time - we don't reproduce this nuance here and
-    // always use a fix time-constant for smoothing (jeez, really should write more on this).
+    // This is discussed in detail in [Conformal App Note 2](https://www.russellmcc.com/conformal/app_notes/2-bbd-lfo/).
     alpha: f32,
 
     phase: f32,
@@ -48,7 +35,7 @@ pub struct Parameters {
 
 /// Time-constant in samples
 fn alpha_from_time_constant(t: f32) -> f32 {
-    1. - (-1. / t).exp()
+    1. - (-2. / t).exp()
 }
 
 impl Lfo {
@@ -56,8 +43,9 @@ impl Lfo {
         assert!(min < max);
         let point = (max + min) * 0.5;
 
-        // Use double the zero-point as the time-constant for the smoothing
-        let alpha = alpha_from_time_constant(2. * point);
+        // Note that we use an artificially large time-constant for the smoothing here.
+        // This was tuned heuristically to sound good.
+        let alpha = alpha_from_time_constant(4. * point);
 
         Self {
             point,
