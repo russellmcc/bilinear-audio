@@ -19,6 +19,7 @@
 
 pub mod f32;
 pub mod iter;
+pub mod look_behind;
 pub mod slice_ops;
 pub mod window;
 
