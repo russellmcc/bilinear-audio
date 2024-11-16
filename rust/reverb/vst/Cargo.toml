@@ -1,0 +1,13 @@
+[package]
+name = "reverb_vst"
+edition = "2021"
+rust-version = "1.79.0"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+conformal_vst_wrapper = "0.3.2"
+vst3 = "0.1.2"
+reverb_component = { path = "../component" }

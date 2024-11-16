@@ -274,10 +274,10 @@ version = "0.0.0"
 dependencies = [
  "conformal_component",
  "criterion",
+ "dsp",
  "fxhash",
  "itertools 0.13.0",
  "serde",
- "util",
 ]
 
 [[package]]
@@ -292,9 +292,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_core"
-version = "0.3.0"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "397e7c68878ccbf58132a0262e2de09c37938360f9e7ad0713274bb3ebd36c9f"
+checksum = "724be53abeb3ff0afe43c8b512811a2d5f3329c6c01e8961615a6008b7248160"
 dependencies = [
  "conformal_component",
  "serde",
@@ -302,9 +302,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_macos_bundle"
-version = "0.3.0"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a5ee96043a85ecdf6d28ee1ab5e92ca1c4e8d18634fd324a7f0ad677645fb9e"
+checksum = "1d83591a1aa9c3a97b91817360e9bd8f63e6772683f363b2d9c2909c2a4d662f"
 dependencies = [
  "objc",
  "process_path",
@@ -321,9 +321,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_preferences"
-version = "0.3.0"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0965c48cfce4b8593eab4b033841b143d9cc35ff62a6943850d8e24f93ba2ebe"
+checksum = "acd599fdad5540f96f565bf623ef813acc8120d7b6275d51a59bad039d8fda8b"
 dependencies = [
  "objc",
  "serde",
@@ -332,9 +332,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_ui"
-version = "0.3.0"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98c28b13ce237c1fdc60c2ddce1d14445024872c131c628d85449fa8fa4c827c"
+checksum = "5311de054f8c3e875e087d4665adebe9ad0952f532417f4f68595dcfd67c8a6c"
 dependencies = [
  "base64",
  "conformal_component",
@@ -350,9 +350,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_vst_wrapper"
-version = "0.3.0"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "956046ac8b49470e83b6be312bc88002a1fc88b563bb9af648c1d75ed374ddb0"
+checksum = "bf3a9a6f00083fbc344949d89fc5ccff3205165e9fbd2462bf4daa7f374f2d39"
 dependencies = [
  "conformal_component",
  "conformal_core",
@@ -575,6 +575,18 @@ name = "dpi"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f25c0e292a7ca6d6498557ff1df68f32c99850012b6ea401cf8daf771f22ff53"
+
+[[package]]
+name = "dsp"
+version = "0.0.0"
+dependencies = [
+ "num",
+ "num-traits",
+ "proptest",
+ "rand 0.8.5",
+ "rand_xoshiro",
+ "realfft",
+]
 
 [[package]]
 name = "dtoa"
@@ -1084,9 +1096,9 @@ name = "iir"
 version = "0.0.0"
 dependencies = [
  "assert_approx_eq",
+ "dsp",
  "more-asserts",
  "snapshots",
- "util",
 ]
 
 [[package]]
@@ -1524,13 +1536,13 @@ dependencies = [
  "conformal_component",
  "conformal_poly",
  "criterion",
+ "dsp",
  "iir",
  "itertools 0.13.0",
  "more-asserts",
  "num-derive",
  "num-traits",
  "snapshots",
- "util",
 ]
 
 [[package]]
@@ -2007,12 +2019,12 @@ dependencies = [
  "component_benchmarks",
  "conformal_component",
  "criterion",
+ "dsp",
  "iir",
  "itertools 0.13.0",
  "more-asserts",
  "num-traits",
  "snapshots",
- "util",
 ]
 
 [[package]]
@@ -2070,6 +2082,22 @@ name = "regex-syntax"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a66a03ae7c801facd77a29370b4faec201768915ac14a721ba36f20bc9c209b"
+
+[[package]]
+name = "reverb_component"
+version = "0.0.0"
+dependencies = [
+ "conformal_component",
+]
+
+[[package]]
+name = "reverb_vst"
+version = "0.0.0"
+dependencies = [
+ "conformal_vst_wrapper",
+ "reverb_component",
+ "vst3",
+]
 
 [[package]]
 name = "rmp"
@@ -2582,18 +2610,6 @@ name = "utf-8"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09cc8ee72d2a9becf2f2febe0205bbed8fc6615b7cb429ad062dc7b7ddd036a9"
-
-[[package]]
-name = "util"
-version = "0.0.0"
-dependencies = [
- "num",
- "num-traits",
- "proptest",
- "rand 0.8.5",
- "rand_xoshiro",
- "realfft",
-]
 
 [[package]]
 name = "version-compare"

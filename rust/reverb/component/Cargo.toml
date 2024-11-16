@@ -1,0 +1,8 @@
+[package]
+name = "reverb_component"
+edition = "2021"
+rust-version = "1.79.0"
+publish = false
+
+[dependencies]
+conformal_component = "0.3.2"

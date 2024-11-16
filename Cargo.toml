@@ -1,5 +1,4 @@
 [workspace]
-resolver = "2"
 members = [
     "rust/p61/component",
     "rust/p61/vst",
@@ -9,4 +8,7 @@ members = [
     "rust/shared/iir",
     "rust/shared/dsp",
     "rust/shared/component_benchmarks",
+    "rust/reverb/component",
+    "rust/reverb/vst"
 ]
+resolver = "2"
