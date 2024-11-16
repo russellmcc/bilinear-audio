@@ -10,7 +10,6 @@ num-traits = "0.2.19"
 itertools = "0.13.0"
 conformal_component = "0.3.2"
 dsp = { path = "../../shared/dsp" }
-iir = { path = "../../shared/iir" }
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0"

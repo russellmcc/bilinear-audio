@@ -5,7 +5,6 @@ members = [
     "rust/shared/snapshots",
     "rust/rchorus/vst",
     "rust/rchorus/component",
-    "rust/shared/iir",
     "rust/shared/dsp",
     "rust/shared/component_benchmarks",
     "rust/reverb/component",

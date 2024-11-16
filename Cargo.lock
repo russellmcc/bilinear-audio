@@ -580,12 +580,15 @@ checksum = "f25c0e292a7ca6d6498557ff1df68f32c99850012b6ea401cf8daf771f22ff53"
 name = "dsp"
 version = "0.0.0"
 dependencies = [
+ "assert_approx_eq",
+ "more-asserts",
  "num",
  "num-traits",
  "proptest",
  "rand 0.8.5",
  "rand_xoshiro",
  "realfft",
+ "snapshots",
 ]
 
 [[package]]
@@ -1092,16 +1095,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "iir"
-version = "0.0.0"
-dependencies = [
- "assert_approx_eq",
- "dsp",
- "more-asserts",
- "snapshots",
-]
-
-[[package]]
 name = "indexmap"
 version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1537,7 +1530,6 @@ dependencies = [
  "conformal_poly",
  "criterion",
  "dsp",
- "iir",
  "itertools 0.13.0",
  "more-asserts",
  "num-derive",
@@ -2020,7 +2012,6 @@ dependencies = [
  "conformal_component",
  "criterion",
  "dsp",
- "iir",
  "itertools 0.13.0",
  "more-asserts",
  "num-traits",

@@ -5,7 +5,7 @@
 //! in both the control and signal inputs - it's just made up.
 
 use dsp::f32::rescale;
-use iir::dc_blocker;
+use dsp::iir::dc_blocker;
 
 #[cfg(test)]
 mod tests;

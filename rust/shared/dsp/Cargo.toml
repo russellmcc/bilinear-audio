@@ -21,3 +21,6 @@ rand = "0.8.5"
 rand_xoshiro = "0.6.0"
 realfft = "3.3.0"
 num = "0.4.1"
+assert_approx_eq = "1.1.0"
+more-asserts = "0.3.1"
+snapshots = { path = "../../shared/snapshots" }

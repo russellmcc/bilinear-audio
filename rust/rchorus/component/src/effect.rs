@@ -7,7 +7,7 @@ use conformal_component::{
     parameters::{self, BufferStates},
     pzip, ProcessingEnvironment, Processor,
 };
-use iir::dc_blocker::DcBlocker;
+use dsp::iir::dc_blocker::DcBlocker;
 use itertools::izip;
 use num_traits::cast;
 
