@@ -9,7 +9,7 @@ use conformal_component::{
     Component, ProcessingEnvironment, ProcessingMode, Processor,
 };
 use criterion::{black_box, BenchmarkId, Criterion, Throughput};
-use util::test_utils::white_noise;
+use dsp::test_utils::white_noise;
 
 pub fn benchmark_effect_mono_process<C: Component<Processor: Effect>>(
     name: &str,
@@ -25,7 +25,7 @@ pub fn benchmark_effect_mono_process<C: Component<Processor: Effect>>(
             buffer_size,
             |b, &buffer_size| {
                 let mut input = BufferData::new(ChannelLayout::Mono, buffer_size);
-                util::iter::move_into(
+                dsp::iter::move_into(
                     white_noise(buffer_size).iter().copied(),
                     input.channel_mut(0),
                 );
@@ -70,7 +70,7 @@ pub fn benchmark_effect_stereo_process<C: Component<Processor: Effect>>(
             |b, &buffer_size| {
                 let mut input = BufferData::new(ChannelLayout::Stereo, buffer_size);
                 for idx in [0, 1] {
-                    util::iter::move_into(
+                    dsp::iter::move_into(
                         white_noise(buffer_size).iter().copied(),
                         input.channel_mut(idx),
                     );

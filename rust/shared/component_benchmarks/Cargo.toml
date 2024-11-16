@@ -11,4 +11,4 @@ fxhash = "0.2.1"
 serde = { version = "1.0.193", features = ["derive"] }
 itertools = "0.13.0"
 criterion = { version = "0.3" }
-util = { path = "../util", features = ["test-utils"] }
+dsp = { path = "../dsp", features = ["test-utils"] }

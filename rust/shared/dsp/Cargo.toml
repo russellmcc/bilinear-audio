@@ -1,5 +1,5 @@
 [package]
-name = "util"
+name = "dsp"
 edition = "2021"
 rust-version = "1.79.0"
 license = "ISC"
@@ -21,4 +21,3 @@ rand = "0.8.5"
 rand_xoshiro = "0.6.0"
 realfft = "3.3.0"
 num = "0.4.1"
-

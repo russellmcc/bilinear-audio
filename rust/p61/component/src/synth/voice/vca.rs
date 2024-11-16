@@ -4,8 +4,8 @@
 //! We "capture the vibe" of this just by making a waveshape that is non-linear
 //! in both the control and signal inputs - it's just made up.
 
+use dsp::f32::rescale;
 use iir::dc_blocker;
-use util::f32::rescale;
 
 #[cfg(test)]
 mod tests;

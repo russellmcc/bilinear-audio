@@ -1,6 +1,6 @@
 use assert_approx_eq::assert_approx_eq;
+use dsp::test_utils::{white_noise, windowed_rfft};
 use more_asserts::{assert_gt, assert_lt};
-use util::test_utils::{white_noise, windowed_rfft};
 
 use super::*;
 

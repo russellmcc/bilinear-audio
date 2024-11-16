@@ -94,7 +94,7 @@ impl Effect {
                     }),
             ),
         );
-        util::iter::move_into(
+        dsp::iter::move_into(
             izip!(
                 input.channel(0),
                 delay_buffer.process(forward),
@@ -136,12 +136,12 @@ impl Effect {
                         })),
                 );
 
-        util::iter::move_into(
+        dsp::iter::move_into(
             izip!(input.channel(0), delay_buffer.process(forward), mix.clone())
                 .map(|(i, l, m)| i + l * m * PERCENT_SCALE),
             output.channel_mut(0),
         );
-        util::iter::move_into(
+        dsp::iter::move_into(
             izip!(input.channel(1), delay_buffer.process(reverse), mix)
                 .map(|(i, r, m)| i + r * m * PERCENT_SCALE),
             output.channel_mut(1),

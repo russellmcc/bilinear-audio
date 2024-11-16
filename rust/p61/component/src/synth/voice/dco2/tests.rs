@@ -1,4 +1,4 @@
-use util::test_utils::{estimate_aliasing_gen, estimate_tuning_gen};
+use dsp::test_utils::{estimate_aliasing_gen, estimate_tuning_gen};
 
 use super::{Dco2, Octave, Shape};
 use assert_approx_eq::assert_approx_eq;
