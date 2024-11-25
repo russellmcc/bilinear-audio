@@ -1,7 +1,7 @@
 {
   "rustPackage": "reverb_vst",
   "name": "Reverb",
-  "id": "com.TODO.reverb",
-  "sig": "TODO",
+  "id": "com.russellmcc.reverb",
+  "sig": "RMcC",
   "version": "0.0.0"
 }
