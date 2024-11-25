@@ -5,7 +5,11 @@ use conformal_component::audio::all_approx_eq;
 fn process(input: impl IntoIterator<Item = f32>, delay: &mut PerSampleDelay) -> Vec<f32> {
     input
         .into_iter()
-        .map(|sample| delay.process(sample))
+        .map(|sample| {
+            let output = delay.read();
+            delay.write(sample);
+            output
+        })
         .collect()
 }
 

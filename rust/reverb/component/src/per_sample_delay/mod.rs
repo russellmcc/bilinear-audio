@@ -14,11 +14,13 @@ impl PerSampleDelay {
         }
     }
 
-    pub fn process(&mut self, input: f32) -> f32 {
-        let output = self.buffer[self.head];
+    pub fn read(&self) -> f32 {
+        self.buffer[self.head]
+    }
+
+    pub fn write(&mut self, input: f32) {
         self.buffer[self.head] = input;
         self.head = (self.head + 1) % self.buffer.len();
-        output
     }
 }
 
