@@ -18,6 +18,8 @@ use conformal_component::parameters::{self, BufferStates, Flags, InfoRef, TypeSp
 use conformal_component::pzip;
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment, Processor};
 
+mod per_sample_delay;
+
 const PARAMETERS: [InfoRef<'static, &'static str>; 2] = [
     InfoRef {
         title: "Bypass",
