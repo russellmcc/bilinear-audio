@@ -18,6 +18,6 @@ fn impulse_response() {
     let mut impulse_vec = vec![0.0; SNAPSHOT_LENGTH];
     impulse_vec[0] = 1.0;
     let mut output = BufferData::new_mono(vec![0.0; SNAPSHOT_LENGTH]);
-    reverb.process(0.85, &BufferData::new_mono(impulse_vec), &mut output);
+    reverb.process(0.6, &BufferData::new_mono(impulse_vec), &mut output);
     assert_snapshot!("impulse_response", 48000, output.channel(0).iter().copied());
 }

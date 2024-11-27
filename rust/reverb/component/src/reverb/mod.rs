@@ -50,7 +50,7 @@ impl Reverb {
             let input = input.channel(0);
             let output = output.channel_mut(0);
             for (input, output) in input.iter().zip(output.iter_mut()) {
-                let mc_input = core::array::from_fn(|i| if i == 0 { *input } else { 0.0 });
+                let mc_input = [*input; CHANNELS];
                 *output = self
                     .feedback_loop
                     .process(self.diffuser.process(&mc_input), feedback)[0];
@@ -60,15 +60,8 @@ impl Reverb {
             let input_r = input.channel(1);
             for (i, (input_l, input_r)) in input_l.iter().zip(input_r.iter()).enumerate() {
                 {
-                    let mc_input = core::array::from_fn(|i| {
-                        if i == 0 {
-                            *input_l
-                        } else if i == 1 {
-                            *input_r
-                        } else {
-                            0.0
-                        }
-                    });
+                    let mc_input =
+                        core::array::from_fn(|i| if i & 1 == 0 { *input_l } else { *input_r });
                     let x = self
                         .feedback_loop
                         .process(self.diffuser.process(&mc_input), feedback);
