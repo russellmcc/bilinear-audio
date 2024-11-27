@@ -4,6 +4,8 @@ use crate::per_sample_delay::PerSampleDelay;
 ///
 /// This is useful in feedback loops with channel mixing, since we have to operate
 /// sample by sample.
+
+#[derive(Debug, Clone)]
 pub struct MultiChannelPerSampleDelay<const CHANNELS: usize> {
     delays: [PerSampleDelay; CHANNELS],
 }

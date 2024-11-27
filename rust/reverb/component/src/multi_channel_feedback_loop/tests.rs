@@ -23,15 +23,9 @@ fn impulse_response() {
         DELAYS_MS.map(|d| (d / 1000.0 * SAMPLE_RATE).round() as usize),
     );
     let mut output = vec![0.0; SNAPSHOT_LENGTH];
-    output[0] = feedback_loop
-        .process([1.0; CHANNELS], FEEDBACK)
-        .into_iter()
-        .sum::<f32>();
+    output[0] = feedback_loop.process([1.0; CHANNELS], FEEDBACK)[0];
     for output in output.iter_mut().skip(1) {
-        *output = feedback_loop
-            .process([0.0; CHANNELS], FEEDBACK)
-            .into_iter()
-            .sum::<f32>();
+        *output = feedback_loop.process([0.0; CHANNELS], FEEDBACK)[0];
     }
     assert_snapshot!("impulse_response", 48000, output);
 }

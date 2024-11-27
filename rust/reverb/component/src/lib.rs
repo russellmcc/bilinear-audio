@@ -18,9 +18,12 @@ use conformal_component::parameters::{self, BufferStates, Flags, InfoRef, TypeSp
 use conformal_component::pzip;
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment, Processor};
 
+mod diffuser;
 mod multi_channel_feedback_loop;
 mod multi_channel_per_sample_delay;
 mod per_sample_delay;
+mod reverb;
+mod shuffler;
 
 const PARAMETERS: [InfoRef<'static, &'static str>; 2] = [
     InfoRef {
