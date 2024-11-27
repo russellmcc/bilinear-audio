@@ -1,4 +1,4 @@
-use util::{
+use dsp::{
     f32::rescale_inverted,
     test_utils::{linear_sine_sweep, white_noise},
 };

@@ -64,7 +64,6 @@ mod compander;
 mod effect;
 mod kernel;
 mod lfo;
-mod look_behind;
 mod modulated_delay;
 mod nonlinearity;
 mod polyphase_kernel;

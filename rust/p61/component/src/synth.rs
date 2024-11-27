@@ -10,7 +10,7 @@ use conformal_component::{
 use self::{osc_utils::increment, voice::SharedData};
 
 use conformal_poly::Poly;
-use util::f32::rescale;
+use dsp::f32::rescale;
 
 mod env;
 mod mg;

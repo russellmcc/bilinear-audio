@@ -1,8 +1,8 @@
 use super::DcBlocker;
+use crate::test_utils::{white_noise, windowed_rfft};
 use assert_approx_eq::assert_approx_eq;
 use more_asserts::{assert_gt, assert_lt};
 use snapshots::assert_snapshot;
-use util::test_utils::{white_noise, windowed_rfft};
 
 #[test]
 fn reset() {

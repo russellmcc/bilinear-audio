@@ -7,7 +7,7 @@ use conformal_component::{
     parameters::{self, BufferStates},
     pzip, ProcessingEnvironment, Processor,
 };
-use iir::dc_blocker::DcBlocker;
+use dsp::iir::dc_blocker::DcBlocker;
 use itertools::izip;
 use num_traits::cast;
 
@@ -94,7 +94,7 @@ impl Effect {
                     }),
             ),
         );
-        util::iter::move_into(
+        dsp::iter::move_into(
             izip!(
                 input.channel(0),
                 delay_buffer.process(forward),
@@ -136,12 +136,12 @@ impl Effect {
                         })),
                 );
 
-        util::iter::move_into(
+        dsp::iter::move_into(
             izip!(input.channel(0), delay_buffer.process(forward), mix.clone())
                 .map(|(i, l, m)| i + l * m * PERCENT_SCALE),
             output.channel_mut(0),
         );
-        util::iter::move_into(
+        dsp::iter::move_into(
             izip!(input.channel(1), delay_buffer.process(reverse), mix)
                 .map(|(i, r, m)| i + r * m * PERCENT_SCALE),
             output.channel_mut(1),

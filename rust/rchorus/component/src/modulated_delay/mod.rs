@@ -1,8 +1,5 @@
-use crate::{
-    kernel,
-    look_behind::{LookBehind, SliceLike},
-    polyphase_kernel::PolyphaseKernel,
-};
+use crate::{kernel, polyphase_kernel::PolyphaseKernel};
+use dsp::look_behind::{LookBehind, SliceLike};
 
 /// A variable delay allows us to delay a different amount
 /// each sample.

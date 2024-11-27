@@ -1,5 +1,5 @@
 use conformal_poly::{Event, EventData, NoteExpressionCurve, NoteExpressionPoint, Voice as VoiceT};
-use util::f32::{lerp, rescale};
+use dsp::f32::{lerp, rescale};
 
 use conformal_component::{parameters, pzip};
 

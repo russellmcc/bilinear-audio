@@ -28,7 +28,7 @@ fn generate_snapshot_with_params(
     params: ConstantBufferStates<StatesMap>,
 ) -> Vec<f32> {
     let mut input_data = BufferData::new(ChannelLayout::Mono, input.len());
-    util::iter::move_into(input.iter().copied(), input_data.channel_mut(0));
+    dsp::iter::move_into(input.iter().copied(), input_data.channel_mut(0));
     let mut output = BufferData::new(ChannelLayout::Mono, input.len());
     effect.process(params, &input_data, &mut output);
     output.channel(0).iter().cloned().collect()
@@ -46,7 +46,7 @@ fn reset() {
         channel_layout: ChannelLayout::Mono,
         processing_mode: ProcessingMode::Realtime,
     });
-    let test_sig = util::test_utils::sine(25, 440. / 48000.);
+    let test_sig = dsp::test_utils::sine(25, 440. / 48000.);
     effect.set_processing(true);
     let initial = generate_snapshot(&mut effect, &test_sig);
     effect.set_processing(false);
@@ -66,7 +66,7 @@ fn snapshot_sine() {
         channel_layout: ChannelLayout::Mono,
         processing_mode: ProcessingMode::Realtime,
     });
-    let test_sig: Vec<_> = util::test_utils::sine(48000, 440. / 48000.)
+    let test_sig: Vec<_> = dsp::test_utils::sine(48000, 440. / 48000.)
         .iter()
         .map(|x| x * 1. / 3.)
         .collect();
@@ -83,7 +83,7 @@ fn snapshot_sweep() {
         channel_layout: ChannelLayout::Mono,
         processing_mode: ProcessingMode::Realtime,
     });
-    let test_sig: Vec<_> = util::test_utils::linear_sine_sweep(48000, 48000., 10., 20000.)
+    let test_sig: Vec<_> = dsp::test_utils::linear_sine_sweep(48000, 48000., 10., 20000.)
         .iter()
         .map(|x| x * 1. / 4.)
         .collect();

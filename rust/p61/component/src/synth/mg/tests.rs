@@ -1,7 +1,7 @@
 use super::Mg;
 use assert_approx_eq::assert_approx_eq;
+use dsp::test_utils::estimate_tuning_gen;
 use snapshots::assert_snapshot;
-use util::test_utils::estimate_tuning_gen;
 
 #[test]
 fn reset() {
