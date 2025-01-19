@@ -37,6 +37,56 @@ pub const BLOCKS: usize = 4;
 pub struct Diffuser {
     blocks: [DiffuserBlock; BLOCKS],
 }
+
+const ER_MIN: [f32; BLOCKS] = [0.5, 0.0, 0.0, 0.0];
+const ER_MAX: [f32; BLOCKS] = [0.125, 0.125, 0.125, 0.125];
+
+trait ErCalc {
+    fn calc(early: f32, input: &[f32; CHANNELS], block: usize) -> Self;
+    fn add_assign(&mut self, other: Self);
+}
+
+impl ErCalc for f32 {
+    fn calc(early: f32, input: &[f32; CHANNELS], block: usize) -> Self {
+        let min = ER_MIN[block];
+        let max = ER_MAX[block];
+        let weight = min + (max - min) * early;
+        weight * input.iter().sum::<f32>()
+    }
+
+    fn add_assign(&mut self, other: Self) {
+        *self += other;
+    }
+}
+
+impl ErCalc for [f32; 2] {
+    fn calc(early: f32, input: &[f32; CHANNELS], block: usize) -> Self {
+        let min = ER_MIN[block];
+        let max = ER_MAX[block];
+        let weight = min + (max - min) * early;
+        // Split the evens and odds
+        [
+            input
+                .iter()
+                .enumerate()
+                .filter_map(|(i, &v)| if i % 2 == 0 { Some(v) } else { None })
+                .sum::<f32>()
+                * weight,
+            input
+                .iter()
+                .enumerate()
+                .filter_map(|(i, &v)| if i % 2 == 1 { Some(v) } else { None })
+                .sum::<f32>()
+                * weight,
+        ]
+    }
+
+    fn add_assign(&mut self, other: Self) {
+        self[0] += other[0];
+        self[1] += other[1];
+    }
+}
+
 impl Diffuser {
     pub fn new(rng: &mut impl Rng, max_delays: [usize; BLOCKS]) -> Self {
         Self {
@@ -44,12 +94,39 @@ impl Diffuser {
         }
     }
 
-    pub fn process(&mut self, input: &[f32; CHANNELS]) -> [f32; CHANNELS] {
+    fn process<T: ErCalc + Default>(
+        &mut self,
+        early: f32,
+        input: &[f32; CHANNELS],
+    ) -> ([f32; CHANNELS], T) {
         let mut output = *input;
-        for block in &mut self.blocks {
+        let mut er = T::default();
+        for (i, block) in self.blocks.iter_mut().enumerate() {
             output = block.process(&output);
+            er.add_assign(T::calc(early, &output, i));
         }
-        output
+        (output, er)
+    }
+
+    /// Process one frame (one sample per channel) through the diffuser
+    ///
+    /// Yields fully diffuse multichannel input for feedback section and a single
+    /// sample of early reflections. `early` must be between 0 and 1. When `early`
+    /// is 0, the early reflections are not very diffuse but are quite early.
+    /// When `early` is 1, the early reflections are more diffuse but less early.
+    pub fn process_mono(&mut self, early: f32, input: &[f32; CHANNELS]) -> ([f32; CHANNELS], f32) {
+        self.process::<f32>(early, input)
+    }
+
+    /// Process one frame (one sample per channel) through the diffuser with stereo early reflections.
+    ///
+    /// Yields fully diffuse multichannel input for feedback section and a stereo early
+    pub fn process_stereo(
+        &mut self,
+        early: f32,
+        input: &[f32; CHANNELS],
+    ) -> ([f32; CHANNELS], [f32; 2]) {
+        self.process::<[f32; 2]>(early, input)
     }
 }
 
