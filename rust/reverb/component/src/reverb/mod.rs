@@ -41,7 +41,7 @@ impl Reverb {
                 &mut rng,
                 DIFFUSER_DELAYS_MS.map(|d| (d / 1000.0 * env.sampling_rate).round() as usize),
             ),
-            feedback_loop: MultiChannelFeedbackLoop::new(fdn_delays),
+            feedback_loop: MultiChannelFeedbackLoop::new(fdn_delays, env.sampling_rate),
         }
     }
 
@@ -52,7 +52,7 @@ impl Reverb {
             for (input, output) in input.iter().zip(output.iter_mut()) {
                 let mc_input = [*input; CHANNELS];
                 let (x, er) = self.diffuser.process_mono(0.5, &mc_input);
-                *output = self.feedback_loop.process(x, feedback)[0] + er;
+                *output = self.feedback_loop.process(x, feedback, 1.0)[0] + er;
             }
         } else if input.num_channels() == 2 {
             let input_l = input.channel(0);
@@ -62,7 +62,7 @@ impl Reverb {
                     let mc_input =
                         core::array::from_fn(|i| if i & 1 == 0 { *input_l } else { *input_r });
                     let (x, er) = self.diffuser.process_stereo(0.5, &mc_input);
-                    let y = self.feedback_loop.process(x, feedback);
+                    let y = self.feedback_loop.process(x, feedback, 1.0);
                     output.channel_mut(0)[i] = y[0] + er[0];
                     output.channel_mut(1)[i] = y[1] + er[1];
                 }

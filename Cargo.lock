@@ -2105,6 +2105,7 @@ dependencies = [
  "assert_approx_eq",
  "bitvec",
  "conformal_component",
+ "dsp",
  "rand 0.8.5",
  "rand_xoshiro",
  "snapshots",

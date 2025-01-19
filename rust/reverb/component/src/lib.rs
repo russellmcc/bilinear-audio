@@ -26,7 +26,6 @@ mod reverb;
 mod shuffler;
 
 // TODO: Optimize Hadamard matrix
-// TODO: Add damping
 // TODO: Add mix
 // TODO: Add brightness (filter on wet path)
 // TODO: Add modulation

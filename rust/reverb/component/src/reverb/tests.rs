@@ -8,9 +8,9 @@ use snapshots::assert_snapshot;
 #[test]
 fn impulse_response() {
     const SNAPSHOT_LENGTH: usize = 48_000 * 2;
-    const SAMPLE_RATE: f32 = 48000.0;
+    const SAMPLING_RATE: f32 = 48000.0;
     let mut reverb = Reverb::new(&ProcessingEnvironment {
-        sampling_rate: SAMPLE_RATE,
+        sampling_rate: SAMPLING_RATE,
         max_samples_per_process_call: SNAPSHOT_LENGTH,
         channel_layout: ChannelLayout::Mono,
         processing_mode: ProcessingMode::Realtime,
