@@ -25,6 +25,22 @@ mod per_sample_delay;
 mod reverb;
 mod shuffler;
 
+// TODO: Optimize Hadamard matrix
+// TODO: Add early reflections
+// TODO: Add damping
+// TODO: Add mix
+// TODO: Add brightness (filter on wet path)
+// TODO: Add modulation
+// TODO: UI
+// TODO: Parameters to consider:
+//   - feedback
+//   - damping
+//   - mix
+//   - brightness
+//   - modulation
+//   - ER weight
+//   - density (diffusion bypass?)
+
 const PARAMETERS: [InfoRef<'static, &'static str>; 2] = [
     InfoRef {
         title: "Bypass",
