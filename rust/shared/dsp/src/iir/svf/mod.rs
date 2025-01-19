@@ -32,10 +32,12 @@ pub struct OutputNoHigh {
     pub band: f64,
 }
 
+#[must_use]
 pub fn calc_g(incr: f64) -> f64 {
     (std::f64::consts::TAU / 2. * incr).tan()
 }
 
+#[must_use]
 pub fn calc_two_r(q: f64) -> f64 {
     1. / q
 }
