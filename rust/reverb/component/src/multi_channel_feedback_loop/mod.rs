@@ -11,20 +11,12 @@ pub struct MultiChannelFeedbackLoop<const CHANNELS: usize> {
 const SHELF_FREQ: f32 = 2000.0;
 const SHELF_Q: f64 = 0.707;
 
-fn calc_g_limited(incr: f32) -> f64 {
-    if incr > 0.45 {
-        calc_g(0.45)
-    } else {
-        calc_g(incr as f64)
-    }
-}
-
 impl<const CHANNELS: usize> MultiChannelFeedbackLoop<CHANNELS> {
     pub fn new(delay: [usize; CHANNELS], sampling_rate: f32) -> Self {
         Self {
             delay: MultiChannelPerSampleDelay::new(delay),
             shelf: Svf::default(),
-            shelf_g: calc_g_limited(SHELF_FREQ / sampling_rate),
+            shelf_g: calc_g(f64::from((SHELF_FREQ / sampling_rate).min(0.45))),
             shelf_two_r: calc_two_r(SHELF_Q),
         }
     }

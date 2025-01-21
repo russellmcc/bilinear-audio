@@ -128,6 +128,12 @@ impl Diffuser {
     ) -> ([f32; CHANNELS], [f32; 2]) {
         self.process::<[f32; 2]>(early, input)
     }
+
+    pub fn reset(&mut self) {
+        for block in &mut self.blocks {
+            block.delay.reset();
+        }
+    }
 }
 
 #[cfg(test)]

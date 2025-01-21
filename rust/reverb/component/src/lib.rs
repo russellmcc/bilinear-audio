@@ -27,7 +27,6 @@ mod shuffler;
 
 // TODO: Optimize Hadamard matrix
 // TODO: Add mix
-// TODO: Add brightness (filter on wet path)
 // TODO: Add modulation
 // TODO: UI
 // TODO: Parameters to consider:
