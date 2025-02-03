@@ -31,24 +31,20 @@ fn impulse_response() {
             damping: 1.0,
             brightness: 1.0,
             mix: 1.0,
-            modulation_depth_seconds: 0.0,
-            modulation_rate_hz: 0.0,
         })
     );
 }
 
 #[test]
-fn impulse_response_modulated_damped() {
+fn impulse_response_damped() {
     assert_snapshot!(
         "impulse_response_modulated_damped",
         48000,
         impulse_response_for_params(Params {
             feedback: 0.6,
             damping: 0.5,
-            brightness: 1.0,
+            brightness: 0.5,
             mix: 1.0,
-            modulation_depth_seconds: 0.004,
-            modulation_rate_hz: 6.0,
         })
     );
 }
