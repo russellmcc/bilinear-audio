@@ -22,11 +22,11 @@ mod diffuser;
 mod multi_channel_feedback_loop;
 mod multi_channel_per_sample_delay;
 mod per_sample_delay;
+mod per_sample_modulated_delay;
 mod reverb;
 mod shuffler;
 
 // TODO: Optimize Hadamard matrix
-// TODO: Add mix
 // TODO: Add modulation
 // TODO: UI
 // TODO: Parameters to consider:

@@ -10,13 +10,14 @@ use crate::multi_channel_feedback_loop::MultiChannelFeedbackLoop;
 
 pub struct Reverb {
     diffuser: Diffuser,
-    feedback_loop: MultiChannelFeedbackLoop<CHANNELS>,
+    feedback_loop: MultiChannelFeedbackLoop,
     shelves: [Svf; 2],
     shelf_g: f64,
     shelf_two_r: f64,
 }
 
 pub struct Params {
+    pub mix: f32,
     pub feedback: f32,
     pub brightness: f32,
     pub damping: f32,
@@ -73,17 +74,19 @@ impl Reverb {
                     .feedback_loop
                     .process(x, params.feedback, params.damping)[0]
                     + er;
-                *output = self.shelves[0]
-                    .process_high_shelf(std::iter::once(GainInput {
-                        x: f64::from(*output),
-                        params: GainRawParams {
-                            g: self.shelf_g,
-                            two_r: self.shelf_two_r,
-                            sqrt_gain: f64::from(params.brightness),
-                        },
-                    }))
-                    .next()
-                    .unwrap() as f32;
+                *output = params.mix
+                    * self.shelves[0]
+                        .process_high_shelf(std::iter::once(GainInput {
+                            x: f64::from(*output),
+                            params: GainRawParams {
+                                g: self.shelf_g,
+                                two_r: self.shelf_two_r,
+                                sqrt_gain: f64::from(params.brightness),
+                            },
+                        }))
+                        .next()
+                        .unwrap() as f32
+                    + (1.0 - params.mix) * *input;
             }
         } else if input.num_channels() == 2 {
             let input_l = input.channel(0);
@@ -97,18 +100,19 @@ impl Reverb {
                         .feedback_loop
                         .process(x, params.feedback, params.damping);
                     for channel in 0..2 {
-                        output.channel_mut(channel)[i] = self.shelves[channel]
-                            .process_high_shelf(std::iter::once(GainInput {
-                                x: f64::from(y[channel] + er[channel]),
-                                params: GainRawParams {
-                                    g: self.shelf_g,
-                                    two_r: self.shelf_two_r,
-                                    sqrt_gain: f64::from(params.brightness),
-                                },
-                            }))
-                            .next()
-                            .unwrap()
-                            as f32;
+                        output.channel_mut(channel)[i] = params.mix
+                            * self.shelves[channel]
+                                .process_high_shelf(std::iter::once(GainInput {
+                                    x: f64::from(y[channel] + er[channel]),
+                                    params: GainRawParams {
+                                        g: self.shelf_g,
+                                        two_r: self.shelf_two_r,
+                                        sqrt_gain: f64::from(params.brightness),
+                                    },
+                                }))
+                                .next()
+                                .unwrap() as f32
+                            + (1.0 - params.mix) * (if channel == 0 { *input_l } else { *input_r });
                     }
                 }
             }

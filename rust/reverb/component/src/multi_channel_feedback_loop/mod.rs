@@ -32,11 +32,11 @@ impl<const CHANNELS: usize> MultiChannelFeedbackLoop<CHANNELS> {
         let delayed = {
             let mut delayed = self.delay.read();
 
-            // We apply damping only to the first channel
-            delayed[0] = self
+            // We apply damping only to the last channel
+            delayed[CHANNELS - 1] = self
                 .shelf
                 .process_high_shelf(std::iter::once(GainInput {
-                    x: f64::from(delayed[0]),
+                    x: f64::from(delayed[CHANNELS - 1]),
                     params: GainRawParams {
                         g: self.shelf_g,
                         two_r: self.shelf_two_r,

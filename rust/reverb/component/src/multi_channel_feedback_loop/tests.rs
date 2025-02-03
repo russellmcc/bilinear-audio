@@ -1,10 +1,10 @@
 #![allow(clippy::cast_possible_truncation)]
 
 use super::*;
+use crate::diffuser::CHANNELS;
 use snapshots::assert_snapshot;
 
 fn impulse_response_for_damping(name: &str, damping: f32) {
-    const CHANNELS: usize = 8;
     const SNAPSHOT_LENGTH: usize = 48_000 * 2;
     const FEEDBACK: f32 = 0.85;
     const SAMPLING_RATE: f32 = 48000.0;
@@ -18,7 +18,7 @@ fn impulse_response_for_damping(name: &str, damping: f32) {
         177.914_43,
         193.846_86,
     ];
-    let mut feedback_loop = MultiChannelFeedbackLoop::<CHANNELS>::new(
+    let mut feedback_loop = MultiChannelFeedbackLoop::new(
         DELAYS_MS.map(|d| (d / 1000.0 * SAMPLING_RATE).round() as usize),
         SAMPLING_RATE,
     );

@@ -4,7 +4,7 @@ use std::ops::Range;
 ///
 /// Given a buffer, it will return a view into the buffer including some
 /// number of previous samples of the stream.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct LookBehind {
     // Implementation note: the buffer is stored as a single Vec,
     // and we always keep the audio data contiguous.  In benchmarks
@@ -30,6 +30,7 @@ pub trait SliceLike {
 }
 
 impl LookBehind {
+    #[must_use]
     pub fn new(look_behind: usize, max_samples_per_process_call: usize) -> Self {
         Self {
             buffer: vec![0.0; look_behind + max_samples_per_process_call],

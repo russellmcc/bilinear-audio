@@ -23,6 +23,7 @@ fn impulse_response() {
             feedback: 0.6,
             damping: 1.0,
             brightness: 1.0,
+            mix: 1.0,
         },
         &BufferData::new_mono(impulse_vec),
         &mut output,
