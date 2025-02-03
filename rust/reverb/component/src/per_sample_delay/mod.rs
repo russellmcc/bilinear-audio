@@ -18,6 +18,10 @@ impl PerSampleDelay {
         self.buffer[self.head]
     }
 
+    pub fn read_with_offset(&self, offset: usize) -> f32 {
+        self.buffer[(self.head + offset) % self.buffer.len()]
+    }
+
     pub fn write(&mut self, input: f32) {
         self.buffer[self.head] = input;
         self.head = (self.head + 1) % self.buffer.len();
