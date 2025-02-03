@@ -23,9 +23,21 @@ fn impulse_response_for_damping(name: &str, damping: f32, depth: f32, rate: f32)
         SAMPLING_RATE,
     );
     let mut output = vec![0.0; SNAPSHOT_LENGTH];
-    output[0] = feedback_loop.process([1.0; CHANNELS], FEEDBACK, damping, depth, rate)[0];
+    output[0] = feedback_loop.process(
+        [1.0; CHANNELS],
+        FEEDBACK,
+        damping,
+        depth * SAMPLING_RATE,
+        rate / SAMPLING_RATE,
+    )[0];
     for output in output.iter_mut().skip(1) {
-        *output = feedback_loop.process([0.0; CHANNELS], FEEDBACK, damping, depth, rate)[0];
+        *output = feedback_loop.process(
+            [0.0; CHANNELS],
+            FEEDBACK,
+            damping,
+            depth * SAMPLING_RATE,
+            rate / SAMPLING_RATE,
+        )[0];
     }
     assert_snapshot!(name, 48000, output);
 }

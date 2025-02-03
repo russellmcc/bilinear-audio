@@ -34,8 +34,8 @@ impl MultiChannelFeedbackLoop {
     ///
     /// So, lower values of damping mean more damping!
     ///
-    /// `modulation_depth` is in _ms_ and controls depth of modulation.
-    /// `modulation_rate` is in cycles per second.
+    /// `modulation_depth` is in samples and controls depth of modulation. 4ms is fine.
+    /// `modulation_rate` is in cycles per sample and controls speed of modulation. 6 hz is fine.
     #[allow(clippy::cast_possible_truncation)]
     pub fn process(
         &mut self,
@@ -47,10 +47,7 @@ impl MultiChannelFeedbackLoop {
     ) -> [f32; CHANNELS] {
         let delayed = {
             let mut delayed = self.delay.read();
-            let modulated_delay = self.modulated_delay.read(
-                modulation_depth * self.sampling_rate,
-                modulation_rate / self.sampling_rate,
-            );
+            let modulated_delay = self.modulated_delay.read(modulation_depth, modulation_rate);
 
             // We apply damping only to the last unmodulated channel
             delayed[UNMODULATED_CHANNELS - 1] = self

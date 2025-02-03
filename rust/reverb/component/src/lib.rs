@@ -27,7 +27,6 @@ mod reverb;
 mod shuffler;
 
 // TODO: Optimize Hadamard matrix
-// TODO: Add modulation
 // TODO: UI
 // TODO: Parameters to consider:
 //   - feedback
