@@ -72,7 +72,7 @@ impl Reverb {
                 let (x, er) = self.diffuser.process_mono(0.5, &mc_input);
                 *output = self
                     .feedback_loop
-                    .process(x, params.feedback, params.damping)[0]
+                    .process(x, params.feedback, params.damping, 0.0, 0.0)[0]
                     + er;
                 *output = params.mix
                     * self.shelves[0]
@@ -96,9 +96,9 @@ impl Reverb {
                     let mc_input =
                         core::array::from_fn(|i| if i & 1 == 0 { *input_l } else { *input_r });
                     let (x, er) = self.diffuser.process_stereo(0.5, &mc_input);
-                    let y = self
-                        .feedback_loop
-                        .process(x, params.feedback, params.damping);
+                    let y =
+                        self.feedback_loop
+                            .process(x, params.feedback, params.damping, 0.0, 0.0);
                     for channel in 0..2 {
                         output.channel_mut(channel)[i] = params.mix
                             * self.shelves[channel]

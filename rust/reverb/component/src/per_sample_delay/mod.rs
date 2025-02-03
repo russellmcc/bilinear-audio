@@ -31,6 +31,10 @@ impl PerSampleDelay {
         self.buffer.fill(0.0);
         self.head = 0;
     }
+
+    pub fn get_delay(&self) -> usize {
+        self.buffer.len()
+    }
 }
 
 #[cfg(test)]

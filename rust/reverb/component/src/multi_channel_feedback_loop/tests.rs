@@ -4,7 +4,7 @@ use super::*;
 use crate::diffuser::CHANNELS;
 use snapshots::assert_snapshot;
 
-fn impulse_response_for_damping(name: &str, damping: f32) {
+fn impulse_response_for_damping(name: &str, damping: f32, depth: f32, rate: f32) {
     const SNAPSHOT_LENGTH: usize = 48_000 * 2;
     const FEEDBACK: f32 = 0.85;
     const SAMPLING_RATE: f32 = 48000.0;
@@ -23,19 +23,24 @@ fn impulse_response_for_damping(name: &str, damping: f32) {
         SAMPLING_RATE,
     );
     let mut output = vec![0.0; SNAPSHOT_LENGTH];
-    output[0] = feedback_loop.process([1.0; CHANNELS], FEEDBACK, damping)[0];
+    output[0] = feedback_loop.process([1.0; CHANNELS], FEEDBACK, damping, depth, rate)[0];
     for output in output.iter_mut().skip(1) {
-        *output = feedback_loop.process([0.0; CHANNELS], FEEDBACK, damping)[0];
+        *output = feedback_loop.process([0.0; CHANNELS], FEEDBACK, damping, depth, rate)[0];
     }
     assert_snapshot!(name, 48000, output);
 }
 
 #[test]
 fn impulse_response() {
-    impulse_response_for_damping("impulse_response", 1.0);
+    impulse_response_for_damping("impulse_response", 1.0, 0.0, 0.0);
 }
 
 #[test]
 fn impulse_response_damped() {
-    impulse_response_for_damping("impulse_response_damped", 0.5);
+    impulse_response_for_damping("impulse_response_damped", 0.5, 0.0, 0.0);
+}
+
+#[test]
+fn impulse_response_modulated() {
+    impulse_response_for_damping("impulse_response_modulated", 1.0, 0.004, 6.0);
 }

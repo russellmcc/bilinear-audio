@@ -24,7 +24,7 @@ impl PerSampleModulatedDelay {
         let offset = self.lfo.run(depth, rate);
 
         // We use linear interpolation to get the fractional delay sample.
-        let floor = offset.floor() as usize;
+        let floor = (offset.floor() as usize).min(self.delay.get_delay() - 2);
         let a = self.delay.read_with_offset(floor);
         let b = self.delay.read_with_offset(floor + 1);
 
