@@ -9,8 +9,6 @@ pub struct MultiChannelFeedbackLoop {
     shelf_g: f64,
     shelf_two_r: f64,
     shelf: Svf,
-
-    sampling_rate: f32,
 }
 
 const SHELF_FREQ: f32 = 2000.0;
@@ -26,7 +24,6 @@ impl MultiChannelFeedbackLoop {
             shelf: Svf::default(),
             shelf_g: calc_g(f64::from((SHELF_FREQ / sampling_rate).min(0.45))),
             shelf_two_r: calc_two_r(SHELF_Q),
-            sampling_rate,
         }
     }
 
@@ -86,6 +83,7 @@ impl MultiChannelFeedbackLoop {
 
     pub fn reset(&mut self) {
         self.delay.reset();
+        self.modulated_delay.reset();
         self.shelf.reset();
     }
 }

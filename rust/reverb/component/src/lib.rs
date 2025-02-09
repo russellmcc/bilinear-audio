@@ -12,7 +12,7 @@
     clippy::default_trait_access
 )]
 
-use conformal_component::audio::{channels, channels_mut, Buffer, BufferMut};
+use conformal_component::audio::{Buffer, BufferMut};
 use conformal_component::effect::Effect as EffectTrait;
 use conformal_component::parameters::{self, BufferStates, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::pzip;

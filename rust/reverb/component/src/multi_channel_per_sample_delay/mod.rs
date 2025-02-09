@@ -32,7 +32,7 @@ impl<const CHANNELS: usize> MultiChannelPerSampleDelay<CHANNELS> {
     }
 
     pub fn reset(&mut self) {
-        for delay in self.delays.iter_mut() {
+        for delay in &mut self.delays {
             delay.reset();
         }
     }
