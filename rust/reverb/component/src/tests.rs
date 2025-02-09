@@ -209,3 +209,23 @@ fn impulse_early_reflections_early() {
         )]))
     );
 }
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn impulse_mid_density() {
+    assert_snapshot!(
+        "impulse_mid_density",
+        48000,
+        impulse_response_for_params(HashMap::from([("density", InternalValue::Numeric(50.0))]))
+    );
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn impulse_low_density() {
+    assert_snapshot!(
+        "impulse_low_density",
+        48000,
+        impulse_response_for_params(HashMap::from([("density", InternalValue::Numeric(0.0))]))
+    );
+}

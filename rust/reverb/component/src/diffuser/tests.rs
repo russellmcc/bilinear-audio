@@ -25,7 +25,7 @@ fn impulse_response_snapshot_test(name: &str, run: impl Fn(&mut Diffuser, f32) -
 #[cfg_attr(miri, ignore)]
 fn impulse_response() {
     impulse_response_snapshot_test("impulse_response", |diffuser, input| {
-        diffuser.process_mono(0.0, &[input; CHANNELS]).0[0]
+        diffuser.process_mono(0.0, 1.0, &[input; CHANNELS]).0[0]
     });
 }
 
@@ -33,7 +33,7 @@ fn impulse_response() {
 #[cfg_attr(miri, ignore)]
 fn impulse_response_er_low() {
     impulse_response_snapshot_test("er_low", |diffuser, input| {
-        diffuser.process_mono(0.0, &[input; CHANNELS]).1
+        diffuser.process_mono(0.0, 1.0, &[input; CHANNELS]).1
     });
 }
 
@@ -41,6 +41,14 @@ fn impulse_response_er_low() {
 #[cfg_attr(miri, ignore)]
 fn impulse_response_er_high() {
     impulse_response_snapshot_test("er_high", |diffuser, input| {
-        diffuser.process_mono(1.0, &[input; CHANNELS]).1
+        diffuser.process_mono(1.0, 1.0, &[input; CHANNELS]).1
+    });
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn impulse_response_low_density() {
+    impulse_response_snapshot_test("impulse_low_density", |diffuser, input| {
+        diffuser.process_mono(0.0, 0.0, &[input; CHANNELS]).0[0]
     });
 }

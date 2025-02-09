@@ -33,6 +33,7 @@ fn impulse_response() {
             brightness: 1.0,
             mix: 1.0,
             early_reflections: 0.0,
+            density: 1.0,
         })
     );
 }
@@ -49,6 +50,7 @@ fn impulse_response_damped() {
             brightness: 0.5,
             mix: 1.0,
             early_reflections: 0.0,
+            density: 1.0,
         })
     );
 }

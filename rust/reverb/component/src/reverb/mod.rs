@@ -24,6 +24,7 @@ pub struct Params {
     pub brightness: f32,
     pub damping: f32,
     pub early_reflections: f32,
+    pub density: f32,
 }
 
 const SHELF_FREQ: f32 = 2000.0;
@@ -76,9 +77,9 @@ impl Reverb {
             let output = output.channel_mut(0);
             for (input, output) in input.iter().zip(output.iter_mut()) {
                 let mc_input = [*input; CHANNELS];
-                let (x, er) = self
-                    .diffuser
-                    .process_mono(params.early_reflections, &mc_input);
+                let (x, er) =
+                    self.diffuser
+                        .process_mono(params.early_reflections, params.density, &mc_input);
                 *output = self.feedback_loop.process(
                     x,
                     params.feedback,
@@ -107,9 +108,11 @@ impl Reverb {
                 {
                     let mc_input =
                         core::array::from_fn(|i| if i & 1 == 0 { *input_l } else { *input_r });
-                    let (x, er) = self
-                        .diffuser
-                        .process_stereo(params.early_reflections, &mc_input);
+                    let (x, er) = self.diffuser.process_stereo(
+                        params.early_reflections,
+                        params.density,
+                        &mc_input,
+                    );
                     let y = self.feedback_loop.process(
                         x,
                         params.feedback,

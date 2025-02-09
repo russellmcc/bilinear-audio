@@ -38,20 +38,42 @@ pub struct Diffuser {
     blocks: [DiffuserBlock; BLOCKS],
 }
 
-const ER_MIN: [f32; BLOCKS] = [0.625 / 2.0, 0.125 / 2.0, 0.125 / 2.0, 0.125 / 2.0];
-const ER_MID: [f32; BLOCKS] = [0.125, 0.125, 0.125, 0.125];
-const ER_MAX: [f32; BLOCKS] = [0.125 / 2.0, 0.125 / 2.0, 0.125 / 2.0, 0.625 / 2.0];
+struct WeightConfig {
+    min: [f32; BLOCKS],
+    mid: [f32; BLOCKS],
+    max: [f32; BLOCKS],
+}
 
-fn weight_for_block(early: f32, block: usize) -> f32 {
-    if early <= 0.5 {
-        let min = ER_MIN[block];
-        let max = ER_MID[block];
-        min + (max - min) * early * 2.0
+const ER_WEIGHTS: WeightConfig = WeightConfig {
+    min: [0.625 / 2.0, 0.125 / 2.0, 0.125 / 2.0, 0.125 / 2.0],
+    mid: [0.125, 0.125, 0.125, 0.125],
+    max: [0.125 / 2.0, 0.125 / 2.0, 0.125 / 2.0, 0.625 / 2.0],
+};
+
+const DENSITY_WEIGHTS: WeightConfig = WeightConfig {
+    min: [0.0, 1.0, 0.0, 0.0],
+    mid: [0.0, 0.0, 1.0, 0.0],
+    max: [0.0, 0.0, 0.0, 1.0],
+};
+
+fn interpolate_weight(config: &WeightConfig, value: f32, block: usize) -> f32 {
+    if value <= 0.5 {
+        let min = config.min[block];
+        let max = config.mid[block];
+        min + (max - min) * value * 2.0
     } else {
-        let min = ER_MID[block];
-        let max = ER_MAX[block];
-        min + (max - min) * (early - 0.5) * 2.0
+        let min = config.mid[block];
+        let max = config.max[block];
+        min + (max - min) * (value - 0.5) * 2.0
     }
+}
+
+fn er_weight_for_block(early: f32, block: usize) -> f32 {
+    interpolate_weight(&ER_WEIGHTS, early, block)
+}
+
+fn density_weight_for_block(density: f32, block: usize) -> f32 {
+    interpolate_weight(&DENSITY_WEIGHTS, density, block)
 }
 
 trait ErCalc {
@@ -61,7 +83,7 @@ trait ErCalc {
 
 impl ErCalc for f32 {
     fn calc(early: f32, input: &[f32; CHANNELS], block: usize) -> Self {
-        weight_for_block(early, block) * input.iter().sum::<f32>()
+        er_weight_for_block(early, block) * input.iter().sum::<f32>()
     }
 
     fn add_assign(&mut self, other: Self) {
@@ -71,7 +93,7 @@ impl ErCalc for f32 {
 
 impl ErCalc for [f32; 2] {
     fn calc(early: f32, input: &[f32; CHANNELS], block: usize) -> Self {
-        let weight = weight_for_block(early, block);
+        let weight = er_weight_for_block(early, block);
         // Split the evens and odds
         [
             input
@@ -105,15 +127,23 @@ impl Diffuser {
     fn process<T: ErCalc + Default>(
         &mut self,
         early: f32,
+        density: f32,
         input: &[f32; CHANNELS],
     ) -> ([f32; CHANNELS], T) {
-        let mut output = *input;
+        let mut block_output = *input;
+        let mut actual_output = [0.0; CHANNELS];
         let mut er = T::default();
         for (i, block) in self.blocks.iter_mut().enumerate() {
-            output = block.process(&output);
-            er.add_assign(T::calc(early, &output, i));
+            block_output = block.process(&block_output);
+            er.add_assign(T::calc(early, &block_output, i));
+            let density = density_weight_for_block(density, i);
+            if density > 0.0 {
+                for (bo, ao) in block_output.iter().zip(actual_output.iter_mut()) {
+                    *ao += *bo * density;
+                }
+            }
         }
-        (output, er)
+        (actual_output, er)
     }
 
     /// Process one frame (one sample per channel) through the diffuser
@@ -122,8 +152,13 @@ impl Diffuser {
     /// sample of early reflections. `early` must be between 0 and 1. When `early`
     /// is 0, the early reflections are not very diffuse but are quite early.
     /// When `early` is 1, the early reflections are more diffuse but less early.
-    pub fn process_mono(&mut self, early: f32, input: &[f32; CHANNELS]) -> ([f32; CHANNELS], f32) {
-        self.process::<f32>(early, input)
+    pub fn process_mono(
+        &mut self,
+        early: f32,
+        density: f32,
+        input: &[f32; CHANNELS],
+    ) -> ([f32; CHANNELS], f32) {
+        self.process::<f32>(early, density, input)
     }
 
     /// Process one frame (one sample per channel) through the diffuser with stereo early reflections.
@@ -132,9 +167,10 @@ impl Diffuser {
     pub fn process_stereo(
         &mut self,
         early: f32,
+        density: f32,
         input: &[f32; CHANNELS],
     ) -> ([f32; CHANNELS], [f32; 2]) {
-        self.process::<[f32; 2]>(early, input)
+        self.process::<[f32; 2]>(early, density, input)
     }
 
     pub fn reset(&mut self) {

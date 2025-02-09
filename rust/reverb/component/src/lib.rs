@@ -42,7 +42,7 @@ const COEFF_MID: f32 = 0.55;
 const TIME_MAX: f32 = 3.1;
 const COEFF_MAX: f32 = 0.8;
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 6] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 7] = [
     InfoRef {
         title: "Bypass",
         short_title: "Bypass",
@@ -105,12 +105,25 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 6] = [
             units: Some("%"),
         },
     },
+    InfoRef {
+        title: "Density",
+        short_title: "Density",
+        unique_id: "density",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 100.0,
+            valid_range: 0f32..=100.0,
+            units: Some("%"),
+        },
+    },
 ];
 
 const INTERNAL_MIX: [f32; 2] = [0.0, 1.0];
 const INTERNAL_BRIGHTNESS: [f32; 2] = [0.125, 1.0];
 const INTERNAL_DAMPING: [f32; 2] = [0.125, 1.0];
 const INTERNAL_EARLY_REFLECTIONS: [f32; 2] = [0.0, 1.0];
+const INTERNAL_DENSITY: [f32; 2] = [0.0, 1.0];
+
 fn to_internal(value: f32, internal_range: [f32; 2]) -> f32 {
     let ratio = value / 100.0;
     lerp(internal_range[0], internal_range[1], ratio)
@@ -173,14 +186,15 @@ impl EffectTrait for Effect {
     ) {
         // Snapshot the parameters at the start of the buffer - we don't support per-sample automation.
         if let Some(params) = pzip!(
-            parameters[switch "bypass", numeric "mix", numeric "brightness", numeric "tone", numeric "time", numeric "early_reflections"]
+            parameters[switch "bypass", numeric "mix", numeric "brightness", numeric "tone", numeric "time", numeric "early_reflections", numeric "density"]
         )
-        .map(|(bypass, mix, brightness, tone, time, early_reflections)| reverb::Params {
+        .map(|(bypass, mix, brightness, tone, time, early_reflections, density)| reverb::Params {
             mix: if bypass { 0.0 } else { to_internal(mix, INTERNAL_MIX) },
             brightness: to_internal(brightness, INTERNAL_BRIGHTNESS),
             damping: to_internal(tone, INTERNAL_DAMPING),
             feedback: time_to_coeff(time),
             early_reflections: to_internal(early_reflections, INTERNAL_EARLY_REFLECTIONS),
+            density: to_internal(density, INTERNAL_DENSITY),
         })
         .next()
         {
