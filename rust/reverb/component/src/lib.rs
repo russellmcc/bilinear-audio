@@ -33,11 +33,17 @@ mod tests;
 #[doc(hidden)]
 pub mod shuffler;
 
-// TODO: Map parameters
 // TODO: extra parameters (?):
 //   - ER weight
 //   - density (diffusion bypass?)
 // TODO: UI
+
+const TIME_MIN: f32 = 0.7;
+const COEFF_MIN: f32 = 0.3;
+const TIME_MID: f32 = 1.2;
+const COEFF_MID: f32 = 0.55;
+const TIME_MAX: f32 = 3.1;
+const COEFF_MAX: f32 = 0.8;
 
 const PARAMETERS: [InfoRef<'static, &'static str>; 5] = [
     InfoRef {
@@ -86,9 +92,9 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 5] = [
         unique_id: "time",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 50.,
-            valid_range: 0f32..=100.,
-            units: Some("%"),
+            default: TIME_MID,
+            valid_range: TIME_MIN..=TIME_MAX,
+            units: Some("s"),
         },
     },
 ];
@@ -96,11 +102,26 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 5] = [
 const INTERNAL_MIX: [f32; 2] = [0.0, 1.0];
 const INTERNAL_BRIGHTNESS: [f32; 2] = [0.125, 1.0];
 const INTERNAL_DAMPING: [f32; 2] = [0.125, 1.0];
-const INTERNAL_FEEDBACK: [f32; 2] = [0.3, 0.8];
 
 fn to_internal(value: f32, internal_range: [f32; 2]) -> f32 {
     let ratio = value / 100.0;
     lerp(internal_range[0], internal_range[1], ratio)
+}
+
+fn time_to_coeff(time: f32) -> f32 {
+    if time <= TIME_MIN {
+        lerp(
+            COEFF_MIN,
+            COEFF_MID,
+            (time - TIME_MIN) / (TIME_MID - TIME_MIN),
+        )
+    } else {
+        lerp(
+            COEFF_MID,
+            COEFF_MAX,
+            (time - TIME_MID) / (TIME_MAX - TIME_MID),
+        )
+    }
 }
 
 #[derive(Clone, Debug, Default)]
@@ -150,7 +171,7 @@ impl EffectTrait for Effect {
             mix: if bypass { 0.0 } else { to_internal(mix, INTERNAL_MIX) },
             brightness: to_internal(brightness, INTERNAL_BRIGHTNESS),
             damping: to_internal(tone, INTERNAL_DAMPING),
-            feedback: to_internal(time, INTERNAL_FEEDBACK),
+            feedback: time_to_coeff(time),
         })
         .next()
         {

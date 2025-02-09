@@ -156,7 +156,7 @@ fn impulse_short() {
     assert_snapshot!(
         "impulse_short",
         48000,
-        impulse_response_for_params(HashMap::from([("time", InternalValue::Numeric(0.0))]))
+        impulse_response_for_params(HashMap::from([("time", InternalValue::Numeric(0.7))]))
     );
 }
 
@@ -166,7 +166,7 @@ fn impulse_long() {
     assert_snapshot!(
         "impulse_long",
         48000,
-        impulse_response_for_params(HashMap::from([("time", InternalValue::Numeric(100.0))]))
+        impulse_response_for_params(HashMap::from([("time", InternalValue::Numeric(3.1))]))
     );
 }
 
