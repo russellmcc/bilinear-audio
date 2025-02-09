@@ -11,6 +11,10 @@ pub struct DcBlocker {
 const CUTOFF: f32 = 5.0;
 
 impl DcBlocker {
+    /// # Panics
+    ///
+    /// If sampling rate is less than 10 Hz.
+    #[must_use]
     pub fn new(sampling_rate: f32) -> Self {
         assert!(CUTOFF < sampling_rate / 2.0);
         let increment = CUTOFF / sampling_rate;

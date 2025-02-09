@@ -11,13 +11,13 @@ pub struct Shuffler {
 }
 
 // Base case for size 2
-fn hadamard_1(input: &[f32; 1]) -> [f32; 1] {
+fn hadamard_1(input: [f32; 1]) -> [f32; 1] {
     [input[0]]
 }
 
 macro_rules! hadamard {
     ($name:ident, $size:expr, $half_name:ident) => {
-        fn $name(input: &[f32; $size]) -> [f32; $size] {
+        fn $name(input: [f32; $size]) -> [f32; $size] {
             let first_half = &input[..$size / 2];
             let second_half = &input[$size / 2..];
 
@@ -32,11 +32,11 @@ macro_rules! hadamard {
 
             let mut a_arr = [0.0; $size / 2];
             dsp::iter::move_into(a, a_arr.iter_mut());
-            let hadamard_a = $half_name(&a_arr);
+            let hadamard_a = $half_name(a_arr);
 
             let mut b_arr = [0.0; $size / 2];
             dsp::iter::move_into(b, b_arr.iter_mut());
-            let hadamard_b = $half_name(&b_arr);
+            let hadamard_b = $half_name(b_arr);
 
             let mut output = [0.0; $size];
             dsp::iter::move_into(hadamard_a.into_iter().chain(hadamard_b), output.iter_mut());
@@ -52,6 +52,8 @@ hadamard!(hadamard_4, 4, hadamard_2);
 hadamard!(hadamard_8, 8, hadamard_4);
 
 impl Shuffler {
+    #[allow(clippy::cast_precision_loss)]
+    #[must_use]
     pub fn new(rng: &mut impl Rng) -> Self {
         let mut reverses = [false; CHANNELS];
         // Invert 50% of the rows
@@ -74,11 +76,10 @@ impl Shuffler {
         }
     }
 
-    #[allow(clippy::cast_precision_loss)]
     #[must_use]
     pub fn shuffle(&self, input: &[f32; CHANNELS]) -> [f32; CHANNELS] {
         // Step 1: shuffle with hadamard transform
-        let mut hadamard = hadamard_8(input);
+        let mut hadamard = hadamard_8(*input);
 
         // Step 2: reverse the rows
         for i in self.reverses.iter().copied() {

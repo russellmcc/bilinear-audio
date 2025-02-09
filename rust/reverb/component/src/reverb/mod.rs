@@ -69,7 +69,7 @@ impl Reverb {
     }
 
     #[allow(clippy::cast_possible_truncation)]
-    pub fn process(&mut self, params: Params, input: &impl Buffer, output: &mut impl BufferMut) {
+    pub fn process(&mut self, params: &Params, input: &impl Buffer, output: &mut impl BufferMut) {
         if input.num_channels() == 1 {
             let input = input.channel(0);
             let output = output.channel_mut(0);

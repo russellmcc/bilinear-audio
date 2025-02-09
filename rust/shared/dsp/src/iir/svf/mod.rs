@@ -74,7 +74,7 @@ impl Svf {
     pub fn process<'a, I: IntoIterator<Item = Input> + 'a>(
         &'a mut self,
         inputs: I,
-    ) -> impl Iterator<Item = Output> + '_ {
+    ) -> impl Iterator<Item = Output> + 'a {
         inputs
             .into_iter()
             .map(move |input| self.process_single(input))
@@ -83,7 +83,7 @@ impl Svf {
     pub fn process_no_high<'a, I: IntoIterator<Item = Input> + 'a>(
         &'a mut self,
         inputs: I,
-    ) -> impl Iterator<Item = OutputNoHigh> + '_ {
+    ) -> impl Iterator<Item = OutputNoHigh> + 'a {
         inputs.into_iter().map(
             move |Input {
                       x,
@@ -106,14 +106,14 @@ impl Svf {
     pub fn process_high<'a, I: IntoIterator<Item = Input> + 'a>(
         &'a mut self,
         inputs: I,
-    ) -> impl Iterator<Item = f64> + '_ {
+    ) -> impl Iterator<Item = f64> + 'a {
         self.process(inputs).map(|Output { high, .. }| high)
     }
 
     pub fn process_band<'a, I: IntoIterator<Item = Input> + 'a>(
         &'a mut self,
         inputs: I,
-    ) -> impl Iterator<Item = f64> + '_ {
+    ) -> impl Iterator<Item = f64> + 'a {
         inputs.into_iter().map(
             move |Input {
                       x,
@@ -134,7 +134,7 @@ impl Svf {
     pub fn process_low<'a, I: IntoIterator<Item = Input> + 'a>(
         &'a mut self,
         inputs: I,
-    ) -> impl Iterator<Item = f64> + '_ {
+    ) -> impl Iterator<Item = f64> + 'a {
         self.process_no_high(inputs)
             .map(|OutputNoHigh { low, .. }| low)
     }
@@ -142,7 +142,7 @@ impl Svf {
     pub fn process_high_shelf<'a, I: IntoIterator<Item = GainInput> + 'a>(
         &'a mut self,
         inputs: I,
-    ) -> impl Iterator<Item = f64> + '_ {
+    ) -> impl Iterator<Item = f64> + 'a {
         // For derivation, see https://www.dafx14.fau.de/papers/dafx14_aaron_wishnick_time_varying_filters_for_.pdf
         inputs.into_iter().map(move |input| {
             let GainInput {
@@ -169,7 +169,7 @@ impl Svf {
     pub fn process_low_shelf<'a, I: IntoIterator<Item = GainInput> + 'a>(
         &'a mut self,
         inputs: I,
-    ) -> impl Iterator<Item = f64> + '_ {
+    ) -> impl Iterator<Item = f64> + 'a {
         // For derivation, see https://www.dafx14.fau.de/papers/dafx14_aaron_wishnick_time_varying_filters_for_.pdf
         inputs.into_iter().map(move |input| {
             let GainInput {
@@ -196,7 +196,7 @@ impl Svf {
     pub fn process_bell<'a, I: IntoIterator<Item = GainInput> + 'a>(
         &'a mut self,
         inputs: I,
-    ) -> impl Iterator<Item = f64> + '_ {
+    ) -> impl Iterator<Item = f64> + 'a {
         // For derivation, see https://www.dafx14.fau.de/papers/dafx14_aaron_wishnick_time_varying_filters_for_.pdf
         inputs.into_iter().map(move |input| {
             let GainInput {

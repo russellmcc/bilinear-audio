@@ -154,7 +154,7 @@ impl EffectTrait for Effect {
         })
         .next()
         {
-            self.reverb.process(params, input, output);
+            self.reverb.process(&params, input, output);
         }
     }
 }
