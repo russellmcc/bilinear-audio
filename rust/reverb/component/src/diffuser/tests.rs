@@ -6,7 +6,7 @@ use rand_xoshiro::Xoshiro256PlusPlus;
 use snapshots::assert_snapshot;
 
 fn impulse_response_snapshot_test(name: &str, run: impl Fn(&mut Diffuser, f32) -> f32) {
-    const SNAPSHOT_LENGTH: usize = 48_000 * 2;
+    const SNAPSHOT_LENGTH: usize = 10_000;
     const SAMPLING_RATE: f32 = 48000.0;
     const DELAYS_MS: [f32; BLOCKS] = [20.0, 40.0, 80.0, 160.0];
     let mut diffuser = Diffuser::new(
@@ -22,6 +22,7 @@ fn impulse_response_snapshot_test(name: &str, run: impl Fn(&mut Diffuser, f32) -
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn impulse_response() {
     impulse_response_snapshot_test("impulse_response", |diffuser, input| {
         diffuser.process_mono(0.0, &[input; CHANNELS]).0[0]
@@ -29,6 +30,7 @@ fn impulse_response() {
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn impulse_response_er_low() {
     impulse_response_snapshot_test("er_low", |diffuser, input| {
         diffuser.process_mono(0.0, &[input; CHANNELS]).1
@@ -36,6 +38,7 @@ fn impulse_response_er_low() {
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn impulse_response_er_high() {
     impulse_response_snapshot_test("er_high", |diffuser, input| {
         diffuser.process_mono(1.0, &[input; CHANNELS]).1

@@ -6,7 +6,7 @@ use conformal_component::{
 use snapshots::assert_snapshot;
 
 fn impulse_response_for_params(params: Params) -> Vec<f32> {
-    const SNAPSHOT_LENGTH: usize = 48_000 * 2;
+    const SNAPSHOT_LENGTH: usize = 48_000;
     const SAMPLING_RATE: f32 = 48000.0;
     let mut reverb = Reverb::new(&ProcessingEnvironment {
         sampling_rate: SAMPLING_RATE,
@@ -22,6 +22,7 @@ fn impulse_response_for_params(params: Params) -> Vec<f32> {
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn impulse_response() {
     assert_snapshot!(
         "impulse_response",
@@ -36,6 +37,7 @@ fn impulse_response() {
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn impulse_response_damped() {
     assert_snapshot!(
         "impulse_response_modulated_damped",

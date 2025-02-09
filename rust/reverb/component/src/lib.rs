@@ -17,6 +17,7 @@ use conformal_component::effect::Effect as EffectTrait;
 use conformal_component::parameters::{self, BufferStates, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::pzip;
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment, Processor};
+use dsp::f32::lerp;
 
 mod diffuser;
 mod multi_channel_feedback_loop;
@@ -24,20 +25,23 @@ mod multi_channel_per_sample_delay;
 mod per_sample_delay;
 mod per_sample_modulated_delay;
 mod reverb;
-mod shuffler;
 
+#[cfg(test)]
+mod tests;
+
+// This is public because we need it in benchmarks for now.
+#[doc(hidden)]
+pub mod shuffler;
+
+// TODO: hook up parameters
 // TODO: Optimize Hadamard matrix
-// TODO: UI
-// TODO: Parameters to consider:
-//   - feedback
-//   - damping
-//   - mix
-//   - brightness
-//   - modulation
+// TODO: Map parameters
+// TODO: extra parameters:
 //   - ER weight
 //   - density (diffusion bypass?)
+// TODO: UI
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 2] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 5] = [
     InfoRef {
         title: "Bypass",
         short_title: "Bypass",
@@ -46,9 +50,20 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 2] = [
         type_specific: TypeSpecificInfoRef::Switch { default: false },
     },
     InfoRef {
-        title: "Gain",
-        short_title: "Gain",
-        unique_id: "gain",
+        title: "Mix",
+        short_title: "Mix",
+        unique_id: "mix",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 50.,
+            valid_range: 0f32..=100.,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Brightness",
+        short_title: "Brightness",
+        unique_id: "brightness",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 100.,
@@ -56,16 +71,69 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 2] = [
             units: Some("%"),
         },
     },
+    InfoRef {
+        title: "Tone",
+        short_title: "Tone",
+        unique_id: "tone",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 100.,
+            valid_range: 0f32..=100.,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Time",
+        short_title: "Time",
+        unique_id: "time",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 50.,
+            valid_range: 0f32..=100.,
+            units: Some("%"),
+        },
+    },
 ];
+
+const INTERNAL_MIX: [f32; 2] = [0.0, 1.0];
+const INTERNAL_BRIGHTNESS: [f32; 2] = [0.125, 1.0];
+const INTERNAL_DAMPING: [f32; 2] = [0.125, 1.0];
+const INTERNAL_FEEDBACK: [f32; 2] = [0.3, 0.8];
+
+fn to_internal(value: f32, internal_range: [f32; 2]) -> f32 {
+    let ratio = value / 100.0;
+    lerp(internal_range[0], internal_range[1], ratio)
+}
 
 #[derive(Clone, Debug, Default)]
 pub struct Component {}
 
-#[derive(Clone, Debug, Default)]
-pub struct Effect {}
+impl Component {
+    #[must_use]
+    pub fn new() -> Self {
+        Component {}
+    }
+}
+
+pub struct Effect {
+    reverb: reverb::Reverb,
+}
+
+impl Effect {
+    #[must_use]
+    pub fn new(env: &ProcessingEnvironment) -> Self {
+        Effect {
+            reverb: reverb::Reverb::new(env),
+        }
+    }
+}
 
 impl Processor for Effect {
-    fn set_processing(&mut self, _processing: bool) {}
+    fn set_processing(&mut self, processing: bool) {
+        if !processing {
+            self.reverb.reset();
+        }
+    }
 }
 
 impl EffectTrait for Effect {
@@ -76,14 +144,19 @@ impl EffectTrait for Effect {
         input: &I,
         output: &mut O,
     ) {
-        for (input_channel, output_channel) in channels(input).zip(channels_mut(output)) {
-            for ((input_sample, output_sample), (gain, bypass)) in input_channel
-                .iter()
-                .zip(output_channel.iter_mut())
-                .zip(pzip!(parameters[numeric "gain", switch "bypass"]))
-            {
-                *output_sample = *input_sample * (if bypass { 1.0 } else { gain / 100.0 });
-            }
+        // Snapshot the parameters at the start of the buffer - we don't support per-sample automation.
+        if let Some(params) = pzip!(
+            parameters[switch "bypass", numeric "mix", numeric "brightness", numeric "tone", numeric "time"]
+        )
+        .map(|(bypass, mix, brightness, tone, time)| reverb::Params {
+            mix: if bypass { 0.0 } else { to_internal(mix, INTERNAL_MIX) },
+            brightness: to_internal(brightness, INTERNAL_BRIGHTNESS),
+            damping: to_internal(tone, INTERNAL_DAMPING),
+            feedback: to_internal(time, INTERNAL_FEEDBACK),
+        })
+        .next()
+        {
+            self.reverb.process(params, input, output);
         }
     }
 }
@@ -95,7 +168,7 @@ impl ComponentTrait for Component {
         parameters::to_infos(&PARAMETERS)
     }
 
-    fn create_processor(&self, _env: &ProcessingEnvironment) -> Self::Processor {
-        Default::default()
+    fn create_processor(&self, env: &ProcessingEnvironment) -> Self::Processor {
+        Effect::new(env)
     }
 }

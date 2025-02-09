@@ -34,7 +34,7 @@ impl Reverb {
         const DIFFUSER_DELAYS_MS: [f32; BLOCKS] = [20.0, 40.0, 80.0, 160.0];
         const FEEDBACK_LOOP_MIN_DELAY_MS: f32 = 100.0;
         const FEEDBACK_LOOP_MAX_DELAY_MS: f32 = 200.0;
-        const MODULATION_DEPTH_SECONDS: f32 = 0.004;
+        const MODULATION_DEPTH_SECONDS: f32 = 0.001;
         const MODULATION_RATE_HZ: f32 = 6.0;
 
         let min_feedback_delay_samples =

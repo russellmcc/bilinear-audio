@@ -2104,7 +2104,9 @@ version = "0.0.0"
 dependencies = [
  "assert_approx_eq",
  "bitvec",
+ "component_benchmarks",
  "conformal_component",
+ "criterion",
  "dsp",
  "rand 0.8.5",
  "rand_xoshiro",
