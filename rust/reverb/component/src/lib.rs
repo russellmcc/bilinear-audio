@@ -25,13 +25,10 @@ mod multi_channel_per_sample_delay;
 mod per_sample_delay;
 mod per_sample_modulated_delay;
 mod reverb;
+mod shuffler;
 
 #[cfg(test)]
 mod tests;
-
-// This is public because we need it in benchmarks for now.
-#[doc(hidden)]
-pub mod shuffler;
 
 // TODO: extra parameters (?):
 //   - ER weight
