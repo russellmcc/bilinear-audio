@@ -30,11 +30,6 @@ mod shuffler;
 #[cfg(test)]
 mod tests;
 
-// TODO: extra parameters (?):
-//   - ER weight
-//   - density (diffusion bypass?)
-// TODO: UI
-
 const TIME_MIN: f32 = 0.7;
 const COEFF_MIN: f32 = 0.3;
 const TIME_MID: f32 = 1.2;
