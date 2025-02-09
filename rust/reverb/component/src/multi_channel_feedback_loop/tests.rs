@@ -43,16 +43,19 @@ fn impulse_response_for_damping(name: &str, damping: f32, depth: f32, rate: f32)
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn impulse_response() {
     impulse_response_for_damping("impulse_response", 1.0, 0.0, 0.0);
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn impulse_response_damped() {
     impulse_response_for_damping("impulse_response_damped", 0.5, 0.0, 0.0);
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn impulse_response_modulated() {
     impulse_response_for_damping("impulse_response_modulated", 1.0, 0.004, 6.0);
 }

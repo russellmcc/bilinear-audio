@@ -110,6 +110,7 @@ fn reset() {
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn buffer_size_agnostic() {
     let test_sig = dsp::test_utils::sine(3000, 440. / 48000.);
     let buff_512 = generate_snapshot(

@@ -4,6 +4,7 @@ use super::*;
 
 #[test]
 #[allow(clippy::cast_possible_truncation)]
+#[cfg_attr(miri, ignore)]
 fn lofi_chorus() {
     const SAMPLING_RATE: f32 = 48000.0;
     const MAX_DELAY: usize = (SAMPLING_RATE * 0.005) as usize;
