@@ -183,3 +183,29 @@ fn impulse_dark() {
         ]))
     );
 }
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn impulse_early_reflections_late() {
+    assert_snapshot!(
+        "impulse_early_reflections_late",
+        48000,
+        impulse_response_for_params(HashMap::from([(
+            "early_reflections",
+            InternalValue::Numeric(100.0)
+        )]))
+    );
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn impulse_early_reflections_early() {
+    assert_snapshot!(
+        "impulse_early_reflections_early",
+        48000,
+        impulse_response_for_params(HashMap::from([(
+            "early_reflections",
+            InternalValue::Numeric(0.0)
+        )]))
+    );
+}

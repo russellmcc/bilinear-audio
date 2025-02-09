@@ -38,8 +38,21 @@ pub struct Diffuser {
     blocks: [DiffuserBlock; BLOCKS],
 }
 
-const ER_MIN: [f32; BLOCKS] = [0.5, 0.0, 0.0, 0.0];
-const ER_MAX: [f32; BLOCKS] = [0.125, 0.125, 0.125, 0.125];
+const ER_MIN: [f32; BLOCKS] = [0.625 / 2.0, 0.125 / 2.0, 0.125 / 2.0, 0.125 / 2.0];
+const ER_MID: [f32; BLOCKS] = [0.125, 0.125, 0.125, 0.125];
+const ER_MAX: [f32; BLOCKS] = [0.125 / 2.0, 0.125 / 2.0, 0.125 / 2.0, 0.625 / 2.0];
+
+fn weight_for_block(early: f32, block: usize) -> f32 {
+    if early <= 0.5 {
+        let min = ER_MIN[block];
+        let max = ER_MID[block];
+        min + (max - min) * early * 2.0
+    } else {
+        let min = ER_MID[block];
+        let max = ER_MAX[block];
+        min + (max - min) * (early - 0.5) * 2.0
+    }
+}
 
 trait ErCalc {
     fn calc(early: f32, input: &[f32; CHANNELS], block: usize) -> Self;
@@ -48,10 +61,7 @@ trait ErCalc {
 
 impl ErCalc for f32 {
     fn calc(early: f32, input: &[f32; CHANNELS], block: usize) -> Self {
-        let min = ER_MIN[block];
-        let max = ER_MAX[block];
-        let weight = min + (max - min) * early;
-        weight * input.iter().sum::<f32>()
+        weight_for_block(early, block) * input.iter().sum::<f32>()
     }
 
     fn add_assign(&mut self, other: Self) {
@@ -61,9 +71,7 @@ impl ErCalc for f32 {
 
 impl ErCalc for [f32; 2] {
     fn calc(early: f32, input: &[f32; CHANNELS], block: usize) -> Self {
-        let min = ER_MIN[block];
-        let max = ER_MAX[block];
-        let weight = min + (max - min) * early;
+        let weight = weight_for_block(early, block);
         // Split the evens and odds
         [
             input
