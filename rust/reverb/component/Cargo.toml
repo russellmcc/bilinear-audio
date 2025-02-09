@@ -10,6 +10,7 @@ conformal_component = "0.3.2"
 rand = "0.8.5"
 rand_xoshiro = "0.6.0"
 dsp = { path = "../../shared/dsp" }
+arrayvec = "0.7.6"
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0"

@@ -33,10 +33,8 @@ mod tests;
 #[doc(hidden)]
 pub mod shuffler;
 
-// TODO: hook up parameters
-// TODO: Optimize Hadamard matrix
 // TODO: Map parameters
-// TODO: extra parameters:
+// TODO: extra parameters (?):
 //   - ER weight
 //   - density (diffusion bypass?)
 // TODO: UI
