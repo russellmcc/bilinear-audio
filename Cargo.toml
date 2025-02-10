@@ -13,6 +13,10 @@ members = [
 ]
 resolver = "2"
 
+[workspace.lints.rustdoc]
+private_doc_tests = "warn"
+unescaped_backticks = "warn"
+
 [workspace.lints.rust]
 nonstandard_style = "warn"
 rust_2018_idioms = "warn"
