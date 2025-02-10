@@ -102,6 +102,7 @@ fn bpf_lowers_both() {
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn low_shelf_lowers_low_freqs() {
     let power_reductions = calc_power_reduction_for_filter(|input| {
         let mut filter: Svf = Default::default();
@@ -123,6 +124,7 @@ fn low_shelf_lowers_low_freqs() {
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn high_shelf_lowers_high_freqs() {
     let power_reductions = calc_power_reduction_for_filter(|input| {
         let mut filter: Svf = Default::default();
@@ -144,6 +146,7 @@ fn high_shelf_lowers_high_freqs() {
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn bell_does_not_lower_extremes() {
     let power_reductions = calc_power_reduction_for_filter(|input| {
         let mut filter: Svf = Default::default();
@@ -165,6 +168,7 @@ fn bell_does_not_lower_extremes() {
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn reset() {
     let mut filter: Svf = Default::default();
     let params = RawParams {
