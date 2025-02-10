@@ -13,6 +13,9 @@ members = [
 ]
 resolver = "2"
 
+[workspace.package]
+rust-version = "1.84.1"
+
 [workspace.lints.rustdoc]
 private_doc_tests = "warn"
 unescaped_backticks = "warn"

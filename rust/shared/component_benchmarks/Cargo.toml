@@ -1,7 +1,7 @@
 [package]
 name = "component_benchmarks"
 edition = "2021"
-rust-version = "1.79.0"
+rust-version.workspace = true
 license = "ISC"
 publish = false
 
@@ -9,7 +9,7 @@ publish = false
 workspace = true
 
 [dependencies]
-conformal_component = "0.3.2"
+conformal_component = "0.3.3"
 fxhash = "0.2.1"
 serde = { version = "1.0.193", features = ["derive"] }
 itertools = "0.13.0"

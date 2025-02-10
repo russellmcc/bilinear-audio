@@ -1,12 +1,12 @@
 [package]
 name = "reverb_component"
 edition = "2021"
-rust-version = "1.79.0"
+rust-version.workspace = true
 publish = false
 
 [dependencies]
 bitvec = "1.0.1"
-conformal_component = "0.3.2"
+conformal_component = "0.3.3"
 rand = "0.8.5"
 rand_xoshiro = "0.6.0"
 dsp = { path = "../../shared/dsp" }
