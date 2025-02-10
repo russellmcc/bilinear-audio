@@ -12,6 +12,9 @@ rand_xoshiro = "0.6.0"
 dsp = { path = "../../shared/dsp" }
 arrayvec = "0.7.6"
 
+[lints]
+workspace = true
+
 [dev-dependencies]
 assert_approx_eq = "1.1.0"
 snapshots = { path = "../../shared/snapshots" }

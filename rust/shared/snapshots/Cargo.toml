@@ -2,5 +2,8 @@
 name = "snapshots"
 edition = "2021"
 
+[lints]
+workspace = true
+
 [dependencies]
 wavers = "1.4.2"

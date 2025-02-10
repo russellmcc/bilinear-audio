@@ -58,10 +58,7 @@ pub fn generate_snapshot<S: ::std::hash::BuildHasher>(
         processing_mode: processing_params.processing_mode,
     });
     let params = ConstantBufferStates::new(StatesMap::from(override_defaults(
-        component
-            .parameter_infos()
-            .iter()
-            .map(std::convert::Into::into),
+        component.parameter_infos().iter().map(Into::into),
         param_overrides,
     )));
     effect.set_processing(true);
@@ -102,10 +99,7 @@ pub fn generate_snapshot_with_reset<S: ::std::hash::BuildHasher>(
     });
     effect.set_processing(true);
     let params = ConstantBufferStates::new(StatesMap::from(override_defaults(
-        component
-            .parameter_infos()
-            .iter()
-            .map(std::convert::Into::into),
+        component.parameter_infos().iter().map(Into::into),
         param_overrides,
     )));
     let before = generate_snapshot_with_params(

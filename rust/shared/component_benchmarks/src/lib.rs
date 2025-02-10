@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+#![allow(clippy::implicit_hasher)]
 
 use conformal_component::{
     audio::{BufferData, BufferMut, ChannelLayout},
@@ -10,15 +10,16 @@ use conformal_component::{
 };
 use criterion::{black_box, BenchmarkId, Criterion, Throughput};
 use dsp::test_utils::white_noise;
+use std::collections::HashMap;
 
 pub fn benchmark_effect_mono_process<C: Component<Processor: Effect>>(
     name: &str,
-    overrides: HashMap<&'_ str, InternalValue>,
+    overrides: &HashMap<&'_ str, InternalValue>,
     c: &mut Criterion,
     f: impl Fn() -> C,
 ) {
     let mut group = c.benchmark_group(name);
-    for buffer_size in [32, 128, 512].iter() {
+    for buffer_size in &[32, 128, 512] {
         group.throughput(Throughput::Elements(*buffer_size as u64));
         group.bench_with_input(
             BenchmarkId::from_parameter(buffer_size),
@@ -33,8 +34,8 @@ pub fn benchmark_effect_mono_process<C: Component<Processor: Effect>>(
                 let mut output = BufferData::new(ChannelLayout::Mono, buffer_size);
                 let component = f();
                 let params = RampedStatesMap::new_const(
-                    component.parameter_infos().iter().map(|info| info.into()),
-                    &overrides,
+                    component.parameter_infos().iter().map(Into::into),
+                    overrides,
                 );
                 let mut effect = component.create_processor(&ProcessingEnvironment {
                     sampling_rate: 48000.0,
@@ -48,8 +49,8 @@ pub fn benchmark_effect_mono_process<C: Component<Processor: Effect>>(
                         black_box(params.clone()),
                         black_box(&input),
                         black_box(&mut output),
-                    )
-                })
+                    );
+                });
             },
         );
     }
@@ -57,12 +58,12 @@ pub fn benchmark_effect_mono_process<C: Component<Processor: Effect>>(
 
 pub fn benchmark_effect_stereo_process<C: Component<Processor: Effect>>(
     name: &str,
-    overrides: HashMap<&'_ str, InternalValue>,
+    overrides: &HashMap<&'_ str, InternalValue>,
     c: &mut Criterion,
     f: impl Fn() -> C,
 ) {
     let mut group = c.benchmark_group(name);
-    for buffer_size in [32, 128, 512].iter() {
+    for buffer_size in &[32, 128, 512] {
         group.throughput(Throughput::Elements(*buffer_size as u64 * 2));
         group.bench_with_input(
             BenchmarkId::from_parameter(buffer_size),
@@ -79,8 +80,8 @@ pub fn benchmark_effect_stereo_process<C: Component<Processor: Effect>>(
                 let mut output = BufferData::new(ChannelLayout::Stereo, buffer_size);
                 let component = f();
                 let params = RampedStatesMap::new_const(
-                    component.parameter_infos().iter().map(|info| info.into()),
-                    &overrides,
+                    component.parameter_infos().iter().map(Into::into),
+                    overrides,
                 );
                 let mut effect = component.create_processor(&ProcessingEnvironment {
                     sampling_rate: 48000.0,
@@ -94,23 +95,24 @@ pub fn benchmark_effect_stereo_process<C: Component<Processor: Effect>>(
                         black_box(params.clone()),
                         black_box(&input),
                         black_box(&mut output),
-                    )
-                })
+                    );
+                });
             },
         );
     }
 }
 
+#[allow(clippy::missing_panics_doc)]
 pub fn benchmark_synth_process<C: Component<Processor: Synth>>(
     name: &str,
-    overrides: HashMap<&'_ str, InternalValue>,
+    overrides: &HashMap<&'_ str, InternalValue>,
     notes: u8,
     channel_layout: ChannelLayout,
     c: &mut Criterion,
     f: impl Fn() -> C,
 ) {
     let mut group = c.benchmark_group(name);
-    for buffer_size in [32, 128, 512].iter() {
+    for buffer_size in &[32, 128, 512] {
         group.throughput(Throughput::Elements(
             *buffer_size as u64 * channel_layout.num_channels() as u64,
         ));
@@ -122,13 +124,11 @@ pub fn benchmark_synth_process<C: Component<Processor: Synth>>(
                 let component = f();
                 let user_params = {
                     let mut user_params: Vec<parameters::Info> = component.parameter_infos();
-                    user_params.extend(CONTROLLER_PARAMETERS.iter().map(|info| info.into()));
+                    user_params.extend(CONTROLLER_PARAMETERS.iter().map(Into::into));
                     user_params
                 };
-                let params = RampedStatesMap::new_const(
-                    user_params.iter().map(|info| info.into()),
-                    &overrides,
-                );
+                let params =
+                    RampedStatesMap::new_const(user_params.iter().map(Into::into), overrides);
                 let mut synth = component.create_processor(&ProcessingEnvironment {
                     sampling_rate: 48000.0,
                     max_samples_per_process_call: buffer_size,
@@ -148,8 +148,8 @@ pub fn benchmark_synth_process<C: Component<Processor: Synth>>(
                         },
                     }),
                     StatesMap::from(override_defaults(
-                        component.parameter_infos().iter().map(|info| info.into()),
-                        &overrides,
+                        component.parameter_infos().iter().map(Into::into),
+                        overrides,
                     )),
                 );
                 let empty_events = [];
@@ -160,8 +160,8 @@ pub fn benchmark_synth_process<C: Component<Processor: Synth>>(
                         black_box(empty_events.clone()),
                         black_box(params.clone()),
                         black_box(&mut output),
-                    )
-                })
+                    );
+                });
             },
         );
     }
@@ -177,7 +177,7 @@ pub fn benchmark_initialize_mono<C: Component>(name: &str, c: &mut Criterion, f:
                 channel_layout: ChannelLayout::Mono,
                 processing_mode: ProcessingMode::Realtime,
             });
-        })
+        });
     });
 }
 
@@ -191,6 +191,6 @@ pub fn benchmark_initialize_stereo<C: Component>(name: &str, c: &mut Criterion, 
                 channel_layout: ChannelLayout::Stereo,
                 processing_mode: ProcessingMode::Realtime,
             });
-        })
+        });
     });
 }

@@ -11,6 +11,9 @@ itertools = "0.13.0"
 conformal_component = "0.3.2"
 dsp = { path = "../../shared/dsp" }
 
+[lints]
+workspace = true
+
 [dev-dependencies]
 assert_approx_eq = "1.1.0"
 more-asserts = "0.3.1"

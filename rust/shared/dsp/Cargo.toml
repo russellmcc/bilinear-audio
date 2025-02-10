@@ -5,6 +5,9 @@ rust-version = "1.79.0"
 license = "ISC"
 publish = false
 
+[lints]
+workspace = true
+
 [features]
 test-utils = ["dep:rand", "dep:rand_xoshiro", "dep:realfft", "dep:num"]
 

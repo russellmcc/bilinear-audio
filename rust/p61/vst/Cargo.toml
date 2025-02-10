@@ -5,6 +5,9 @@ rust-version = "1.79.0"
 license = "ISC"
 publish = false
 
+[lints]
+workspace = true
+
 [lib]
 crate-type = ["cdylib"]
 
