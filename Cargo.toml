@@ -7,7 +7,8 @@ members = [
     "rust/rchorus/component",
     "rust/shared/dsp",
     "rust/shared/component_benchmarks",
+    "rust/shared/component_snapshots",
     "rust/reverb/component",
-    "rust/reverb/vst"
+    "rust/reverb/vst",
 ]
 resolver = "2"

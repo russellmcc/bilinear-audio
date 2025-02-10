@@ -299,6 +299,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "component_snapshots"
+version = "0.0.0"
+dependencies = [
+ "conformal_component",
+ "dsp",
+]
+
+[[package]]
 name = "conformal_component"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1550,6 +1558,7 @@ version = "0.0.0"
 dependencies = [
  "assert_approx_eq",
  "component_benchmarks",
+ "component_snapshots",
  "conformal_component",
  "conformal_poly",
  "criterion",
@@ -2039,6 +2048,7 @@ version = "0.0.0"
 dependencies = [
  "assert_approx_eq",
  "component_benchmarks",
+ "component_snapshots",
  "conformal_component",
  "criterion",
  "dsp",
@@ -2112,6 +2122,7 @@ dependencies = [
  "assert_approx_eq",
  "bitvec",
  "component_benchmarks",
+ "component_snapshots",
  "conformal_component",
  "criterion",
  "dsp",

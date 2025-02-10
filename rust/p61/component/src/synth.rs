@@ -17,9 +17,6 @@ mod mg;
 mod osc_utils;
 mod voice;
 
-#[cfg(test)]
-mod tests;
-
 #[derive(Debug)]
 pub struct Synth {
     poly: Poly<voice::Voice>,

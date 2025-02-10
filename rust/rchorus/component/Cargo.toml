@@ -17,6 +17,7 @@ more-asserts = "0.3.1"
 snapshots = { path = "../../shared/snapshots" }
 dsp = { path = "../../shared/dsp", features = ["test-utils"] }
 component_benchmarks = { path = "../../shared/component_benchmarks" }
+component_snapshots = { path = "../../shared/component_snapshots" }
 criterion = "0.3"
 
 [[bench]]

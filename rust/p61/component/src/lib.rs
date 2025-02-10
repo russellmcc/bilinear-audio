@@ -18,6 +18,8 @@ use conformal_component::{Component as ComponentT, ProcessingEnvironment};
 
 mod synth;
 
+#[cfg(test)]
+mod tests;
 #[derive(Clone, Debug, Default)]
 pub struct Component {}
 

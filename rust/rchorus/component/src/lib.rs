@@ -68,6 +68,9 @@ mod modulated_delay;
 mod nonlinearity;
 mod polyphase_kernel;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Clone, Debug, Default)]
 pub struct Component {}
 

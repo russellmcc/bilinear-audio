@@ -1,135 +1,51 @@
 use std::collections::HashMap;
 
-use conformal_component::{
-    audio::{all_approx_eq, BufferData, ChannelLayout},
-    parameters::{override_defaults, ConstantBufferStates, InternalValue, StatesMap},
-    ProcessingMode,
+use component_snapshots::{
+    effect::{generate_basic_snapshot, generate_snapshot, generate_snapshot_with_reset},
+    ProcessingParams,
 };
-use dsp::iter::move_into;
+use conformal_component::{audio::all_approx_eq, parameters::InternalValue, ProcessingMode};
 use snapshots::assert_snapshot;
 
 use super::*;
 
-// TODO: make this into a helper since it is shared with rchorus?
-fn generate_snapshot_with_params(
-    effect: &mut impl EffectTrait,
-    input: &[f32],
-    params: impl BufferStates,
-) -> Vec<f32> {
-    let mut input_data = BufferData::new(ChannelLayout::Mono, input.len());
-    dsp::iter::move_into(input.iter().copied(), input_data.channel_mut(0));
-    let mut output_buffer = BufferData::new(ChannelLayout::Mono, input.len());
-    effect.process(params, &input_data, &mut output_buffer);
-    output_buffer.channel(0).to_vec()
-}
-
-struct ProcessingParams {
-    sampling_rate: f32,
-    max_buffer_size: usize,
-    processing_mode: ProcessingMode,
-}
-
-impl Default for ProcessingParams {
-    fn default() -> Self {
-        Self {
-            sampling_rate: 48000.0,
-            max_buffer_size: 512,
-            processing_mode: ProcessingMode::Realtime,
-        }
-    }
-}
-
-fn generate_snapshot(
-    component: &impl ComponentTrait<Processor: EffectTrait>,
-    input: &[f32],
-    processing_params: ProcessingParams,
-    param_overrides: HashMap<&'_ str, InternalValue>,
-) -> Vec<f32> {
-    let mut effect = component.create_processor(&ProcessingEnvironment {
-        sampling_rate: processing_params.sampling_rate,
-        max_samples_per_process_call: processing_params.max_buffer_size,
-        channel_layout: ChannelLayout::Mono,
-        processing_mode: processing_params.processing_mode,
-    });
-    let params = ConstantBufferStates::new(StatesMap::from(override_defaults(
-        component.parameter_infos().iter().map(|i| i.into()),
-        &param_overrides,
-    )));
-    let mut output = vec![0.0; input.len()];
-
-    // Split input into chunks of max_buffer_size
-    for (chunk, output_chunk) in input
-        .chunks(processing_params.max_buffer_size)
-        .zip(output.chunks_mut(processing_params.max_buffer_size))
-    {
-        move_into(
-            generate_snapshot_with_params(&mut effect, chunk, params.clone()).into_iter(),
-            output_chunk,
-        );
-    }
-
-    output
-}
-
-fn generate_basic_snapshot(
-    component: &impl ComponentTrait<Processor: EffectTrait>,
-    input: &[f32],
-    param_overrides: HashMap<&'_ str, InternalValue>,
-) -> Vec<f32> {
-    generate_snapshot(
-        component,
-        input,
-        ProcessingParams::default(),
-        param_overrides,
-    )
-}
-
 #[test]
 fn reset() {
-    let mut effect = Effect::new(&ProcessingEnvironment {
-        sampling_rate: 48000.0,
-        max_samples_per_process_call: 100,
-        channel_layout: ChannelLayout::Mono,
-        processing_mode: ProcessingMode::Realtime,
-    });
     let test_sig = dsp::test_utils::sine(25, 440. / 48000.);
-    effect.set_processing(true);
-    let params = ConstantBufferStates::new(StatesMap::from(override_defaults(
-        Component::new()
-            .parameter_infos()
-            .iter()
-            .map(std::convert::Into::into),
+    let (before, after) = generate_snapshot_with_reset(
+        &Component::new(),
+        &test_sig,
+        &ProcessingParams {
+            max_buffer_size: 100,
+            sampling_rate: 48000.0,
+            processing_mode: ProcessingMode::Realtime,
+        },
         &HashMap::new(),
-    )));
-
-    let initial = generate_snapshot_with_params(&mut effect, &test_sig, params.clone());
-    effect.set_processing(false);
-    effect.set_processing(true);
-    let reset = generate_snapshot_with_params(&mut effect, &test_sig, params.clone());
-    assert!(all_approx_eq(initial, reset, 1e-6));
+    );
+    assert!(all_approx_eq(before, after, 1e-6));
 }
 
 #[test]
 #[cfg_attr(miri, ignore)]
 fn buffer_size_agnostic() {
-    let test_sig = dsp::test_utils::sine(3000, 440. / 48000.);
+    let test_sig: Vec<f32> = dsp::test_utils::sine(3000, 440. / 48000.);
     let buff_512 = generate_snapshot(
         &Component::new(),
         &test_sig,
-        ProcessingParams {
+        &ProcessingParams {
             max_buffer_size: 512,
             ..Default::default()
         },
-        HashMap::new(),
+        &HashMap::new(),
     );
     let buff_1024 = generate_snapshot(
         &Component::new(),
         &test_sig,
-        ProcessingParams {
+        &ProcessingParams {
             max_buffer_size: 1024,
             ..Default::default()
         },
-        HashMap::new(),
+        &HashMap::new(),
     );
     assert!(all_approx_eq(buff_512, buff_1024, 1e-6));
 }
@@ -138,7 +54,7 @@ fn impulse_response_for_params(params: HashMap<&'_ str, InternalValue>) -> Vec<f
     const SNAPSHOT_LENGTH: usize = 48_000 * 2;
     let mut impulse_vec = vec![0.0; SNAPSHOT_LENGTH];
     impulse_vec[0] = 1.0;
-    generate_basic_snapshot(&Component::new(), &impulse_vec, params)
+    generate_basic_snapshot(&Component::new(), &impulse_vec, &params)
 }
 
 #[test]

@@ -185,6 +185,3 @@ impl EffectT for Effect {
         }
     }
 }
-
-#[cfg(test)]
-mod tests;
