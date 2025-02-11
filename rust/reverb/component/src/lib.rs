@@ -4,6 +4,7 @@ use conformal_component::parameters::{self, BufferStates, Flags, InfoRef, TypeSp
 use conformal_component::pzip;
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment, Processor};
 use dsp::f32::lerp;
+use rtsan_standalone::nonblocking;
 
 mod diffuser;
 mod multi_channel_feedback_loop;
@@ -150,6 +151,7 @@ impl Effect {
 }
 
 impl Processor for Effect {
+    #[nonblocking]
     fn set_processing(&mut self, processing: bool) {
         if !processing {
             self.reverb.reset();
@@ -158,7 +160,10 @@ impl Processor for Effect {
 }
 
 impl EffectTrait for Effect {
+    #[nonblocking]
     fn handle_parameters<P: parameters::States>(&mut self, _: P) {}
+
+    #[nonblocking]
     fn process<P: BufferStates, I: Buffer, O: BufferMut>(
         &mut self,
         parameters: P,

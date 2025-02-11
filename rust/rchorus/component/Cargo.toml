@@ -10,6 +10,7 @@ num-traits = "0.2.19"
 itertools = "0.13.0"
 conformal_component = "0.3.3"
 dsp = { path = "../../shared/dsp" }
+rtsan-standalone = "0.1.1"
 
 [lints]
 workspace = true
@@ -22,6 +23,9 @@ dsp = { path = "../../shared/dsp", features = ["test-utils"] }
 component_benchmarks = { path = "../../shared/component_benchmarks" }
 component_snapshots = { path = "../../shared/component_snapshots" }
 criterion = "0.3"
+
+[features]
+rtsan = ["rtsan-standalone/enable"]
 
 [[bench]]
 name = "process"

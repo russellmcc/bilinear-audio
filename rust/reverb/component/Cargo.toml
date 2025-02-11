@@ -11,6 +11,7 @@ rand = "0.8.5"
 rand_xoshiro = "0.6.0"
 dsp = { path = "../../shared/dsp" }
 arrayvec = "0.7.6"
+rtsan-standalone = "0.1.1"
 
 [lints]
 workspace = true

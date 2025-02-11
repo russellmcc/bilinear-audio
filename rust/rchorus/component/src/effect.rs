@@ -10,6 +10,7 @@ use conformal_component::{
 use dsp::iir::dc_blocker::DcBlocker;
 use itertools::izip;
 use num_traits::cast;
+use rtsan_standalone::nonblocking;
 
 pub struct Effect {
     lfo: lfo::Lfo,
@@ -22,6 +23,7 @@ pub struct Effect {
 }
 
 impl Processor for Effect {
+    #[nonblocking]
     fn set_processing(&mut self, processing: bool) {
         if !processing {
             self.lfo.reset();
@@ -150,8 +152,10 @@ impl Effect {
 }
 
 impl EffectT for Effect {
+    #[nonblocking]
     fn handle_parameters<P: parameters::States>(&mut self, _: P) {}
 
+    #[nonblocking]
     fn process<P: BufferStates, I: Buffer, O: BufferMut>(
         &mut self,
         parameters: P,

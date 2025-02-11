@@ -52,7 +52,7 @@ version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9b39be18770d11421cdb1b9947a45dd3f37e93092cbf377614828a319d5fee8"
 dependencies = [
- "hermit-abi",
+ "hermit-abi 0.1.19",
  "libc",
  "winapi",
 ]
@@ -1102,6 +1102,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hermit-abi"
+version = "0.3.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d231dfb89cfffdbc30e7fc41579ed6066ad03abda9e567ccafae602b97ec5024"
+
+[[package]]
 name = "html5ever"
 version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1492,6 +1498,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "num_cpus"
+version = "1.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4161fcb6d602d4d2081af7c3a45852d875a03dd337a6bfdd6e06407b61342a43"
+dependencies = [
+ "hermit-abi 0.3.9",
+ "libc",
+]
+
+[[package]]
 name = "num_enum"
 version = "0.5.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1567,6 +1583,7 @@ dependencies = [
  "more-asserts",
  "num-derive",
  "num-traits",
+ "rtsan-standalone",
  "snapshots",
 ]
 
@@ -2055,6 +2072,7 @@ dependencies = [
  "itertools 0.13.0",
  "more-asserts",
  "num-traits",
+ "rtsan-standalone",
  "snapshots",
 ]
 
@@ -2128,6 +2146,7 @@ dependencies = [
  "dsp",
  "rand 0.8.5",
  "rand_xoshiro",
+ "rtsan-standalone",
  "snapshots",
 ]
 
@@ -2160,6 +2179,36 @@ dependencies = [
  "byteorder",
  "rmp",
  "serde",
+]
+
+[[package]]
+name = "rtsan-standalone"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e15d5bd1ad7fd0c81650ac3629dffb1796dabaf54c2518ad53964b95ba01c4bb"
+dependencies = [
+ "rtsan-standalone-macros",
+ "rtsan-standalone-sys",
+]
+
+[[package]]
+name = "rtsan-standalone-macros"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ba90c379afb30d2afe7691f12ab2918fa43a38e54062546ec27a73c07cbb6b4"
+dependencies = [
+ "quote",
+ "syn 2.0.75",
+]
+
+[[package]]
+name = "rtsan-standalone-sys"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7546df1e63946b4db8bdc999c24bbd14d2ae4e80487b52fab6a1eaeed1039c8"
+dependencies = [
+ "num_cpus",
+ "tempfile",
 ]
 
 [[package]]
