@@ -9,8 +9,8 @@ publish = false
 itertools = "0.13.0"
 num-derive = "0.4.2"
 num-traits = "0.2.19"
-conformal_component = "0.3.3"
-conformal_poly = "0.3.3"
+conformal_component = "0.3.4"
+conformal_poly = "0.3.4"
 dsp = { path = "../../shared/dsp" }
 rtsan-standalone = "0.1.1"
 

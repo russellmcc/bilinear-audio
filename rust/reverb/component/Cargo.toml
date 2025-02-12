@@ -6,7 +6,7 @@ publish = false
 
 [dependencies]
 bitvec = "1.0.1"
-conformal_component = "0.3.3"
+conformal_component = "0.3.4"
 rand = "0.8.5"
 rand_xoshiro = "0.6.0"
 dsp = { path = "../../shared/dsp" }
@@ -23,6 +23,9 @@ component_benchmarks = { path = "../../shared/component_benchmarks" }
 component_snapshots = { path = "../../shared/component_snapshots" }
 dsp = { path = "../../shared/dsp", features = ["test-utils"] }
 criterion = "0.3"
+
+[features]
+rtsan = ["rtsan-standalone/enable"]
 
 [[bench]]
 name = "process"
