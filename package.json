@@ -72,9 +72,9 @@
     "@conformal/plugin": "^0.3.4",
     "@types/d3-shape": "^3.1.7",
     "rollup-plugin-license": "^3.5.3",
-    "@next/eslint-plugin-next": "^14.2.24",
-    "next": "^14.2.24",
-    "nextra": "^3.3.1",
-    "nextra-theme-docs": "^3.3.1"
+    "@next/eslint-plugin-next": "^15.1.7",
+    "next": "^15.1.7",
+    "nextra": "^4.2.11",
+    "nextra-theme-docs": "^4.2.11"
   }
 }
