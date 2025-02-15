@@ -7,7 +7,7 @@ const GrabDecorator: Decorator<Props> = (Story, context) => {
   const onGrabOrRelease = (grabbed: boolean) => {
     updateArgs({ grabbed });
   };
-  return Story({ ...context, args: { ...context.args, onGrabOrRelease } });
+  return <Story {...context} args={{ ...context.args, onGrabOrRelease }} />;
 };
 
 const ValueDecorator: Decorator<Props> = (Story, context) => {
@@ -16,7 +16,7 @@ const ValueDecorator: Decorator<Props> = (Story, context) => {
     if (context.args.value === value) return;
     updateArgs({ value });
   };
-  return Story({ ...context, args: { ...context.args, onValue } });
+  return <Story {...context} args={{ ...context.args, onValue }} />;
 };
 
 const demoValues = ["saw", "pulse", "pwm"];

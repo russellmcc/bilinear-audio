@@ -27,7 +27,7 @@ export const ValueLabelInternal = ({
   selectedIndex: number | undefined;
   numValues: number;
   selectIndex?: (i: number) => void;
-  radios: React.MutableRefObject<Map<number, HTMLDivElement>>;
+  radios: React.RefObject<Map<number, HTMLDivElement>>;
   displayFormatter?: (value: string) => string;
   ClientComponent: ValueLabel;
 }) => {
