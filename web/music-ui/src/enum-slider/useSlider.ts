@@ -1,4 +1,4 @@
-import { LegacyRef, useCallback, useMemo, useRef, useState } from "react";
+import { RefObject, useCallback, useMemo, useRef, useState } from "react";
 import { useAnimation } from "../animation";
 import { clamp } from "../util";
 
@@ -31,8 +31,8 @@ type Props = {
 };
 
 export type Output<Container extends Element, Ball extends Element> = {
-  containerRef: LegacyRef<Container>;
-  ballRef: LegacyRef<Ball>;
+  containerRef: RefObject<Container | null>;
+  ballRef: RefObject<Ball | null>;
   onPointerDown: (event: React.PointerEvent) => void;
   onPointerMove: (event: React.PointerEvent) => void;
   onPointerUp: (event: React.PointerEvent) => void;

@@ -8,7 +8,6 @@ module.exports = {
     "plugin:react-hooks/recommended",
     "plugin:react/recommended",
     "plugin:react/jsx-runtime",
-    "plugin:tailwindcss/recommended",
   ],
   ignorePatterns: ["dist", ".eslintrc.cjs"],
   parser: "@typescript-eslint/parser",
@@ -18,6 +17,7 @@ module.exports = {
   },
   plugins: ["react-refresh", "prefer-arrow-functions"],
   rules: {
+    "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -33,7 +33,6 @@ module.exports = {
       "error",
       { allowConstantLoopConditions: true },
     ],
-    "tailwindcss/classnames-order": "off",
     "react-refresh/only-export-components": [
       "warn",
       { allowConstantExport: true },
