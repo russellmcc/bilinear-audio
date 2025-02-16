@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useCallback, useMemo } from "react";
-import { indexOf } from "../util";
+import { indexOf } from "../../util";
 
 export type ValueLabelProps = React.DetailedHTMLProps<
   React.HTMLAttributes<HTMLDivElement>,

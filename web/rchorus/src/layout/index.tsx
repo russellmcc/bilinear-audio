@@ -1,7 +1,7 @@
 import { useSwitchParam } from "@conformal/plugin";
 import logo from "../assets/logo.svg";
 import { forwardRef, useCallback } from "react";
-import EnumSlider, { ValueLabelProps } from "music-ui/enum-slider";
+import { EnumSlider } from "music-ui/kit";
 import Slider from "./slider";
 
 const Layout = () => {
@@ -45,14 +45,14 @@ const Layout = () => {
       <div style={{ position: "absolute", bottom: "21px", left: "21px" }}>
         <div>Chorus</div>
         <div style={{ marginTop: "11px" }}>
-          <EnumSlider
+          <EnumSlider.EnumSlider
             values={["On", "Off"]}
             value={enabled ? "On" : "Off"}
             onValue={(v) => {
               setEnabled(v === "On");
             }}
             accessibilityLabel={"Chorus"}
-            ValueLabel={forwardRef<HTMLDivElement, ValueLabelProps>(
+            ValueLabel={forwardRef<HTMLDivElement, EnumSlider.ValueLabelProps>(
               // eslint-disable-next-line prefer-arrow-functions/prefer-arrow-functions
               function ValueLabel({ label, ...props }, ref) {
                 return (

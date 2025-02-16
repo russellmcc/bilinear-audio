@@ -1,5 +1,5 @@
 import { describe, expect, test, mock, beforeEach } from "bun:test";
-import { useSlider } from "./useSlider";
+import { useEnumSlider } from "./useEnumSlider";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 
 const LINE_SPACING = 10;
@@ -59,7 +59,7 @@ const TestSlider = ({
     onPointerUp,
     onPointerCancel,
     ball,
-  } = useSlider<HTMLDivElement, HTMLDivElement>({
+  } = useEnumSlider<HTMLDivElement, HTMLDivElement>({
     ballMargin: 0,
     lineSpacing: LINE_SPACING,
     ballSize: 10,
@@ -83,7 +83,7 @@ const TestSlider = ({
   );
 };
 
-describe("useSlider", () => {
+describe("useEnumSlider", () => {
   beforeEach(() => {
     cleanup();
   });

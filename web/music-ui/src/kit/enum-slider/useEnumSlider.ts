@@ -1,6 +1,6 @@
 import { RefObject, useCallback, useMemo, useRef, useState } from "react";
-import { useAnimation } from "../animation";
-import { clamp } from "../util";
+import { useAnimation } from "../../animation";
+import { clamp } from "../../util";
 
 type Data = {
   index: number | undefined;
@@ -20,7 +20,7 @@ type State = {
     | undefined;
 };
 
-type Props = {
+export type Props = {
   ballMargin: number;
   lineSpacing: number;
   ballSize: number;
@@ -42,7 +42,7 @@ export type Output<Container extends Element, Ball extends Element> = {
 
 const RATE = 10;
 
-export const useSlider = <Container extends Element, Ball extends Element>({
+export const useEnumSlider = <Container extends Element, Ball extends Element>({
   ballMargin,
   lineSpacing,
   ballSize,
@@ -247,4 +247,4 @@ export const useSlider = <Container extends Element, Ball extends Element>({
   };
 };
 
-export default useSlider;
+export default useEnumSlider;

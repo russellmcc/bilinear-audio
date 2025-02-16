@@ -1,10 +1,10 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import {
   EnumSlider as InternalEnumSlider,
   SliderProps,
   ValueLabelProps,
-} from "../enum-slider";
-import useSlider from "../enum-slider/useSlider";
+} from "../kit/enum-slider";
+import { useEnumSlider } from "../kit";
 
 export type Props = {
   /**
@@ -78,7 +78,7 @@ const Slider = ({
     containerRef,
     ballRef,
     ball,
-  } = useSlider<HTMLDivElement, HTMLDivElement>({
+  } = useEnumSlider<HTMLDivElement, HTMLDivElement>({
     ballMargin: BALL_MARGIN,
     lineSpacing: LINE_SPACING,
     ballSize: BALL_SIZE,

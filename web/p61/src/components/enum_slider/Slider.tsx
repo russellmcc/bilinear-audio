@@ -1,4 +1,4 @@
-import useSlider from "music-ui/enum-slider/useSlider";
+import { useEnumSlider } from "music-ui/kit";
 
 export type Props = {
   index: number | undefined;
@@ -23,7 +23,7 @@ const Slider = ({
     containerRef,
     ballRef,
     ball,
-  } = useSlider<HTMLDivElement, HTMLDivElement>({
+  } = useEnumSlider<HTMLDivElement, HTMLDivElement>({
     ballMargin: 2.5,
     lineSpacing: 24,
     ballSize: BALL_SIZE,

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { indexOf } from "../util";
+import { indexOf } from "../../util";
 import { LabelGroup, ValueLabel } from "./value-label";
 export type { ValueLabel, ValueLabelProps } from "./value-label";
 export type SliderProps = {
@@ -59,7 +59,7 @@ export type Props = {
   /**
    * Component type to use for the slider.
    *
-   * You can use the `useSlider` hook to implement an animated slider.
+   * You can use the `useEnumSlider` hook to implement an animated slider.
    */
   Slider: Slider;
 };

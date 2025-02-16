@@ -1,10 +1,9 @@
 import { forwardRef, useCallback, useMemo, useState } from "react";
 import Slider from "./Slider";
-import {
-  ValueLabel,
-  ValueLabelProps,
-  EnumSlider as EnumSliderInternal,
-} from "music-ui/enum-slider";
+import { EnumSlider as EnumSliderModule } from "music-ui/kit";
+
+type ValueLabel = EnumSliderModule.ValueLabel;
+type ValueLabelProps = EnumSliderModule.ValueLabelProps;
 
 export type Props = {
   /**
@@ -135,7 +134,7 @@ const EnumSlider = ({
       className={`cursor-default touch-none select-none flex-row items-stretch`}
       style={{ width: width === "normal" ? "91px" : "61px" }}
     >
-      <EnumSliderInternal
+      <EnumSliderModule.EnumSlider
         value={value}
         values={values}
         accessibilityLabel={accessibilityLabel ?? label}
