@@ -10,7 +10,7 @@ export type ValueLabelProps = React.DetailedHTMLProps<
   label: string;
 };
 
-export type ValueLabel = React.ExoticComponent<ValueLabelProps>;
+export type ValueLabel = React.FC<ValueLabelProps>;
 
 export const ValueLabelInternal = ({
   label,
@@ -108,10 +108,10 @@ export const ValueLabelInternal = ({
 export type LabelGroupProps = {
   accessibilityLabel: string;
   values: string[];
-  value: string;
+  value?: string;
   displayFormatter?: (value: string) => string;
   valueLabel: ValueLabel;
-  radios: React.MutableRefObject<Map<number, HTMLDivElement>>;
+  radios: React.RefObject<Map<number, HTMLDivElement>>;
   selectIndex: (i: number) => void;
 };
 

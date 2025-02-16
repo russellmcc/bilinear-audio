@@ -26,7 +26,7 @@ export type Props = {
   /**
    * The current value of the enum - must be one of `values`
    */
-  value: string;
+  value?: string;
 
   /**
    * Accessibility label for the enum - can contain more information than `label`

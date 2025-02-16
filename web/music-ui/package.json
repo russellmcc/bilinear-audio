@@ -4,7 +4,8 @@
   "scripts": {
     "lint": "tsc && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "check-format": "prettier --ignore-path .gitignore -c .",
-    "format": "prettier --ignore-path .gitignore --write ."
+    "format": "prettier --ignore-path .gitignore --write .",
+    "storybook": "storybook dev -p 6006"
   },
   "author": "Bilinear Audio Authors",
   "main": "src/index.ts",
