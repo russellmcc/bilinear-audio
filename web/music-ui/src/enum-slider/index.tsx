@@ -49,7 +49,18 @@ export type Props = {
    */
   displayFormatter?: (value: string) => string;
 
+  /**
+   * Component type to use for the value label.
+   *
+   * Note that this must forward props to an HTML div element.
+   */
   ValueLabel: ValueLabel;
+
+  /**
+   * Component type to use for the slider.
+   *
+   * You can use the `useSlider` hook to implement an animated slider.
+   */
   Slider: Slider;
 };
 

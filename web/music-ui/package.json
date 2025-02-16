@@ -22,6 +22,9 @@
     },
     "./util": {
       "import": "./src/util/index.ts"
+    },
+    "./draft-ui": {
+      "import": "./src/draft-ui/index.ts"
     }
   },
   "type": "module"

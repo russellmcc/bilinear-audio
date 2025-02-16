@@ -60,7 +60,7 @@ export type Props = {
 
 const BALL_SIZE = 12;
 const LINE_SPACING = 24;
-const BALL_MARGIN = 1;
+const BALL_MARGIN = 2;
 const BORDER_WIDTH = 1;
 
 const Slider = ({
@@ -99,7 +99,7 @@ const Slider = ({
       className="slider-track"
       style={{
         height: `${LINE_SPACING * count + BALL_MARGIN * 2 - BALL_SIZE}px`,
-        width: `${BALL_SIZE + BALL_MARGIN * 2 + BORDER_WIDTH * 2}px`,
+        width: `${BALL_SIZE + BALL_MARGIN * 2}px`,
         borderWidth: `${BORDER_WIDTH}px`,
         position: "relative",
         borderStyle: "solid",
@@ -119,7 +119,7 @@ const Slider = ({
               width: `${BALL_SIZE - BORDER_WIDTH * 2}px`,
               height: `${BALL_SIZE - BORDER_WIDTH * 2}px`,
               bottom: `${ball.bottom}px`,
-              left: `${BORDER_WIDTH + BALL_MARGIN}px`,
+              left: `${BALL_MARGIN}px`,
               position: "absolute",
               borderRadius: `1000px`,
               borderWidth: `${BORDER_WIDTH}px`,
@@ -132,6 +132,21 @@ const Slider = ({
   );
 };
 
+const ValueLabel = ({ label, checked, ...props }: ValueLabelProps) => (
+  <div
+    {...props}
+    style={{
+      height: `${LINE_SPACING}px`,
+      fontWeight: checked ? "400" : "200",
+      fontFamily: "sans-serif",
+      cursor: "pointer",
+    }}
+    className="slider-value-label"
+  >
+    {label}
+  </div>
+);
+
 export const EnumSlider = ({
   label,
   accessibilityLabel,
@@ -141,27 +156,8 @@ export const EnumSlider = ({
   grabbed,
   onGrabOrRelease,
   defaultValue,
+  displayFormatter,
 }: Props) => {
-  const valueLabel = useMemo(() => {
-    const ValueLabel = ({ label, checked }: ValueLabelProps) => (
-      <div
-        style={{
-          height: `${LINE_SPACING}px`,
-          fontWeight: checked ? "400" : "200",
-          fontFamily: "sans-serif",
-          cursor: "pointer",
-        }}
-        className="slider-value-label"
-        onClick={() => {
-          onValue(label);
-        }}
-      >
-        {label}
-      </div>
-    );
-    return ValueLabel;
-  }, [onValue]);
-
   const onDoubleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (defaultValue) {
@@ -182,8 +178,9 @@ export const EnumSlider = ({
         onValue={onValue}
         grabbed={grabbed}
         onGrabOrRelease={onGrabOrRelease}
-        ValueLabel={valueLabel}
+        ValueLabel={ValueLabel}
         Slider={Slider}
+        displayFormatter={displayFormatter}
       />
       <div
         className="slider-label"
