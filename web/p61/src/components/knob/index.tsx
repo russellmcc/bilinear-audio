@@ -1,7 +1,7 @@
-import useGesture from "./useGesture.ts";
 import Display from "./Display.tsx";
 import Label from "./Label.tsx";
 import { useMemo } from "react";
+import { Knob as KnobKit } from "music-ui/kit";
 
 export type Props = {
   /**
@@ -62,60 +62,20 @@ const SECONDARY_KNOB_SIZE = 31;
 const PRIMARY_RADIUS_RATIO = 18 / 30.5;
 const SECONDARY_RADIUS_RATIO = 15 / 30.5;
 
-const Knob = ({
-  value,
-  grabbed,
-  onGrabOrRelease,
-  onValue,
-  label,
-  valueFormatter,
-  showLabel = true,
-  style = "primary",
-  accessibilityLabel,
-  defaultValue,
-}: Props) => {
-  const { hover, props } = useGesture({
-    value,
-    onGrabOrRelease,
-    onValue,
-    defaultValue,
-  });
-  const valueLabel = useMemo(
-    () => (valueFormatter ? valueFormatter(value) : label),
-    [valueFormatter, value, label],
-  );
-  return (
-    <div
-      role="slider"
-      aria-label={accessibilityLabel ?? label}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={value}
-      aria-orientation="vertical"
-      aria-valuetext={valueFormatter ? valueLabel : String(value)}
-      tabIndex={0}
-      className="inline-block cursor-default touch-none select-none"
-      {...props}
-    >
+const Knob = ({ style = "primary", ...props }: Props) => {
+  const display = useMemo(() => {
+    const StyledDisplay = (props: KnobKit.DisplayProps) => (
       <Display
         size={style === "primary" ? PRIMARY_KNOB_SIZE : SECONDARY_KNOB_SIZE}
         innerRadiusRatio={
           style === "primary" ? PRIMARY_RADIUS_RATIO : SECONDARY_RADIUS_RATIO
         }
-        value={value}
-        grabbed={grabbed ?? false}
-        hover={hover}
+        {...props}
       />
-      {showLabel ? (
-        // Note that `valueLabel` will never be undefined if `label` is defined.
-        <Label
-          label={label}
-          hover={hover || !!grabbed}
-          valueLabel={valueLabel}
-        />
-      ) : undefined}
-    </div>
-  );
+    );
+    return StyledDisplay;
+  }, [style]);
+  return <KnobKit.Knob {...props} Display={display} Label={Label} />;
 };
 
 export default Knob;

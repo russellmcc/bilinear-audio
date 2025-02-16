@@ -1,8 +1,8 @@
-import EnumSlider, { Props } from "./EnumSlider";
+import { EnumSlider, EnumSliderProps } from "music-ui/draft-ui";
 import { Decorator } from "@storybook/react";
 import { useArgs } from "@storybook/preview-api";
 
-const GrabDecorator: Decorator<Props> = (Story, context) => {
+const GrabDecorator: Decorator<EnumSliderProps> = (Story, context) => {
   const updateArgs = useArgs()[1];
   const onGrabOrRelease = (grabbed: boolean) => {
     updateArgs({ grabbed });
@@ -10,7 +10,7 @@ const GrabDecorator: Decorator<Props> = (Story, context) => {
   return <Story {...context} args={{ ...context.args, onGrabOrRelease }} />;
 };
 
-const ValueDecorator: Decorator<Props> = (Story, context) => {
+const ValueDecorator: Decorator<EnumSliderProps> = (Story, context) => {
   const updateArgs = useArgs()[1];
   const onValue = (value: string) => {
     if (context.args.value === value) return;
