@@ -1,27 +1,52 @@
+import { Knob as KnobKit } from "music-ui/kit";
 import { useCallback, useState } from "react";
 import { useNumericParam } from "@conformal/plugin";
-import Knob, { Props } from "../../components/knob";
-import { Scale } from "../../scale";
+import { Scale } from "music-ui/util";
 
-export type ParamKnobProps = {
-  param: string;
-
+export type Props = {
+  /**
+   * The label of the knob. To hide the label, set `showLabel` to false.
+   */
   label?: string;
 
+  /**
+   * Whether we should show the label
+   */
+  showLabel?: boolean;
+
+  /**
+   * Label for accessibility (can contain more information than `label`)
+   */
   accessibilityLabel?: string;
 
-  style?: Props["style"];
+  /** The param id to connect this knob to */
+  param: string;
 
+  /**
+   * The scale to apply to the knob
+   */
   scale?: Scale;
+
+  /**
+   * A component for the knob display
+   */
+  Display?: KnobKit.DisplayComponent;
+
+  /**
+   * A component for the knob label
+   */
+  Label?: KnobKit.LabelComponent;
 };
 
-export const ParamKnob = ({
-  param,
+export const Knob = ({
   label,
+  showLabel,
   accessibilityLabel,
-  style,
+  Display,
+  Label,
   scale,
-}: ParamKnobProps) => {
+  param,
+}: Props) => {
   const [grabbed, setGrabbed] = useState(false);
   const {
     info: {
@@ -50,6 +75,7 @@ export const ParamKnob = ({
     },
     [max_value, min_value, scale],
   );
+
   const onGrabOrRelease = useCallback(
     (grabbed: boolean) => {
       setGrabbed(grabbed);
@@ -62,7 +88,7 @@ export const ParamKnob = ({
     [grab, release, setGrabbed],
   );
   return (
-    <Knob
+    <KnobKit.Knob
       label={label ?? title}
       value={scaled}
       onValue={(scaled) => {
@@ -74,10 +100,10 @@ export const ParamKnob = ({
         units ? (value) => `${unscale(value).toFixed(0)}${units}` : undefined
       }
       accessibilityLabel={accessibilityLabel}
-      style={style}
       defaultValue={defaultValue}
+      Display={Display}
+      Label={Label}
+      showLabel={showLabel}
     />
   );
 };
-
-export default ParamKnob;

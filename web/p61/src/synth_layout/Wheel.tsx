@@ -1,4 +1,4 @@
-import ParamKnob from "../param_components/knob";
+import ParamKnob from "../components/knob/ParamKnob";
 
 export const Wheel = () => (
   <div className="bg-zone border-border ms-px flex h-[207px] w-[61px] flex-col border">

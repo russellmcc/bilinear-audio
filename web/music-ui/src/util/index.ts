@@ -8,3 +8,6 @@ export const indexOf = <T>(v: T, vs: T[]): number | undefined => {
 
 export const clamp = (v: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, v));
+
+export { exponentialScale } from "./scale";
+export type { Scale } from "./scale";

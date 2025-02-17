@@ -21,7 +21,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "music-ui": "workspace:*"
+    "music-ui": "workspace:*",
+    "plugin-ui": "workspace:*"
   },
   "type": "module"
 }

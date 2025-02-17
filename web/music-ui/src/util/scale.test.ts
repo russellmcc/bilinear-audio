@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { exponentialScale } from ".";
+import { exponentialScale } from "./scale";
 
 describe("exponentialScale", () => {
   const testExpFor = (fromBreak: number, toBreak: number) => {

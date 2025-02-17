@@ -1,7 +1,6 @@
-import Display from "./Display.tsx";
 import Label from "./Label.tsx";
-import { useMemo } from "react";
 import { Knob as KnobKit } from "music-ui/kit";
+import { useDisplay } from "./useDisplay.tsx";
 
 export type Props = {
   /**
@@ -57,25 +56,8 @@ export type Props = {
   defaultValue?: number;
 };
 
-const PRIMARY_KNOB_SIZE = 61;
-const SECONDARY_KNOB_SIZE = 31;
-const PRIMARY_RADIUS_RATIO = 18 / 30.5;
-const SECONDARY_RADIUS_RATIO = 15 / 30.5;
-
-const Knob = ({ style = "primary", ...props }: Props) => {
-  const display = useMemo(() => {
-    const StyledDisplay = (props: KnobKit.DisplayProps) => (
-      <Display
-        size={style === "primary" ? PRIMARY_KNOB_SIZE : SECONDARY_KNOB_SIZE}
-        innerRadiusRatio={
-          style === "primary" ? PRIMARY_RADIUS_RATIO : SECONDARY_RADIUS_RATIO
-        }
-        {...props}
-      />
-    );
-    return StyledDisplay;
-  }, [style]);
-  return <KnobKit.Knob {...props} Display={display} Label={Label} />;
-};
+const Knob = ({ style = "primary", ...props }: Props) => (
+  <KnobKit.Knob {...props} Display={useDisplay({ style })} Label={Label} />
+);
 
 export default Knob;
