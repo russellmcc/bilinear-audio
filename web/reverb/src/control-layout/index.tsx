@@ -1,15 +1,29 @@
+import BypassSlider from "../components/BypassSlider";
 import Knob from "../components/Knob";
 
 export const ControlLayout = () => (
-  <div style={{ width: "100%" }}>
+  <div style={{ width: "100%", marginBottom: "12px" }}>
     <div
       style={{
         display: "flex",
         justifyContent: "center",
-        marginBottom: "1rem",
+        alignItems: "end",
+        marginBottom: "20px",
       }}
     >
-      <Knob style="big" param="mix" label="mix" />
+      <div style={{ position: "relative" }}>
+        <div
+          style={{
+            position: "absolute",
+            right: "100%",
+            marginRight: "90px",
+            bottom: "3px",
+          }}
+        >
+          <BypassSlider />
+        </div>
+        <Knob style="big" param="mix" label="mix" />
+      </div>
     </div>
     <div
       style={{

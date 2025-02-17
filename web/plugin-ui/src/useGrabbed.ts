@@ -23,3 +23,5 @@ export const useGrabbed = ({
 
   return { grabbed, onGrabOrRelease };
 };
+
+export default useGrabbed;
