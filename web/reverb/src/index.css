@@ -17,6 +17,8 @@ body {
   background-repeat: no-repeat;
   background-color: var(--cloud-color);
   margin: 0;
+  font-size: 26px;
+  color: var(--sea-color);
 }
 
 :root {
@@ -28,6 +30,6 @@ body {
 h1 {
   margin: 0;
   font-size: 72px;
-  color: var(--sea-color);
   text-align: center;
+  color: var(--cloud-color);
 }

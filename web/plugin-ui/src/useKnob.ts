@@ -14,7 +14,7 @@ export const useKnob = ({ param, scale }: Props) => {
     info: {
       title,
       valid_range: [min_value, max_value],
-      default: defaultValue,
+      default: unscaledDefault,
       units,
     },
     value,
@@ -24,17 +24,27 @@ export const useKnob = ({ param, scale }: Props) => {
   } = useNumericParam(param);
 
   const { grabbed, onGrabOrRelease } = useGrabbed({ grab, release });
-  let scaled = ((value - min_value) / (max_value - min_value)) * 100;
-  if (scale) {
-    scaled = scale.from(scaled / 100) * 100;
-  }
+
+  const doScale = useCallback(
+    (value: number) => {
+      let scaled = ((value - min_value) / (max_value - min_value)) * 100;
+      if (scale) {
+        scaled = scale.from(scaled / 100) * 100;
+      }
+      return scaled;
+    },
+    [min_value, max_value, scale],
+  );
+
+  const scaled = doScale(value);
+  const defaultValue = doScale(unscaledDefault);
+
   const unscale = useCallback(
     (scaled: number) => {
       let unscaledValue = Math.min(Math.max(scaled / 100, 0.0), 1.0);
       if (scale) {
         unscaledValue = scale.to(unscaledValue);
       }
-
       return unscaledValue * (max_value - min_value) + min_value;
     },
     [max_value, min_value, scale],
@@ -47,10 +57,6 @@ export const useKnob = ({ param, scale }: Props) => {
     [unscale, set],
   );
 
-  const onDoubleClick = useCallback(() => {
-    set(defaultValue);
-  }, [defaultValue, set]);
-
   const valueFormatter = useMemo(
     () => (value: number) => `${unscale(value).toFixed(0)}${units}`,
     [unscale, units],
@@ -61,7 +67,7 @@ export const useKnob = ({ param, scale }: Props) => {
     value: scaled,
     onGrabOrRelease,
     onValue,
-    onDoubleClick,
+    defaultValue,
     valueFormatter,
     label: title,
   };
