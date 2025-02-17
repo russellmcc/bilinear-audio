@@ -40,7 +40,7 @@
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/bun": "1.2.2",
-    "@types/react": "^19.0.8",
+    "@types/react": "^19.0.9",
     "@types/react-dom": "^19.0.3",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
     "@typescript-eslint/parser": "^8.24.0",
@@ -68,13 +68,13 @@
     "@use-gesture/react": "^10.3.1",
     "d3-shape": "^3.2.0",
     "dequal": "^2.0.3",
-    "@conformal/scripts": "^0.3.4",
-    "@conformal/plugin": "^0.3.4",
+    "@conformal/scripts": "^0.3.5",
+    "@conformal/plugin": "^0.3.5",
     "@types/d3-shape": "^3.1.7",
     "rollup-plugin-license": "^3.5.3",
     "@next/eslint-plugin-next": "^15.1.7",
     "next": "^15.1.7",
-    "nextra": "^4.2.11",
-    "nextra-theme-docs": "^4.2.11"
+    "nextra": "^4.2.12",
+    "nextra-theme-docs": "^4.2.12"
   }
 }

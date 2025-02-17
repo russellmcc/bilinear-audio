@@ -1,29 +1,10 @@
-import { useNumericParam } from "@conformal/plugin";
+import ControlLayout from "./control-layout";
 
-const Layout = () => {
-  const { value: gain, set: setGain } = useNumericParam("gain");
-
-  return (
-    <div>
-      <p>Current gain: {gain}%</p>
-      <p>
-        <span
-          onClick={() => {
-            setGain(Math.max(0, gain - 10));
-          }}
-        >
-          -
-        </span>
-        <span
-          onClick={() => {
-            setGain(Math.min(100, gain + 10));
-          }}
-        >
-          +
-        </span>
-      </p>
-    </div>
-  );
-};
+const Layout = () => (
+  <div>
+    <h1>Fluffyverb</h1>
+    <ControlLayout />
+  </div>
+);
 
 export default Layout;

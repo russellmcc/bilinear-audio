@@ -1,4 +1,33 @@
+@font-face {
+  font-family: "Josefin Sans";
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url(./fonts/JosefinSans-Light.woff) format("woff");
+}
+
 body {
   user-select: none;
   -webkit-user-select: none;
+  font-family: "Josefin Sans", sans-serif;
+  font-weight: 200;
+  cursor: default;
+  background-image: url(./assets/bg.svg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-color: var(--cloud-color);
+  margin: 0;
+}
+
+:root {
+  --sky-color: #84d5ed;
+  --sea-color: #1b337b;
+  --cloud-color: #efeee0;
+}
+
+h1 {
+  margin: 0;
+  font-size: 72px;
+  color: var(--sea-color);
+  text-align: center;
 }
