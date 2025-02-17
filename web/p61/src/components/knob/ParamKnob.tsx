@@ -1,13 +1,22 @@
-import { Knob } from "plugin-ui";
-import { Props } from ".";
-import { useDisplay } from "./useDisplay";
-import Label from "./Label";
+import { useKnob } from "plugin-ui";
+import Knob, { Props } from ".";
+import { Scale } from "music-ui/util";
 
 export const ParamKnob = ({
+  param,
   style,
+  scale,
   ...props
-}: Omit<Knob.Props, "Display" | "Label"> & { style?: Props["style"] }) => (
-  <Knob.Knob {...props} Display={useDisplay({ style })} Label={Label} />
-);
+}: Partial<Props> & {
+  style?: Props["style"];
+  param: string;
+  scale?: Scale;
+}) => {
+  const knobProps = useKnob({
+    param,
+    scale,
+  });
+  return <Knob style={style} {...knobProps} {...props}></Knob>;
+};
 
 export default ParamKnob;

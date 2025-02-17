@@ -29,7 +29,7 @@ export type Props = {
   value?: string;
 
   /**
-   * Accessibility label for the enum - can contain more information than `label`
+   * Accessibility label for the enum
    */
   accessibilityLabel: string;
 

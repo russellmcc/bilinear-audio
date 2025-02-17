@@ -1,5 +1,4 @@
-import { useCallback, useState } from "react";
-import { useEnumParam } from "@conformal/plugin";
+import { useEnumSlider } from "plugin-ui";
 import EnumSlider, { Props } from "../../components/enum_slider";
 
 export type ParamEnumSliderProps = {
@@ -23,37 +22,13 @@ export const ParamEnumSlider = ({
   textAlign,
   displayFormatter,
 }: ParamEnumSliderProps) => {
-  const [grabbed, setGrabbed] = useState(false);
-  const {
-    info: { title, values, default: defaultValue },
-    value,
-    set,
-    grab,
-    release,
-  } = useEnumParam(param);
-  const onGrabOrRelease = useCallback(
-    (grabbed: boolean) => {
-      setGrabbed(grabbed);
-      if (grabbed) {
-        grab();
-      } else {
-        release();
-      }
-    },
-    [grab, release, setGrabbed],
-  );
+  const { label: defaultLabel, ...props } = useEnumSlider({ param });
+
   return (
     <EnumSlider
-      label={label ?? title}
+      {...props}
+      label={label ?? defaultLabel}
       accessibilityLabel={accessibilityLabel}
-      defaultValue={defaultValue}
-      value={value}
-      values={values}
-      onValue={(value) => {
-        set(value);
-      }}
-      grabbed={grabbed}
-      onGrabOrRelease={onGrabOrRelease}
       displayFormatter={displayFormatter ?? ((value) => value.toLowerCase())}
       width={width}
       textAlign={textAlign}
