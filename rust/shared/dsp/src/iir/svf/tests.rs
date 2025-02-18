@@ -119,7 +119,7 @@ fn low_shelf_lowers_low_freqs() {
             .map(|x| x as f32)
             .collect()
     });
-    assert_approx_eq!(power_reductions.low.sqrt(), 0.5, 0.05);
+    assert_approx_eq!(power_reductions.low.sqrt().sqrt(), 0.5, 0.05);
     assert_approx_eq!(power_reductions.high, 1.0, 0.05);
 }
 
@@ -141,7 +141,7 @@ fn high_shelf_lowers_high_freqs() {
             .map(|x| x as f32)
             .collect()
     });
-    assert_approx_eq!(power_reductions.high.sqrt(), 0.5, 0.05);
+    assert_approx_eq!(power_reductions.high.sqrt().sqrt(), 0.5, 0.05);
     assert_approx_eq!(power_reductions.low, 1.0, 0.05);
 }
 

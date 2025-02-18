@@ -157,12 +157,12 @@ impl Svf {
             let Output { low, band, high } = self.process_single(Input {
                 x,
                 params: RawParams {
-                    g: g / sqrt_gain,
+                    g: g * sqrt_gain,
                     two_r,
                 },
             });
             let gain = sqrt_gain * sqrt_gain;
-            gain * high + low + sqrt_gain * two_r * band
+            gain * gain * high + low + gain * two_r * band
         })
     }
 
@@ -184,12 +184,12 @@ impl Svf {
             let Output { low, band, high } = self.process_single(Input {
                 x,
                 params: RawParams {
-                    g: g * sqrt_gain,
+                    g: g / sqrt_gain,
                     two_r,
                 },
             });
             let gain = sqrt_gain * sqrt_gain;
-            gain * low + high + sqrt_gain * two_r * band
+            gain * gain * low + high + gain * two_r * band
         })
     }
 

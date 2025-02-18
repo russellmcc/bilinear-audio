@@ -102,6 +102,19 @@ fn impulse_dark() {
 
 #[test]
 #[cfg_attr(miri, ignore)]
+fn impulse_mid_dark() {
+    assert_snapshot!(
+        "impulse_mid_dark",
+        48000,
+        impulse_response_for_params(HashMap::from([
+            ("brightness", InternalValue::Numeric(50.0)),
+            ("tone", InternalValue::Numeric(50.0)),
+        ]))
+    );
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
 fn impulse_early_reflections_late() {
     assert_snapshot!(
         "impulse_early_reflections_late",
