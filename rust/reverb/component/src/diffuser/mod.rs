@@ -32,7 +32,7 @@ impl DiffuserBlock {
     }
 }
 
-pub const BLOCKS: usize = 4;
+pub const BLOCKS: usize = 8;
 
 pub struct Diffuser {
     blocks: [DiffuserBlock; BLOCKS],
@@ -45,15 +45,33 @@ struct WeightConfig {
 }
 
 const ER_WEIGHTS: WeightConfig = WeightConfig {
-    min: [0.625 / 2.0, 0.125 / 2.0, 0.125 / 2.0, 0.125 / 2.0],
-    mid: [0.125, 0.125, 0.125, 0.125],
-    max: [0.125 / 2.0, 0.125 / 2.0, 0.125 / 2.0, 0.625 / 2.0],
+    min: [
+        0.625 / 2.0,
+        0.125 / 2.0,
+        0.125 / 2.0,
+        0.125 / 2.0,
+        0.125 / 2.0,
+        0.125 / 2.0,
+        0.125 / 2.0,
+        0.125 / 2.0,
+    ],
+    mid: [0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125],
+    max: [
+        0.125 / 2.0,
+        0.125 / 2.0,
+        0.125 / 2.0,
+        0.125 / 2.0,
+        0.125 / 2.0,
+        0.125 / 2.0,
+        0.125 / 2.0,
+        0.625 / 2.0,
+    ],
 };
 
 const DENSITY_WEIGHTS: WeightConfig = WeightConfig {
-    min: [0.0, 1.0, 0.0, 0.0],
-    mid: [0.0, 0.0, 1.0, 0.0],
-    max: [0.0, 0.0, 0.0, 1.0],
+    min: [0.0, 0.25, 0.0, 0.0, 0.75, 0.0, 0.0, 0.0],
+    mid: [0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.75, 0.0],
+    max: [0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.75],
 };
 
 fn interpolate_weight(config: &WeightConfig, value: f32, block: usize) -> f32 {

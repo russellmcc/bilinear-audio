@@ -21,8 +21,8 @@ const TIME_MIN: f32 = 0.7;
 const COEFF_MIN: f32 = 0.3;
 const TIME_MID: f32 = 1.2;
 const COEFF_MID: f32 = 0.55;
-const TIME_MAX: f32 = 3.1;
-const COEFF_MAX: f32 = 0.8;
+const TIME_MAX: f32 = 45.0;
+const COEFF_MAX: f32 = 0.97;
 
 const PARAMETERS: [InfoRef<'static, &'static str>; 7] = [
     InfoRef {

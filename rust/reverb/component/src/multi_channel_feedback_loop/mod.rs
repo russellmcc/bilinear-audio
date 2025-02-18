@@ -3,7 +3,8 @@ use crate::{diffuser::CHANNELS, per_sample_modulated_delay::PerSampleModulatedDe
 use dsp::iir::svf::{calc_g, calc_two_r, GainInput, GainRawParams, Svf};
 
 const UNMODULATED_CHANNELS: usize = CHANNELS - 1;
-const FILTER_CHANNELS: usize = 8;
+const FILTER_CHANNELS: usize = CHANNELS;
+
 pub struct MultiChannelFeedbackLoop {
     delay: MultiChannelPerSampleDelay<UNMODULATED_CHANNELS>,
     modulated_delay: PerSampleModulatedDelay,

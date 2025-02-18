@@ -33,11 +33,11 @@ const SHELF_Q: f64 = 0.707;
 impl Reverb {
     #[allow(clippy::cast_possible_truncation)]
     pub fn new(env: &ProcessingEnvironment) -> Self {
-        const DIFFUSER_DELAYS_MS: [f32; BLOCKS] = [20.0, 40.0, 80.0, 160.0];
+        const DIFFUSER_DELAYS_MS: [f32; BLOCKS] = [20.0, 20.0, 20.0, 40.0, 80.0, 80.0, 80.0, 160.0];
         const FEEDBACK_LOOP_MIN_DELAY_MS: f32 = 100.0;
         const FEEDBACK_LOOP_MAX_DELAY_MS: f32 = 200.0;
-        const MODULATION_DEPTH_SECONDS: f32 = 0.001;
-        const MODULATION_RATE_HZ: f32 = 6.0;
+        const MODULATION_DEPTH_SECONDS: f32 = 0.02;
+        const MODULATION_RATE_HZ: f32 = 0.02;
 
         let min_feedback_delay_samples =
             (FEEDBACK_LOOP_MIN_DELAY_MS / 1000.0 * env.sampling_rate).round() as usize;
