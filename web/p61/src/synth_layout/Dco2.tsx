@@ -1,5 +1,5 @@
 import ParamEnumSlider from "../param_components/enum_slider";
-import ParamKnob from "../param_components/knob";
+import ParamKnob from "../components/knob/ParamKnob";
 
 export const Dco2 = () => (
   <div className="border-border mr-px flex flex-col border-t">

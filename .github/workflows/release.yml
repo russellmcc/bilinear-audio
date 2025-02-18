@@ -75,6 +75,11 @@ jobs:
           DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
           DEVELOPER_ID_INSTALLER: ${{ secrets.DEVELOPER_INSTALLER_ID }}
           NOTARYTOOL_CREDENTIALS_KEYCHAIN_ITEM: ${{ secrets.NOTARYTOOL_CREDENTIALS_KEYCHAIN_ITEM }}
+      - run: NOTARYTOOL_KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db bun run package reverb --dist
+        env:
+          DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
+          DEVELOPER_ID_INSTALLER: ${{ secrets.DEVELOPER_INSTALLER_ID }}
+          NOTARYTOOL_CREDENTIALS_KEYCHAIN_ITEM: ${{ secrets.NOTARYTOOL_CREDENTIALS_KEYCHAIN_ITEM }}
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
@@ -83,6 +88,7 @@ jobs:
           files: |
             target/release/Poly 81.dmg
             target/release/Chorus-R.dmg
+            target/release/Fluffyverb.dmg
   deploy:
     environment:
       name: github-pages

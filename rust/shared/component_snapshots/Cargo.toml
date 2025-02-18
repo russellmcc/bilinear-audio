@@ -1,0 +1,13 @@
+[package]
+name = "component_snapshots"
+edition = "2021"
+rust-version.workspace = true
+license = "ISC"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+conformal_component = "0.3.4"
+dsp = { path = "../dsp", features = ["test-utils"] }

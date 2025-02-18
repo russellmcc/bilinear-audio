@@ -1,8 +1,8 @@
 use super::*;
 
 use assert_approx_eq::assert_approx_eq;
+use dsp::test_utils::{estimate_tuning, linear_sine_sweep, sine};
 use snapshots::assert_snapshot;
-use util::test_utils::{estimate_tuning, linear_sine_sweep, sine};
 
 #[test]
 #[cfg_attr(miri, ignore)]

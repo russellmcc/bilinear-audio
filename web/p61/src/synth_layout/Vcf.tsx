@@ -1,4 +1,4 @@
-import ParamKnob from "../param_components/knob";
+import ParamKnob from "../components/knob/ParamKnob";
 
 export const Vcf = () => (
   <div className="bg-zone border-border mr-px flex flex-col border">

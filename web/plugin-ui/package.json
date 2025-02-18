@@ -1,0 +1,17 @@
+{
+  "name": "plugin-ui",
+  "private": true,
+  "scripts": {
+    "lint": "tsc && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "check-format": "prettier --ignore-path .gitignore -c .",
+    "format": "prettier --ignore-path .gitignore --write ."
+  },
+  ".": {
+    "import": "./src/index.ts",
+    "bun": "./src/index.ts"
+  },
+  "author": "Bilinear Audio Authors",
+  "main": "src/index.ts",
+  "license": "ISC",
+  "type": "module"
+}

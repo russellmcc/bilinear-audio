@@ -1,7 +1,7 @@
 [package]
 name = "p61_component"
 edition = "2021"
-rust-version = "1.79.0"
+rust-version.workspace = true
 license = "ISC"
 publish = false
 
@@ -9,18 +9,25 @@ publish = false
 itertools = "0.13.0"
 num-derive = "0.4.2"
 num-traits = "0.2.19"
-conformal_component = "0.3.2"
-conformal_poly = "0.3.2"
-util = { path = "../../shared/util" }
-iir = { path = "../../shared/iir" }
+conformal_component = "0.3.4"
+conformal_poly = "0.3.4"
+dsp = { path = "../../shared/dsp" }
+rtsan-standalone = "0.1.1"
+
+[lints]
+workspace = true
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0"
 more-asserts = "0.3.1"
 snapshots = { path = "../../shared/snapshots" }
 component_benchmarks = { path = "../../shared/component_benchmarks" }
-util = { path = "../../shared/util", features = ["test-utils"] }
+component_snapshots = { path = "../../shared/component_snapshots" }
+dsp = { path = "../../shared/dsp", features = ["test-utils"] }
 criterion = "0.3"
+
+[features]
+rtsan = ["rtsan-standalone/enable"]
 
 [[bench]]
 name = "process"

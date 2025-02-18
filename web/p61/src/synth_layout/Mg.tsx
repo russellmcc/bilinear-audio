@@ -1,4 +1,4 @@
-import ParamKnob from "../param_components/knob";
+import ParamKnob from "../components/knob/ParamKnob";
 
 export const Mg = () => (
   <div className="bg-zone border-border flex h-[207px] w-[103px] flex-col border">

@@ -1,5 +1,5 @@
-import ParamKnob from "../param_components/knob";
-import { exponentialScale } from "../scale";
+import ParamKnob from "../components/knob/ParamKnob";
+import { exponentialScale } from "music-ui/util";
 
 export const Env = () => (
   <div className="bg-zone border-border flex flex-col border">

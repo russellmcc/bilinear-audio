@@ -7,7 +7,7 @@ fn roughly_accurate_for_sine() {
     let sampling_rate = 48000.;
     let mut detector = PeakLevelDetector::new(sampling_rate);
 
-    let test_sig = util::test_utils::sine(48000, 1123. / 48000.);
+    let test_sig = dsp::test_utils::sine(48000, 1123. / 48000.);
     let detected = test_sig
         .iter()
         .map(|x| detector.detect_level(*x))
@@ -22,7 +22,7 @@ fn roughly_accurate_for_sine_2() {
     let sampling_rate = 48000.;
     let mut detector = PeakLevelDetector::new(sampling_rate);
 
-    let test_sig = util::test_utils::sine(48000, 1123. / 48000.);
+    let test_sig = dsp::test_utils::sine(48000, 1123. / 48000.);
     let detected = test_sig
         .iter()
         .map(|x| detector.detect_level(*x * 0.3))
@@ -36,7 +36,7 @@ fn reset() {
     let sampling_rate = 48000.;
     let mut detector = PeakLevelDetector::new(sampling_rate);
 
-    let test_sig = util::test_utils::sine(100, 440. / 48000.);
+    let test_sig = dsp::test_utils::sine(100, 440. / 48000.);
     let detected = test_sig
         .iter()
         .map(|x| detector.detect_level(*x * 0.3))

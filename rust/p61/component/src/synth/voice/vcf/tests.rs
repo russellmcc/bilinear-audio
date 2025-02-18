@@ -1,11 +1,11 @@
 use super::Vcf;
 use assert_approx_eq::assert_approx_eq;
-use snapshots::assert_snapshot;
-use util::test_utils::estimate_tuning;
-use util::{
+use dsp::test_utils::estimate_tuning;
+use dsp::{
     f32::rescale,
     test_utils::{white_noise, windowed_rfft},
 };
+use snapshots::assert_snapshot;
 
 #[test]
 fn reset() {

@@ -1,12 +1,24 @@
 {
   "extends": "tsconfig/tsconfig.json",
-  "include": ["theme.config.tsx", "pages", "src", "next-env.d.ts"],
+  "include": [
+    "app",
+    "content",
+    "next-env.d.ts",
+    "src",
+    "theme.config.tsx",
+    ".next/types/**/*.ts"
+  ],
   "compilerOptions": {
     "allowJs": false,
     "incremental": false,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "exclude": ["node_modules"]
 }

@@ -1,7 +1,6 @@
-import useGesture from "./useGesture.ts";
-import Display from "./Display.tsx";
 import Label from "./Label.tsx";
-import { useMemo } from "react";
+import { Knob as KnobKit } from "music-ui/kit";
+import { useDisplay } from "./useDisplay.tsx";
 
 export type Props = {
   /**
@@ -57,65 +56,8 @@ export type Props = {
   defaultValue?: number;
 };
 
-const PRIMARY_KNOB_SIZE = 61;
-const SECONDARY_KNOB_SIZE = 31;
-const PRIMARY_RADIUS_RATIO = 18 / 30.5;
-const SECONDARY_RADIUS_RATIO = 15 / 30.5;
-
-const Knob = ({
-  value,
-  grabbed,
-  onGrabOrRelease,
-  onValue,
-  label,
-  valueFormatter,
-  showLabel = true,
-  style = "primary",
-  accessibilityLabel,
-  defaultValue,
-}: Props) => {
-  const { hover, props } = useGesture({
-    value,
-    onGrabOrRelease,
-    onValue,
-    defaultValue,
-  });
-  const valueLabel = useMemo(
-    () => (valueFormatter ? valueFormatter(value) : label),
-    [valueFormatter, value, label],
-  );
-  return (
-    <div
-      role="slider"
-      aria-label={accessibilityLabel ?? label}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={value}
-      aria-orientation="vertical"
-      aria-valuetext={valueFormatter ? valueLabel : String(value)}
-      tabIndex={0}
-      className="inline-block cursor-default touch-none select-none"
-      {...props}
-    >
-      <Display
-        size={style === "primary" ? PRIMARY_KNOB_SIZE : SECONDARY_KNOB_SIZE}
-        innerRadiusRatio={
-          style === "primary" ? PRIMARY_RADIUS_RATIO : SECONDARY_RADIUS_RATIO
-        }
-        value={value}
-        grabbed={grabbed ?? false}
-        hover={hover}
-      />
-      {showLabel ? (
-        // Note that `valueLabel` will never be undefined if `label` is defined.
-        <Label
-          label={label}
-          hover={hover || !!grabbed}
-          valueLabel={valueLabel}
-        />
-      ) : undefined}
-    </div>
-  );
-};
+const Knob = ({ style = "primary", ...props }: Props) => (
+  <KnobKit.Knob {...props} Display={useDisplay({ style })} Label={Label} />
+);
 
 export default Knob;

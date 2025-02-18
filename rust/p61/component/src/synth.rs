@@ -6,19 +6,17 @@ use conformal_component::{
     synth::Synth as SynthT,
     ProcessingEnvironment, Processor,
 };
+use rtsan_standalone::nonblocking;
 
 use self::{osc_utils::increment, voice::SharedData};
 
 use conformal_poly::Poly;
-use util::f32::rescale;
+use dsp::f32::rescale;
 
 mod env;
 mod mg;
 mod osc_utils;
 mod voice;
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Debug)]
 pub struct Synth {
@@ -67,6 +65,7 @@ fn mg_params(params: &impl parameters::BufferStates) -> impl Iterator<Item = MgP
 }
 
 impl Processor for Synth {
+    #[nonblocking]
     fn set_processing(&mut self, processing: bool) {
         if !processing {
             self.poly.reset();
@@ -78,6 +77,7 @@ impl Processor for Synth {
 }
 
 impl SynthT for Synth {
+    #[nonblocking]
     fn handle_events<E: IntoIterator<Item = Data> + Clone, P: parameters::States>(
         &mut self,
         events: E,
@@ -97,6 +97,7 @@ impl SynthT for Synth {
         }
     }
 
+    #[nonblocking]
     fn process<E: Iterator<Item = Event> + Clone, P: parameters::BufferStates, O: BufferMut>(
         &mut self,
         events: Events<E>,

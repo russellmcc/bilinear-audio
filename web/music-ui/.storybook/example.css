@@ -1,0 +1,23 @@
+.slider-track {
+  border-color: white !important;
+}
+
+.slider-ball {
+  border-color: white !important;
+}
+
+.slider-ball-grabbed {
+  background-color: white !important;
+}
+
+.slider-value-label {
+  color: white !important;
+}
+
+.slider-label {
+  color: white !important;
+}
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}

@@ -1,5 +1,5 @@
+use dsp::window;
 use num_traits::cast;
-use util::window;
 
 /// Create a sinc function with given length and increment
 fn sinc(length: usize, increment: f32) -> Vec<f32> {

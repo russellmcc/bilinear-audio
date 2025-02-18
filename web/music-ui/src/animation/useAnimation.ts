@@ -1,5 +1,5 @@
 import { dequal } from "dequal/lite";
-import { MutableRefObject, useEffect, useRef, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 
 type AnimationState<D, S> = {
   data: D;
@@ -18,7 +18,7 @@ const onFrame = <D, S>(
   time: DOMHighResTimeStamp | undefined,
   state: AnimationState<D, S>,
   setState: (state: S) => void,
-  customAnimation: MutableRefObject<CustomAnimation<D, S>>,
+  customAnimation: RefObject<CustomAnimation<D, S>>,
 ) => {
   let elapsed: number | undefined = undefined;
   if (time === undefined) {

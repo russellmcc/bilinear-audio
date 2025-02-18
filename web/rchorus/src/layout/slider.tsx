@@ -1,5 +1,4 @@
-import { SliderProps } from "music-ui/enum-slider";
-import useSlider from "music-ui/enum-slider/useSlider";
+import { useEnumSlider, EnumSlider } from "music-ui/kit";
 
 const BALL_SIZE = 19;
 
@@ -8,7 +7,7 @@ const Slider = ({
   count,
   selectIndex: selectIndex,
   onGrabOrRelease,
-}: SliderProps) => {
+}: EnumSlider.SliderProps) => {
   const {
     onPointerDown,
     onPointerMove,
@@ -17,7 +16,7 @@ const Slider = ({
     containerRef,
     ballRef,
     ball,
-  } = useSlider<HTMLDivElement, HTMLDivElement>({
+  } = useEnumSlider<HTMLDivElement, HTMLDivElement>({
     ballMargin: -1,
     lineSpacing: 21,
     ballSize: BALL_SIZE,

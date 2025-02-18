@@ -4,23 +4,24 @@
   "scripts": {
     "lint": "tsc && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "check-format": "prettier --ignore-path .gitignore -c .",
-    "format": "prettier --ignore-path .gitignore --write ."
+    "format": "prettier --ignore-path .gitignore --write .",
+    "storybook": "storybook dev -p 6006"
   },
   "author": "Bilinear Audio Authors",
   "main": "src/index.ts",
   "license": "ISC",
   "exports": {
-    "./enum-slider": {
-      "import": "./src/enum-slider/index.tsx"
-    },
-    "./enum-slider/useSlider": {
-      "import": "./src/enum-slider/useSlider.ts"
-    },
     "./animation": {
       "import": "./src/animation/index.ts"
     },
     "./util": {
       "import": "./src/util/index.ts"
+    },
+    "./kit": {
+      "import": "./src/kit/index.ts"
+    },
+    "./draft-ui": {
+      "import": "./src/draft-ui/index.ts"
     }
   },
   "type": "module"

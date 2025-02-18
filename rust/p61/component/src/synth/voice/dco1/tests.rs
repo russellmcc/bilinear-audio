@@ -1,8 +1,8 @@
 use super::{Dco1, Shape};
 use assert_approx_eq::assert_approx_eq;
+use dsp::test_utils::{estimate_aliasing_gen, estimate_tuning_gen};
 use more_asserts::assert_lt;
 use snapshots::assert_snapshot;
-use util::test_utils::{estimate_aliasing_gen, estimate_tuning_gen};
 
 #[test]
 #[cfg_attr(miri, ignore)]

@@ -1,0 +1,32 @@
+[package]
+name = "reverb_component"
+edition = "2021"
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+bitvec = "1.0.1"
+conformal_component = "0.3.4"
+rand = "0.8.5"
+rand_xoshiro = "0.6.0"
+dsp = { path = "../../shared/dsp" }
+arrayvec = "0.7.6"
+rtsan-standalone = "0.1.1"
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+assert_approx_eq = "1.1.0"
+snapshots = { path = "../../shared/snapshots" }
+component_benchmarks = { path = "../../shared/component_benchmarks" }
+component_snapshots = { path = "../../shared/component_snapshots" }
+dsp = { path = "../../shared/dsp", features = ["test-utils"] }
+criterion = "0.3"
+
+[features]
+rtsan = ["rtsan-standalone/enable"]
+
+[[bench]]
+name = "process"
+harness = false
