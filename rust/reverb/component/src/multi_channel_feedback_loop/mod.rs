@@ -73,11 +73,15 @@ impl MultiChannelFeedbackLoop {
         }
 
         // We use a householder matrix to mix the channels of the delayed output into the input
+        // Note this has permuted rows, sending most of the output to the next channel.
+        // This for some reason sounds a bit better subjectively than non-permuted rows,
+        //by making it sound less "delay-y".
         for (i, input) in input.iter_mut().enumerate() {
             #[allow(clippy::cast_precision_loss)]
             for (j, delayed) in filtered.iter().enumerate() {
-                *input +=
-                    feedback * (if i == j { 1.0 } else { 0.0 } - 2.0 / (CHANNELS as f32)) * delayed;
+                *input += feedback
+                    * (if (i + 1) % CHANNELS == j { 1.0 } else { 0.0 } - 2.0 / (CHANNELS as f32))
+                    * delayed;
             }
         }
         self.delay
