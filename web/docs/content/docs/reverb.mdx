@@ -1,0 +1,47 @@
+---
+title: Fluffyverb
+---
+
+import { Cards } from "nextra/components";
+
+## Download
+
+<Cards.Card
+  title="Download now"
+  href="https://github.com/russellmcc/bilinear-audio/releases/latest/download/Fluffyverb.dmg"
+  arrow
+/>
+
+## Overview
+
+Fluffyverb is a reverb plug-in designed to be light enough to be used on a per-track basis.
+
+## Parameters
+
+### Mix
+
+Determines the mix between the original signal and the reverb. Minimum is the input alone, maximum is the reverb alone. To use the reverb as a bus effect, set mix to maximum.
+
+### Time
+
+Determines how long the reverb lasts. Lower values create a shorter reverb tail.
+
+### Tone
+
+Determines how fast different frequencies decay. Lower values will make higher frequencies decay faster. At maximum, all frequencies will decay at abou the same rate.
+
+### Brightness
+
+Determines how bright the reverberation is. Lower values will make the reverb sound darker and more muted, while higher values will have more high-end energy in the reverb signal.
+
+### Density
+
+Controls the character of the echoes of the reverb. Lower values will create sparser, more distinct echoes, while higher values will create denser, more diffuse echoes. Lower values here tend to have a bit of a lo-fi digital character.
+
+### Early
+
+Controls the character of the earliest reflections of the reverberation. Lower values will create fast and sharp reflections, while higher values will make the earliest reflections arrive later and be a bit more diffuse.
+
+## Design
+
+Fluffyverb is a feedback delay network reverb based closely on [this](https://signalsmith-audio.co.uk/writing/2021/lets-write-a-reverb/) inspirational blog post by Geraint Luff.
