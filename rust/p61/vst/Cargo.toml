@@ -1,6 +1,6 @@
 [package]
 name = "p61_vst"
-edition = "2021"
+edition.workspace = true
 rust-version.workspace = true
 license = "ISC"
 publish = false
