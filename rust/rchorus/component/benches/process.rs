@@ -10,13 +10,13 @@ fn criterion_benchmark(c: &mut Criterion) {
     benchmark_initialize_stereo("rchorus_initialize_stereo", c, || Component::default());
     benchmark_effect_mono_process(
         "rchorus_process_defaults_mono",
-        [].into_iter().collect(),
+        &[].into_iter().collect(),
         c,
         || Component::default(),
     );
     benchmark_effect_stereo_process(
         "rchorus_process_defaults_stereo",
-        [].into_iter().collect(),
+        &[].into_iter().collect(),
         c,
         || Component::default(),
     );
