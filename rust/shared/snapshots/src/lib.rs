@@ -148,7 +148,9 @@ pub fn _do_assert_snapshot(
                 Mode::Default => {
                     println!("Snapshot {name} did not match: {comparison}");
                     create_snapshot(snapshot_new_path.clone(), sampling_rate, &value);
-                    panic!("Snapshot created for comparison at {snapshot_new_path:?}, Rerun with UPDATE_SNAPSHOTS=1 to update snapshot");
+                    panic!(
+                        "Snapshot created for comparison at {snapshot_new_path:?}, Rerun with UPDATE_SNAPSHOTS=1 to update snapshot"
+                    );
                 }
                 Mode::Update => {
                     println!("Updating snapshot {name} {comparison}");

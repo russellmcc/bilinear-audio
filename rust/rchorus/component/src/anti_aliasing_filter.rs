@@ -2,7 +2,7 @@
 //! with SVFs with the same frequency response. It would be fun to write
 //! up an application note on this.
 
-use dsp::iir::svf::{calc_g, Input, RawParams, Svf};
+use dsp::iir::svf::{Input, RawParams, Svf, calc_g};
 
 #[derive(Debug, Clone)]
 pub struct AntiAliasingFilter {

@@ -1,6 +1,6 @@
 //! Weird ducking envelope use for MG delay.
 
-use super::{calc_coeff, Coeff};
+use super::{Coeff, calc_coeff};
 
 #[cfg(test)]
 mod tests;

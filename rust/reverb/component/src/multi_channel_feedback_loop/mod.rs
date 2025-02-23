@@ -1,6 +1,6 @@
 use crate::multi_channel_per_sample_delay::MultiChannelPerSampleDelay;
 use crate::{diffuser::CHANNELS, per_sample_modulated_delay::PerSampleModulatedDelay};
-use dsp::iir::svf::{calc_g, calc_two_r, GainInput, GainRawParams, Svf};
+use dsp::iir::svf::{GainInput, GainRawParams, Svf, calc_g, calc_two_r};
 
 const UNMODULATED_CHANNELS: usize = CHANNELS - 1;
 const FILTER_CHANNELS: usize = CHANNELS;

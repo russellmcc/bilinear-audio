@@ -1,4 +1,4 @@
-use super::{calc_coeffs, Ar, Params};
+use super::{Ar, Params, calc_coeffs};
 use assert_approx_eq::assert_approx_eq;
 use snapshots::assert_snapshot;
 

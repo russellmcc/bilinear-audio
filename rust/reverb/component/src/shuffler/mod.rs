@@ -1,5 +1,5 @@
 use arrayvec::ArrayVec;
-use rand::{seq::SliceRandom, Rng};
+use rand::{Rng, seq::SliceRandom};
 
 pub const CHANNELS: usize = 8;
 

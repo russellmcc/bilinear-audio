@@ -2,7 +2,7 @@ use component_benchmarks::{
     benchmark_initialize_mono, benchmark_initialize_stereo, benchmark_synth_process,
 };
 use conformal_component::audio::ChannelLayout;
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use p61_component::Component;
 
 fn criterion_benchmark(c: &mut Criterion) {

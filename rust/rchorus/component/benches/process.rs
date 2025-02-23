@@ -2,7 +2,7 @@ use component_benchmarks::{
     benchmark_effect_mono_process, benchmark_effect_stereo_process, benchmark_initialize_mono,
     benchmark_initialize_stereo,
 };
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use rchorus_component::Component;
 
 fn criterion_benchmark(c: &mut Criterion) {

@@ -1,11 +1,11 @@
-use conformal_component::audio::{Buffer, BufferMut};
 use conformal_component::ProcessingEnvironment;
-use dsp::iir::svf::{calc_g, calc_two_r, GainInput, GainRawParams, Svf};
+use conformal_component::audio::{Buffer, BufferMut};
+use dsp::iir::svf::{GainInput, GainRawParams, Svf, calc_g, calc_two_r};
 use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro256PlusPlus;
 
 pub use crate::diffuser::CHANNELS;
-use crate::diffuser::{Diffuser, BLOCKS};
+use crate::diffuser::{BLOCKS, Diffuser};
 use crate::multi_channel_feedback_loop::MultiChannelFeedbackLoop;
 
 pub struct Reverb {

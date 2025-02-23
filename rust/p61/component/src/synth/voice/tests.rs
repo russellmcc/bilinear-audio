@@ -2,11 +2,11 @@ use crate::PARAMETERS;
 use assert_approx_eq::assert_approx_eq;
 use conformal_component::{
     events::{NoteData, NoteID},
-    parameters::{override_synth_defaults, ConstantBufferStates, InternalValue, StatesMap},
+    parameters::{ConstantBufferStates, InternalValue, StatesMap, override_synth_defaults},
 };
 use conformal_poly::{
-    default_note_expression_curve, Event, EventData, NoteExpressionCurve, NoteExpressionPoint,
-    NoteExpressionState, Voice as VoiceT,
+    Event, EventData, NoteExpressionCurve, NoteExpressionPoint, NoteExpressionState,
+    Voice as VoiceT, default_note_expression_curve,
 };
 use snapshots::assert_snapshot;
 use std::collections::HashMap;

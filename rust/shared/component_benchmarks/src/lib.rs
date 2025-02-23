@@ -1,14 +1,14 @@
 #![allow(clippy::implicit_hasher)]
 
 use conformal_component::{
+    Component, ProcessingEnvironment, ProcessingMode, Processor,
     audio::{BufferData, BufferMut, ChannelLayout},
     effect::Effect,
     events,
-    parameters::{self, override_defaults, InternalValue, RampedStatesMap, StatesMap},
-    synth::{Synth, CONTROLLER_PARAMETERS},
-    Component, ProcessingEnvironment, ProcessingMode, Processor,
+    parameters::{self, InternalValue, RampedStatesMap, StatesMap, override_defaults},
+    synth::{CONTROLLER_PARAMETERS, Synth},
 };
-use criterion::{black_box, BenchmarkId, Criterion, Throughput};
+use criterion::{BenchmarkId, Criterion, Throughput, black_box};
 use dsp::test_utils::white_noise;
 use std::collections::HashMap;
 

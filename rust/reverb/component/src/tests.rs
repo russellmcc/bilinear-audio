@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
 use component_snapshots::{
-    effect::{generate_basic_snapshot, generate_snapshot, generate_snapshot_with_reset},
     ProcessingParams,
+    effect::{generate_basic_snapshot, generate_snapshot, generate_snapshot_with_reset},
 };
-use conformal_component::{audio::all_approx_eq, parameters::InternalValue, ProcessingMode};
+use conformal_component::{ProcessingMode, audio::all_approx_eq, parameters::InternalValue};
 use snapshots::assert_snapshot;
 
 use super::*;
