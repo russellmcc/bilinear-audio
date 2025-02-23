@@ -38,10 +38,7 @@ impl LookBehind {
         }
     }
 
-    pub fn process<I: std::iter::IntoIterator<Item = f32>>(
-        &mut self,
-        input: I,
-    ) -> impl SliceLike + '_ {
+    pub fn process<I: std::iter::IntoIterator<Item = f32>>(&mut self, input: I) -> impl SliceLike {
         let input_iter = input.into_iter();
         let mut input_size = 0;
         for (src, dest) in input_iter.zip(self.buffer[self.look_behind..].iter_mut()) {

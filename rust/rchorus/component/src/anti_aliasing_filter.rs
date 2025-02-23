@@ -37,7 +37,7 @@ impl AntiAliasingFilter {
     pub fn process<'a, I: IntoIterator<Item = f32> + 'a>(
         &'a mut self,
         input: I,
-    ) -> impl Iterator<Item = f32> + 'a {
+    ) -> impl Iterator<Item = f32> {
         let g = self.g.unwrap_or(0.);
         let active = self.g.is_some();
         let a_params = RawParams {

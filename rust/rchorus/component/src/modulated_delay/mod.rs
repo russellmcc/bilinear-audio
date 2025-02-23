@@ -41,7 +41,7 @@ impl<'a, B: SliceLike + 'a> Buffer<'a, B> {
     pub fn process<'b: 'a, IDelay: std::iter::IntoIterator<Item = f32> + 'b>(
         &'a self,
         delay: IDelay,
-    ) -> impl Iterator<Item = f32> + 'a {
+    ) -> impl Iterator<Item = f32> + use<'a, B, IDelay> {
         delay.into_iter().enumerate().map(|(i, d)| {
             debug_assert!(d >= 0f32);
 
@@ -103,7 +103,7 @@ impl ModulatedDelay {
     pub fn process<'a, 'b: 'a, IAudio: std::iter::IntoIterator<Item = f32>>(
         &'a mut self,
         input: IAudio,
-    ) -> Buffer<'a, impl SliceLike + 'a> {
+    ) -> Buffer<'a, impl SliceLike + use<'a, IAudio>> {
         let input = input.into_iter();
         let view = self.look_behind.process(input);
         let max_delay = self.max_delay;
