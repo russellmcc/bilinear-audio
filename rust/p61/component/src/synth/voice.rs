@@ -116,7 +116,7 @@ struct Params {
     timbre_vcf: f32,
 }
 
-fn per_sample_params(params: &impl parameters::BufferStates) -> impl Iterator<Item = Params> + '_ {
+fn per_sample_params(params: &impl parameters::BufferStates) -> impl Iterator<Item = Params> {
     pzip!(params[enum "dco1_shape",
                  numeric "dco1_width",
                  enum "dco1_octave",
