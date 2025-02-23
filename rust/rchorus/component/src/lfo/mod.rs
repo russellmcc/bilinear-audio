@@ -80,7 +80,7 @@ impl Lfo {
     pub fn run<P: IntoIterator<Item = Parameters> + Clone>(
         &mut self,
         params: P,
-    ) -> Buffer<impl Iterator<Item = f32>, impl Iterator<Item = f32>> {
+    ) -> Buffer<impl Iterator<Item = f32> + use<P>, impl Iterator<Item = f32> + use<P>> {
         let mut forward_lfo = self.clone();
         let mut reverse_lfo = self.clone();
 

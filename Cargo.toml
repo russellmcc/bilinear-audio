@@ -14,7 +14,8 @@ members = [
 resolver = "2"
 
 [workspace.package]
-rust-version = "1.84.1"
+rust-version = "1.85.0"
+edition = "2024"
 
 [workspace.lints.rustdoc]
 private_doc_tests = "warn"

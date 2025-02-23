@@ -1,4 +1,4 @@
-use super::{calc_coeff, Coeff};
+use super::{Coeff, calc_coeff};
 
 #[cfg(test)]
 mod tests;

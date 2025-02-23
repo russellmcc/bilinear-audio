@@ -1,13 +1,13 @@
 use std::{collections::HashMap, ops::Range};
 
 use conformal_component::{
+    Component, ProcessingEnvironment, Processor,
     audio::{Buffer, BufferData, ChannelLayout},
     events::{Data, Event, Events, NoteData, NoteID},
     parameters::{
-        override_defaults, to_infos, BufferStates, ConstantBufferStates, InternalValue, StatesMap,
+        BufferStates, ConstantBufferStates, InternalValue, StatesMap, override_defaults, to_infos,
     },
-    synth::{Synth, CONTROLLER_PARAMETERS},
-    Component, ProcessingEnvironment, Processor,
+    synth::{CONTROLLER_PARAMETERS, Synth},
 };
 use dsp::iter::move_into;
 

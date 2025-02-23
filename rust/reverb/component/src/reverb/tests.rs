@@ -1,7 +1,7 @@
 use super::*;
 use conformal_component::{
-    audio::{BufferData, ChannelLayout},
     ProcessingMode,
+    audio::{BufferData, ChannelLayout},
 };
 use snapshots::assert_snapshot;
 

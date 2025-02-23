@@ -2,13 +2,13 @@ use std::collections::HashMap;
 
 use super::Component;
 use component_snapshots::{
+    ProcessingParams,
     synth::{
         generate_basic_snapshot, generate_separate_events_snapshot, generate_snapshot,
         generate_snapshot_with_reset, get_single_note_events,
     },
-    ProcessingParams,
 };
-use conformal_component::{audio::all_approx_eq, parameters::InternalValue, ProcessingMode};
+use conformal_component::{ProcessingMode, audio::all_approx_eq, parameters::InternalValue};
 use snapshots::assert_snapshot;
 fn snapshot_param_overrides() -> HashMap<&'static str, InternalValue> {
     HashMap::from([

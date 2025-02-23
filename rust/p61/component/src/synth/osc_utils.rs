@@ -19,11 +19,7 @@ pub fn polyblep2_residual(phase: f32, increment: f32) -> f32 {
 
 fn rotate(phase: f32, x: f32) -> f32 {
     let phase = phase + (1.0 - x);
-    if phase > 1.0 {
-        phase - 1.0
-    } else {
-        phase
-    }
+    if phase > 1.0 { phase - 1.0 } else { phase }
 }
 
 pub fn pulse(phase: f32, increment: f32, width: f32) -> f32 {

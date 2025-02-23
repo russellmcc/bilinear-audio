@@ -99,8 +99,10 @@ pub fn estimate_tuning(data: &mut [f32]) -> f32 {
     max_index / data.len() as f32
 }
 
-pub fn estimate_tuning_gen(gen: impl FnMut() -> f32) -> f32 {
-    let mut data = std::iter::repeat_with(gen).take(4096).collect::<Vec<_>>();
+pub fn estimate_tuning_gen(generator: impl FnMut() -> f32) -> f32 {
+    let mut data = std::iter::repeat_with(generator)
+        .take(4096)
+        .collect::<Vec<_>>();
     estimate_tuning(&mut data)
 }
 
@@ -128,7 +130,9 @@ pub fn estimate_aliasing(data: &mut [f32], increment: f32) -> f32 {
 
 /// Estimates the ratio of energy that is below the fundamental frequency
 /// in decibels. This is a crude measure of "aliasing".
-pub fn estimate_aliasing_gen(gen: impl FnMut() -> f32, increment: f32) -> f32 {
-    let mut data = std::iter::repeat_with(gen).take(4096).collect::<Vec<_>>();
+pub fn estimate_aliasing_gen(generator: impl FnMut() -> f32, increment: f32) -> f32 {
+    let mut data = std::iter::repeat_with(generator)
+        .take(4096)
+        .collect::<Vec<_>>();
     estimate_aliasing(&mut data, increment)
 }

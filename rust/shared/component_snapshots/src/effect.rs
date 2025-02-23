@@ -2,10 +2,10 @@ use std::collections::HashMap;
 
 use super::ProcessingParams;
 use conformal_component::{
+    Component, ProcessingEnvironment, Processor,
     audio::{Buffer, BufferData, BufferMut, ChannelLayout},
     effect::Effect,
-    parameters::{override_defaults, BufferStates, ConstantBufferStates, InternalValue, StatesMap},
-    Component, ProcessingEnvironment, Processor,
+    parameters::{BufferStates, ConstantBufferStates, InternalValue, StatesMap, override_defaults},
 };
 use dsp::iter::move_into;
 

@@ -1,10 +1,10 @@
 use conformal_component::{
+    ProcessingEnvironment, Processor,
     audio::BufferMut,
     events::{Data, Event, Events},
     parameters::{self},
     pzip,
     synth::Synth as SynthT,
-    ProcessingEnvironment, Processor,
 };
 use rtsan_standalone::nonblocking;
 
@@ -54,7 +54,7 @@ struct MgParams {
     wheel_rate: f32,
 }
 
-fn mg_params(params: &impl parameters::BufferStates) -> impl Iterator<Item = MgParams> + '_ {
+fn mg_params(params: &impl parameters::BufferStates) -> impl Iterator<Item = MgParams> {
     pzip!(params[numeric "mg_rate", numeric "mg_delay", numeric "wheel_rate"]).map(
         |(rate, delay, wheel_rate)| MgParams {
             rate,

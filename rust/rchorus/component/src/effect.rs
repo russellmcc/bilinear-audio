@@ -1,11 +1,12 @@
-use crate::compander::{compress, expand, PeakLevelDetector};
+use crate::compander::{PeakLevelDetector, compress, expand};
 use crate::nonlinearity::nonlinearity;
 use crate::{anti_aliasing_filter::AntiAliasingFilter, lfo, modulated_delay};
 use conformal_component::{
+    ProcessingEnvironment, Processor,
     audio::{Buffer, BufferMut, ChannelLayout},
     effect::Effect as EffectT,
     parameters::{self, BufferStates},
-    pzip, ProcessingEnvironment, Processor,
+    pzip,
 };
 use dsp::iir::dc_blocker::DcBlocker;
 use itertools::izip;
@@ -173,16 +174,8 @@ impl EffectT for Effect {
                     depth,
                 }),
         );
-        let mix =
-            pzip!(parameters[numeric "mix", switch "bypass"]).map(
-                |(mix, bypass)| {
-                    if bypass {
-                        0.0
-                    } else {
-                        mix
-                    }
-                },
-            );
+        let mix = pzip!(parameters[numeric "mix", switch "bypass"])
+            .map(|(mix, bypass)| if bypass { 0.0 } else { mix });
         match input.channel_layout() {
             ChannelLayout::Mono => self.process_mono(input, output, forward, reverse, mix),
             ChannelLayout::Stereo => self.process_stereo(input, output, forward, reverse, mix),
