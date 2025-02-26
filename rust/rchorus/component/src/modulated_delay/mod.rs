@@ -103,7 +103,7 @@ impl ModulatedDelay {
     pub fn process<'a, 'b: 'a, IAudio: std::iter::IntoIterator<Item = f32>>(
         &'a mut self,
         input: IAudio,
-    ) -> Buffer<'a, impl SliceLike + use<'a, IAudio>> {
+    ) -> Buffer<'a, impl SliceLike> {
         let input = input.into_iter();
         let view = self.look_behind.process(input);
         let max_delay = self.max_delay;

@@ -2072,6 +2072,7 @@ dependencies = [
  "dsp",
  "itertools 0.13.0",
  "more-asserts",
+ "num-derive",
  "num-traits",
  "rtsan-standalone",
  "snapshots",
