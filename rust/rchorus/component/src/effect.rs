@@ -21,7 +21,17 @@ struct DelayChannel {
     pre_filter: AntiAliasingFilter,
     post_filter: AntiAliasingFilter,
     dc_blocker: DcBlocker,
+    dc_blocker_high: DcBlocker,
     detector: PeakLevelDetector,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum HipassCutoffSetting {
+    // DC blocking only
+    Low,
+
+    // ~80 hz, emulating some chorus designs
+    High,
 }
 
 impl DelayChannel {
@@ -40,6 +50,7 @@ impl DelayChannel {
             pre_filter: AntiAliasingFilter::new(sampling_rate),
             post_filter: AntiAliasingFilter::new(sampling_rate),
             dc_blocker: DcBlocker::new(sampling_rate),
+            dc_blocker_high: DcBlocker::new_with_custom_cutoff(sampling_rate, 80.0),
             detector: PeakLevelDetector::new(sampling_rate),
         }
     }
@@ -49,18 +60,28 @@ impl DelayChannel {
         self.pre_filter.reset();
         self.post_filter.reset();
         self.dc_blocker.reset();
+        self.dc_blocker_high.reset();
         self.detector.reset();
     }
 
     pub fn process<'a>(
         &'a mut self,
         input: impl Iterator<Item = f32> + 'a,
+        hipass_cutoff: HipassCutoffSetting,
     ) -> modulated_delay::Buffer<'a, impl dsp::look_behind::SliceLike> {
+        match hipass_cutoff {
+            HipassCutoffSetting::Low => self.dc_blocker_high.reset(),
+            HipassCutoffSetting::High => self.dc_blocker.reset(),
+        }
+        let dc_blocker = match hipass_cutoff {
+            HipassCutoffSetting::Low => &mut self.dc_blocker,
+            HipassCutoffSetting::High => &mut self.dc_blocker_high,
+        };
         self.delay.process(
             self.post_filter
                 .process(self.pre_filter.process(input).map(|x| {
                     let detected_level = self.detector.detect_level(x);
-                    self.dc_blocker.process(expand(
+                    dc_blocker.process(expand(
                         nonlinearity(compress(x, detected_level)),
                         detected_level,
                     ))
@@ -132,7 +153,8 @@ impl Effect {
         reverse: R,
         mix: M,
     ) {
-        let delay_buffer = self.channels[0].process(input.channel(0).iter().copied());
+        let delay_buffer =
+            self.channels[0].process(input.channel(0).iter().copied(), HipassCutoffSetting::Low);
         dsp::iter::move_into(
             izip!(
                 input.channel(0),
@@ -160,7 +182,7 @@ impl Effect {
         mix: M,
     ) {
         let mixed = izip!(input.channel(0), input.channel(1)).map(|(l, r)| (l + r) * 0.5);
-        let delay_buffer = self.channels[0].process(mixed);
+        let delay_buffer = self.channels[0].process(mixed, HipassCutoffSetting::Low);
 
         dsp::iter::move_into(
             izip!(input.channel(0), delay_buffer.process(forward), mix.clone())
