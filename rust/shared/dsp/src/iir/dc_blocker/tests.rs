@@ -54,8 +54,19 @@ fn lowers_dc() {
 fn snapshot() {
     let mut blocker = DcBlocker::new(48000.0);
     let mut processed = white_noise(48000);
-    for sample in processed.iter_mut() {
+    for sample in &mut processed {
         *sample = blocker.process(*sample);
     }
     assert_snapshot!("snapshot", 48000, processed);
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn snapshot_high() {
+    let mut blocker = DcBlocker::new_with_custom_cutoff(48000.0, 80.0);
+    let mut processed = white_noise(48000);
+    for sample in &mut processed {
+        *sample = blocker.process(*sample / 2.);
+    }
+    assert_snapshot!("snapshot_high", 48000, processed);
 }

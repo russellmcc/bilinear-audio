@@ -13,11 +13,19 @@ const CUTOFF: f32 = 5.0;
 impl DcBlocker {
     /// # Panics
     ///
-    /// If sampling rate is less than 10 Hz.
+    /// If sampling rate is less than 5 Hz.
     #[must_use]
     pub fn new(sampling_rate: f32) -> Self {
-        assert!(CUTOFF < sampling_rate / 2.0);
-        let increment = CUTOFF / sampling_rate;
+        Self::new_with_custom_cutoff(sampling_rate, CUTOFF)
+    }
+
+    /// # Panics
+    ///
+    /// If sampling rate is less than 10 Hz.
+    #[must_use]
+    pub fn new_with_custom_cutoff(sampling_rate: f32, cutoff: f32) -> Self {
+        assert!(cutoff < sampling_rate / 2.0);
+        let increment = cutoff / sampling_rate;
 
         // Note that we don't bother pre-warping here.
         // One way to think about this is we're approximating tan(x) (which would be correct)
