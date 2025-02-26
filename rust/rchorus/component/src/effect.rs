@@ -12,7 +12,8 @@ use conformal_component::{
 };
 use dsp::iir::dc_blocker::DcBlocker;
 use itertools::izip;
-use num_traits::cast;
+use num_derive::FromPrimitive;
+use num_traits::{FromPrimitive, cast};
 use rtsan_standalone::nonblocking;
 
 struct DelayChannel {
@@ -25,8 +26,8 @@ struct DelayChannel {
     detector: PeakLevelDetector,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum HipassCutoffSetting {
+#[derive(Debug, Clone, Copy, PartialEq, FromPrimitive)]
+enum HighpassCutoffSetting {
     // DC blocking only
     Low,
 
@@ -67,15 +68,15 @@ impl DelayChannel {
     pub fn process<'a>(
         &'a mut self,
         input: impl Iterator<Item = f32> + 'a,
-        hipass_cutoff: HipassCutoffSetting,
+        highpass_cutoff: HighpassCutoffSetting,
     ) -> modulated_delay::Buffer<'a, impl dsp::look_behind::SliceLike> {
-        match hipass_cutoff {
-            HipassCutoffSetting::Low => self.dc_blocker_high.reset(),
-            HipassCutoffSetting::High => self.dc_blocker.reset(),
+        match highpass_cutoff {
+            HighpassCutoffSetting::Low => self.dc_blocker_high.reset(),
+            HighpassCutoffSetting::High => self.dc_blocker.reset(),
         }
-        let dc_blocker = match hipass_cutoff {
-            HipassCutoffSetting::Low => &mut self.dc_blocker,
-            HipassCutoffSetting::High => &mut self.dc_blocker_high,
+        let dc_blocker = match highpass_cutoff {
+            HighpassCutoffSetting::Low => &mut self.dc_blocker,
+            HighpassCutoffSetting::High => &mut self.dc_blocker_high,
         };
         self.delay.process(
             self.post_filter
@@ -152,9 +153,10 @@ impl Effect {
         forward: F,
         reverse: R,
         mix: M,
+        highpass_cutoff: HighpassCutoffSetting,
     ) {
         let delay_buffer =
-            self.channels[0].process(input.channel(0).iter().copied(), HipassCutoffSetting::Low);
+            self.channels[0].process(input.channel(0).iter().copied(), highpass_cutoff);
         dsp::iter::move_into(
             izip!(
                 input.channel(0),
@@ -180,9 +182,10 @@ impl Effect {
         forward: F,
         reverse: R,
         mix: M,
+        highpass_cutoff: HighpassCutoffSetting,
     ) {
         let mixed = izip!(input.channel(0), input.channel(1)).map(|(l, r)| (l + r) * 0.5);
-        let delay_buffer = self.channels[0].process(mixed, HipassCutoffSetting::Low);
+        let delay_buffer = self.channels[0].process(mixed, highpass_cutoff);
 
         dsp::iter::move_into(
             izip!(input.channel(0), delay_buffer.process(forward), mix.clone())
@@ -221,9 +224,19 @@ impl EffectT for Effect {
         );
         let mix = pzip!(parameters[numeric "mix", switch "bypass"])
             .map(|(mix, bypass)| if bypass { 0.0 } else { mix });
+
+        // we only update the highpass cutoff per-buffer
+        let highpass_cutoff = pzip!(parameters[enum "highpass_cutoff"])
+            .map(|highpass_cutoff| FromPrimitive::from_u32(highpass_cutoff).unwrap())
+            .next()
+            .unwrap_or(HighpassCutoffSetting::Low);
         match input.channel_layout() {
-            ChannelLayout::Mono => self.process_mono(input, output, forward, reverse, mix),
-            ChannelLayout::Stereo => self.process_stereo(input, output, forward, reverse, mix),
+            ChannelLayout::Mono => {
+                self.process_mono(input, output, forward, reverse, mix, highpass_cutoff);
+            }
+            ChannelLayout::Stereo => {
+                self.process_stereo(input, output, forward, reverse, mix, highpass_cutoff);
+            }
         }
     }
 }
