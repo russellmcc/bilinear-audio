@@ -1,3 +1,5 @@
+use std::array;
+
 use crate::compander::{PeakLevelDetector, compress, expand};
 use crate::nonlinearity::nonlinearity;
 use crate::{anti_aliasing_filter::AntiAliasingFilter, lfo, modulated_delay};
@@ -13,14 +15,64 @@ use itertools::izip;
 use num_traits::cast;
 use rtsan_standalone::nonblocking;
 
-pub struct Effect {
-    lfo: lfo::Lfo,
-    delay_l: modulated_delay::ModulatedDelay,
-    rate_to_incr_scale: f32,
+struct DelayChannel {
+    delay: modulated_delay::ModulatedDelay,
+
     pre_filter: AntiAliasingFilter,
     post_filter: AntiAliasingFilter,
     dc_blocker: DcBlocker,
     detector: PeakLevelDetector,
+}
+
+impl DelayChannel {
+    fn new(
+        lookaround: u16,
+        max_delay: usize,
+        sampling_rate: f32,
+        max_samples_per_process_call: usize,
+    ) -> Self {
+        Self {
+            delay: modulated_delay::ModulatedDelay::new(modulated_delay::Options {
+                lookaround,
+                max_delay,
+                max_samples_per_process_call,
+            }),
+            pre_filter: AntiAliasingFilter::new(sampling_rate),
+            post_filter: AntiAliasingFilter::new(sampling_rate),
+            dc_blocker: DcBlocker::new(sampling_rate),
+            detector: PeakLevelDetector::new(sampling_rate),
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.delay.reset();
+        self.pre_filter.reset();
+        self.post_filter.reset();
+        self.dc_blocker.reset();
+        self.detector.reset();
+    }
+
+    pub fn process<'a>(
+        &'a mut self,
+        input: impl Iterator<Item = f32> + 'a,
+    ) -> modulated_delay::Buffer<'a, impl dsp::look_behind::SliceLike> {
+        self.delay.process(
+            self.post_filter
+                .process(self.pre_filter.process(input).map(|x| {
+                    let detected_level = self.detector.detect_level(x);
+                    self.dc_blocker.process(expand(
+                        nonlinearity(compress(x, detected_level)),
+                        detected_level,
+                    ))
+                })),
+        )
+    }
+}
+
+pub struct Effect {
+    lfo: lfo::Lfo,
+    rate_to_incr_scale: f32,
+    channels: [DelayChannel; 2],
 }
 
 impl Processor for Effect {
@@ -28,11 +80,9 @@ impl Processor for Effect {
     fn set_processing(&mut self, processing: bool) {
         if !processing {
             self.lfo.reset();
-            self.delay_l.reset();
-            self.pre_filter.reset();
-            self.post_filter.reset();
-            self.dc_blocker.reset();
-            self.detector.reset();
+            for channel in &mut self.channels {
+                channel.reset();
+            }
         }
     }
 }
@@ -51,22 +101,20 @@ impl Effect {
         if max_delay < min_delay {
             max_delay = min_delay + 1.0;
         }
-        let delay_l = modulated_delay::ModulatedDelay::new(modulated_delay::Options {
-            lookaround: u16::from(LOOKAROUND),
-            max_delay: cast::<f32, usize>(max_delay.ceil()).unwrap(),
-            max_samples_per_process_call: env.max_samples_per_process_call,
-        });
         Effect {
             lfo: lfo::Lfo::new(lfo::Options {
                 min: min_delay,
                 max: max_delay,
             }),
-            delay_l,
             rate_to_incr_scale: 1. / env.sampling_rate,
-            pre_filter: AntiAliasingFilter::new(env.sampling_rate),
-            post_filter: AntiAliasingFilter::new(env.sampling_rate),
-            dc_blocker: DcBlocker::new(env.sampling_rate),
-            detector: PeakLevelDetector::new(env.sampling_rate),
+            channels: array::from_fn(|_| {
+                DelayChannel::new(
+                    u16::from(LOOKAROUND),
+                    cast::<f32, usize>(max_delay.ceil()).unwrap(),
+                    env.sampling_rate,
+                    env.max_samples_per_process_call,
+                )
+            }),
         }
     }
 
@@ -84,19 +132,7 @@ impl Effect {
         reverse: R,
         mix: M,
     ) {
-        let delay_buffer = self.delay_l.process(
-            self.post_filter.process(
-                self.pre_filter
-                    .process(input.channel(0).iter().copied())
-                    .map(|x| {
-                        let detected_level = self.detector.detect_level(x);
-                        self.dc_blocker.process(expand(
-                            nonlinearity(compress(x, detected_level)),
-                            detected_level,
-                        ))
-                    }),
-            ),
-        );
+        let delay_buffer = self.channels[0].process(input.channel(0).iter().copied());
         dsp::iter::move_into(
             izip!(
                 input.channel(0),
@@ -123,21 +159,8 @@ impl Effect {
         reverse: R,
         mix: M,
     ) {
-        // Note that we re-do the mixing for each channel - it might
-        // be better to just do this once and store the result in a temp buffer?
         let mixed = izip!(input.channel(0), input.channel(1)).map(|(l, r)| (l + r) * 0.5);
-        let delay_buffer =
-            self.delay_l
-                .process(
-                    self.post_filter
-                        .process(self.pre_filter.process(mixed).map(|x| {
-                            let detected_level = self.detector.detect_level(x);
-                            self.dc_blocker.process(expand(
-                                nonlinearity(compress(x, detected_level)),
-                                detected_level,
-                            ))
-                        })),
-                );
+        let delay_buffer = self.channels[0].process(mixed);
 
         dsp::iter::move_into(
             izip!(input.channel(0), delay_buffer.process(forward), mix.clone())
