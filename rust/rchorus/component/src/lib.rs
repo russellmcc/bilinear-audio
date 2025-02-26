@@ -2,7 +2,7 @@ use conformal_component::parameters::{self, InfoRef};
 use conformal_component::parameters::{Flags, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentT, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 5] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 6] = [
     InfoRef {
         title: "Rate",
         short_title: "Rate",
@@ -52,6 +52,16 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 5] = [
         unique_id: "bypass",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Switch { default: false },
+    },
+    InfoRef {
+        title: "Routing",
+        short_title: "Routing",
+        unique_id: "routing",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 0,
+            values: &["Synth", "Dimension"],
+        },
     },
 ];
 
