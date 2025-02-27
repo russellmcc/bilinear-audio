@@ -8,6 +8,7 @@ export type ValueLabelProps = React.DetailedHTMLProps<
 > & {
   checked: boolean;
   label: string;
+  ref: React.Ref<HTMLDivElement>;
 };
 
 export type ValueLabel = React.FC<ValueLabelProps>;

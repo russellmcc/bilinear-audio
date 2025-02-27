@@ -1,5 +1,5 @@
 import { DevModeTools } from "@conformal/plugin";
-import Layout from "./layout";
+import Layout from "./c3p/layout";
 
 const App = () => (
   <div>
