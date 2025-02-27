@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Slider from "./Slider";
 import { EnumSlider as EnumSliderModule } from "music-ui/kit";
 
@@ -59,51 +59,43 @@ export type Props = {
 
 const useValueLabel = (textAlign: Props["textAlign"]): ValueLabel =>
   useMemo(() => {
-    const v = forwardRef<HTMLDivElement, ValueLabelProps>(
-      ({ checked, label, ...props }: ValueLabelProps, ref) => {
-        const [hover, setHover] = useState(false);
+    const ValueLabel = ({ checked, label, ...props }: ValueLabelProps) => {
+      const [hover, setHover] = useState(false);
 
-        const onMouseEnter = useCallback(() => {
-          setHover(true);
-        }, []);
-        const onMouseLeave = useCallback(() => {
-          setHover(false);
-        }, []);
+      const onMouseEnter = useCallback(() => {
+        setHover(true);
+      }, []);
+      const onMouseLeave = useCallback(() => {
+        setHover(false);
+      }, []);
 
-        const pop = hover || checked;
-        const popOpacity = hover && !checked ? "75%" : "100%";
-        const popDuration = hover ? "duration-100" : "duration-300";
-        return (
+      const pop = hover || checked;
+      const popOpacity = hover && !checked ? "75%" : "100%";
+      const popDuration = hover ? "duration-100" : "duration-300";
+      return (
+        <div {...props} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
           <div
-            {...props}
-            ref={ref}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
+            className={`text-border transition-opacity ${popDuration} ease-in`}
+            style={{ opacity: pop ? "0%" : "100%", textAlign }}
           >
-            <div
-              className={`text-border transition-opacity ${popDuration} ease-in`}
-              style={{ opacity: pop ? "0%" : "100%", textAlign }}
-            >
-              {label}
-            </div>
-            <div
-              className={`text-pop ${popDuration} absolute inset-0 blur-[1px] transition-opacity ease-in`}
-              style={{ opacity: pop ? popOpacity : "0%", textAlign }}
-            >
-              {label}
-            </div>
-            <div
-              className={`text-pop absolute inset-0 transition-opacity ${popDuration} ease-in`}
-              style={{ opacity: pop ? popOpacity : "0%", textAlign }}
-            >
-              {label}
-            </div>
+            {label}
           </div>
-        );
-      },
-    );
-    v.displayName = "ValueLabel";
-    return v;
+          <div
+            className={`text-pop ${popDuration} absolute inset-0 blur-[1px] transition-opacity ease-in`}
+            style={{ opacity: pop ? popOpacity : "0%", textAlign }}
+          >
+            {label}
+          </div>
+          <div
+            className={`text-pop absolute inset-0 transition-opacity ${popDuration} ease-in`}
+            style={{ opacity: pop ? popOpacity : "0%", textAlign }}
+          >
+            {label}
+          </div>
+        </div>
+      );
+    };
+    return ValueLabel;
   }, [textAlign]);
 
 const EnumSlider = ({

@@ -1,6 +1,6 @@
 import { useSwitchParam } from "@conformal/plugin";
 import { useEnumSlider, EnumSlider } from "music-ui/kit";
-import { forwardRef, useCallback } from "react";
+import { useCallback } from "react";
 
 const BALL_SIZE = 19;
 
@@ -93,6 +93,13 @@ const Slider = ({ highlightColor }: SliderProps) => {
     [highlightColor],
   );
 
+  const internalValueLabel = useCallback(
+    ({ label, ...props }: EnumSlider.ValueLabelProps) => (
+      <div {...props}>{label}</div>
+    ),
+    [],
+  );
+
   return (
     <div style={{ position: "absolute", bottom: "21px", left: "21px" }}>
       <div>Chorus</div>
@@ -104,16 +111,7 @@ const Slider = ({ highlightColor }: SliderProps) => {
             setEnabled(v === "On");
           }}
           accessibilityLabel={"Chorus"}
-          ValueLabel={forwardRef<HTMLDivElement, EnumSlider.ValueLabelProps>(
-            // eslint-disable-next-line prefer-arrow-functions/prefer-arrow-functions
-            function ValueLabel({ label, ...props }, ref) {
-              return (
-                <div ref={ref} {...props}>
-                  {label}
-                </div>
-              );
-            },
-          )}
+          ValueLabel={internalValueLabel}
           Slider={internalSlider}
         />
       </div>
