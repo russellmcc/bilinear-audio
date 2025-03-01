@@ -308,9 +308,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_component"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e511c6a0110783a3d9493d57842dd7d49e34f832b5f8427994a2f086efeff3c3"
+checksum = "885aab0f9283afe46fa5e71ecbac29ee04d344775b6dc933753788fcd6b7f306"
 dependencies = [
  "fxhash",
  "itertools 0.13.0",
@@ -318,9 +318,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_core"
-version = "0.3.4"
+version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9752c0443dbaa832dc67c7f3e42d2b35bd6042158a7c4da48397ee3b0f3d98cd"
+checksum = "9863b2da583d1765ac5b801b7d58302cb24aab215091d53403ae3df29225cc24"
 dependencies = [
  "conformal_component",
  "serde",
@@ -328,9 +328,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_macos_bundle"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "787b7a08c11ae72d220d901b662eb17a95bb250508c6d56b5727fc24382523e8"
+checksum = "7270db9d92e5822e98f3477e6e173170348f71477323cd3933bf17f90817bdc3"
 dependencies = [
  "objc",
  "process_path",
@@ -348,9 +348,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_preferences"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1802203bf7a130e09e85246963a494e71070a8bef0b90942c130e2c83e209cc"
+checksum = "f2877eb691c278764fecf97fa07fa66cdbe7f66f46cd29b9e490284554a3f7f8"
 dependencies = [
  "objc",
  "serde",
@@ -359,9 +359,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_ui"
-version = "0.3.4"
+version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d1bda3a02e6cbf3d0f05866fa8997434eff99b0253eea5551d6d673d96e059a"
+checksum = "d40628a757fdd680eec3a2b8c595cb55375c9b28d66219611bd95658f17135cd"
 dependencies = [
  "base64",
  "conformal_component",
@@ -377,9 +377,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_vst_wrapper"
-version = "0.3.4"
+version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a49a957c248afa9b43ae9c149f6a6dbcbdcf82f99545396baa24699790a36e93"
+checksum = "9150ecf2de70087d93a757cdb2ef49dd5161f9d6b96e2768e4a82f67cf44a242"
 dependencies = [
  "conformal_component",
  "conformal_core",
