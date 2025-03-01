@@ -32,7 +32,6 @@ const InternalSlider = ({
         position: "relative",
         display: "flex",
         marginRight: "11px",
-        marginLeft: "11px",
       }}
     >
       <div style={{ position: "relative" }} {...divProps} ref={containerRef}>
@@ -101,7 +100,14 @@ const Slider = ({ highlightColor }: SliderProps) => {
   );
 
   return (
-    <div style={{ position: "absolute", bottom: "21px", left: "21px" }}>
+    <div
+      style={{
+        position: "absolute",
+        bottom: "11px",
+        left: "13px",
+        fontSize: "14px",
+      }}
+    >
       <div>Chorus</div>
       <div style={{ marginTop: "11px" }}>
         <EnumSlider.EnumSlider

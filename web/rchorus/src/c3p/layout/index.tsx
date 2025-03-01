@@ -15,7 +15,7 @@ const Layout = () => (
     <div
       style={{
         textAlign: "right",
-        marginRight: "21px",
+        marginRight: "13px",
         paddingTop: "11px",
       }}
     >
