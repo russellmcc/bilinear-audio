@@ -1,9 +1,9 @@
 @font-face {
-  font-family: "TeX Gyre Heros Regular";
+  font-family: "Inter Display Regular";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(./fonts/texgyreheros-regular.woff) format("woff");
+  src: url(./fonts/InterDisplay-Regular.woff2) format("woff2");
 }
 
 :root {
@@ -13,7 +13,7 @@
 }
 
 body {
-  font-family: "TeX Gyre Heros Regular", sans-serif;
+  font-family: "Inter Display Regular", sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
   font-size: 17.5px;
