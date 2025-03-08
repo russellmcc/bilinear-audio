@@ -1,3 +1,4 @@
+import Button from "../../components/button";
 import Slider from "../../components/slider";
 import logo from "../assets/logo.svg";
 
@@ -31,6 +32,7 @@ const Layout = () => (
       <img src={logo} draggable={false} />
     </div>
     <Slider highlightColor={"var(--highlight-color-c3p)"} />
+    <Button highlightColor={"var(--highlight-color-c3p)"} />
   </div>
 );
 
