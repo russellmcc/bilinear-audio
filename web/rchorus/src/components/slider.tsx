@@ -103,8 +103,8 @@ const Slider = ({ highlightColor }: SliderProps) => {
     <div
       style={{
         position: "absolute",
-        bottom: "11px",
-        left: "13px",
+        bottom: "19px",
+        left: "21px",
         fontSize: "14px",
       }}
     >
