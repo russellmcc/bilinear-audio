@@ -1,9 +1,9 @@
 import { DevModeTools } from "@conformal/plugin";
-import Layout from "./layout";
+import Router from "./Router";
 
 const App = () => (
   <div>
-    <Layout />
+    <Router />
     <DevModeTools />
   </div>
 );

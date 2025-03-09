@@ -1,25 +1,42 @@
 @font-face {
-  font-family: "TeX Gyre Heros Regular";
+  font-family: "Inter Display";
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url(./fonts/InterDisplay-Thin.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "Inter Display";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(./fonts/texgyreheros-regular.woff) format("woff");
+  src: url(./fonts/InterDisplay-Regular.woff2) format("woff2");
 }
 
 :root {
-  --bg-color: #1a1423;
+  --bg-color-c3p: #1a1423;
   --text-color: #d6dbd2;
-  --highlight-color: #c52184;
+  --highlight-color-c3p: #c52184;
+  --highlight-color-super-dimension: #d45113;
 }
 
 body {
-  font-family: "TeX Gyre Heros Regular", sans-serif;
-  background: var(--bg-color);
+  font-family: "Inter Display", sans-serif;
+  font-weight: 400;
   color: var(--text-color);
-  font-size: 17.5px;
   line-height: 21px;
   user-select: none;
   -webkit-user-select: none;
   cursor: default;
   margin: 0px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: inherit;
+  padding: 0px;
 }

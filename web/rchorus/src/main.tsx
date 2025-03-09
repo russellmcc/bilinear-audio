@@ -9,6 +9,7 @@ import * as Client from "react-dom/client";
 import { Provider } from "@conformal/plugin";
 import "./index.css";
 import infos from "./mock_infos.ts";
+import ModeProvider from "./ModeProvider.tsx";
 
 const domElement = document.querySelector("#root");
 
@@ -17,9 +18,11 @@ if (!(domElement == null)) {
     <StrictMode>
       <Jotai.Provider>
         <Provider mockInfos={infos}>
-          <Suspense fallback={<></>}>
-            <App />
-          </Suspense>
+          <ModeProvider>
+            <Suspense fallback={<></>}>
+              <App />
+            </Suspense>
+          </ModeProvider>
         </Provider>
       </Jotai.Provider>
     </StrictMode>,
