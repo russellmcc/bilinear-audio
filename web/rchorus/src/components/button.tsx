@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useNextMode } from "../mode";
 
 export type ButtonProps = {
   highlightColor: string;
@@ -8,9 +8,7 @@ const Button = ({ highlightColor }: ButtonProps) => {
   const triangleSize = 19;
   const sideLength = (triangleSize * Math.sqrt(3)) / 2;
 
-  const nextMode = useCallback(() => {
-    console.log("next mode");
-  }, []);
+  const nextMode = useNextMode();
 
   return (
     <button

@@ -1,6 +1,6 @@
-import Button from "../../components/button";
-import Slider from "../../components/slider";
-import logo from "../assets/logo.svg";
+import Button from "../components/button";
+import Slider from "../components/slider";
+import logo from "./assets/logo.svg";
 
 const Layout = () => (
   <div
@@ -11,6 +11,7 @@ const Layout = () => (
       whiteSpace: "pre-wrap",
       padding: "0px",
       margin: "0px",
+      background: "var(--bg-color-c3p)",
     }}
   >
     <div
@@ -18,6 +19,7 @@ const Layout = () => (
         textAlign: "right",
         marginRight: "21px",
         paddingTop: "11px",
+        fontSize: "17.5px",
       }}
     >
       {"Analogue\nModeled\nChorus\nEffect"}
