@@ -1,11 +1,11 @@
 import { Preset } from "../preset";
 
 export const preset: Preset = {
-  rate: 0.35,
-  depth: 100,
+  rate: 0.5,
+  depth: 40,
   mix: 100,
-  highpass_cutoff: "Low",
-  routing: "Synth",
+  highpass_cutoff: "High",
+  routing: "Dimension",
 };
 
 export default preset;

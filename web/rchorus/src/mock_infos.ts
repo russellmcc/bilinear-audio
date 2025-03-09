@@ -53,6 +53,8 @@ export const typedInfos = {
   } as const,
 } as const;
 
-const infos = new Map<string, Info>(Object.entries(typedInfos));
+const infos = new Map<string, Info>(
+  Object.entries(typedInfos as unknown as Record<string, Info>),
+);
 
 export default infos;

@@ -2,6 +2,10 @@ import { useUiStateAtom } from "@conformal/plugin";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useCallback } from "react";
 import { z } from "zod";
+import { Preset, useApplyPreset } from "./preset";
+import c3pPreset from "./c3p/preset";
+import superDimensionPreset from "./super-dimension/preset";
+
 const c3pSchema = z.object({
   id: z.literal("c3p"),
 });
@@ -23,20 +27,19 @@ export const useMode = (): Mode => {
   return mode ?? { id: "c3p" };
 };
 
-const modeSetSideEffect = (mode: Mode) => {
+const getPresetForMode = (mode: Mode): Preset => {
   switch (mode.id) {
     case "c3p":
-      break;
+      return c3pPreset;
     case "super-dimension":
-      break;
-    default:
-      mode satisfies never;
+      return superDimensionPreset;
   }
 };
 
 export const useNextMode = () => {
   const mode = useMode();
   const setMode = useSetAtom(useUiStateAtom<Mode>());
+  const applyPreset = useApplyPreset();
   const nextMode = useCallback(() => {
     const currentIndex = modeIds.indexOf(mode.id);
     if (currentIndex === -1) {
@@ -45,8 +48,8 @@ export const useNextMode = () => {
     const nextIndex = (currentIndex + 1) % modeIds.length;
     const nextModeId = modeIds[nextIndex]!;
     const nextMode = makeMode(nextModeId);
-    modeSetSideEffect(nextMode);
+    applyPreset(getPresetForMode(nextMode));
     setMode(nextMode);
-  }, [mode.id, setMode]);
+  }, [mode.id, setMode, applyPreset]);
   return nextMode;
 };

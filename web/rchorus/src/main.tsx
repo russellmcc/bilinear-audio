@@ -9,7 +9,7 @@ import * as Client from "react-dom/client";
 import { Provider } from "@conformal/plugin";
 import "./index.css";
 import infos from "./mock_infos.ts";
-import ModeProvider from "./modeProvider.tsx";
+import ModeProvider from "./ModeProvider.tsx";
 
 const domElement = document.querySelector("#root");
 

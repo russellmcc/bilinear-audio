@@ -4,7 +4,7 @@ import {
   useBooleanAtom,
 } from "@conformal/plugin";
 import { typedInfos } from "./mock_infos";
-import { useCallback, useMemo } from "react";
+import { useCallback, useRef } from "react";
 
 const presetParams = [
   "rate",
@@ -26,51 +26,49 @@ const presetParamInfos: {
   routing: typedInfos.routing,
 } as const;
 
-export type Preset = {
-  [Parameter in PresetParam]: (typeof presetParamInfos)[Parameter]["type_specific"]["default"];
-};
-
 const atomGetter = {
   numeric: useNumericAtom,
   enum: useStringAtom,
   switch: useBooleanAtom,
 } as const;
 
+export type Preset = {
+  [Parameter in PresetParam]: Parameters<
+    ReturnType<
+      (typeof atomGetter)[(typeof presetParamInfos)[Parameter]["type_specific"]["t"]]
+    >[1]
+  >[0];
+};
+
 type Setters = {
   [K in PresetParam]: (value: Preset[K]) => void;
 };
 
 export const useApplyPreset = () => {
-  const setters: Setters = useMemo(
-    () => ({
-      rate: atomGetter[presetParamInfos.rate.type_specific.t]("rate")[1],
-      depth: atomGetter[presetParamInfos.depth.type_specific.t]("depth")[1],
-      mix: atomGetter[presetParamInfos.mix.type_specific.t]("mix")[1],
-      highpass_cutoff:
-        atomGetter[presetParamInfos.highpass_cutoff.type_specific.t](
-          "highpass_cutoff",
-        )[1],
-      routing:
-        atomGetter[presetParamInfos.routing.type_specific.t]("routing")[1],
-    }),
-    [],
-  );
+  const setters = Object.fromEntries(
+    presetParams.map((param) => [
+      param,
+      atomGetter[presetParamInfos[param].type_specific.t](`params/${param}`)[1],
+    ]),
+    // Ugh, I really tried to avoid this type assertion, but I think there's no
+    // way to get typescript to accept this fromEntries call.
+  ) as Setters;
 
-  const applyPreset = useCallback(
-    (preset: Preset) => {
-      const applyParam = <K extends PresetParam>(
-        value: Preset[K],
-        setter: Setters[K],
-      ) => {
-        setter(value);
-      };
+  const settersRef = useRef(setters);
+  settersRef.current = setters;
 
-      presetParams.forEach((key) => {
-        applyParam(preset[key], setters[key]);
-      });
-    },
-    [setters],
-  );
+  const applyPreset = useCallback((preset: Preset) => {
+    const applyParam = <K extends PresetParam>(
+      value: Preset[K],
+      setter: Setters[K],
+    ) => {
+      setter(value);
+    };
+
+    presetParams.forEach((key) => {
+      applyParam(preset[key], settersRef.current[key]);
+    });
+  }, []);
 
   return applyPreset;
 };
