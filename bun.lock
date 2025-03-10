@@ -5,7 +5,7 @@
       "name": "poly-81",
       "dependencies": {
         "@conformal/plugin": "^0.4.0",
-        "@conformal/scripts": "^0.4.1",
+        "@conformal/scripts": "^0.4.2",
         "@happy-dom/global-registrator": "^17.1.8",
         "@next/eslint-plugin-next": "^15.2.0",
         "@storybook/addon-essentials": "^8.6.2",
@@ -151,7 +151,7 @@
 
     "@conformal/plugin": ["@conformal/plugin@0.4.0", "", { "dependencies": { "@msgpack/msgpack": "^3.0.0-beta2", "jotai": "^2.9.3", "zod": "^3.23.8" }, "peerDependencies": { "react": "^18.3.1 || ^19.0.0", "react-dom": "^18.3.1 || ^19.0.0" } }, "sha512-qlB60MPDdEAxyJez7VBnGbUwTS87AWN9rf8/inUiDUFpF9eaazJKbwzFRLaEaQ1+9B+HOxckvcopqYQyouk9DQ=="],
 
-    "@conformal/scripts": ["@conformal/scripts@0.4.1", "", { "dependencies": { "@commander-js/extra-typings": "^12.1.0", "@conformal/create-plugin": "^0.4.0", "@conformal/stamp": "^0.3.5", "commander": "^12.1.0", "tmp-promise": "^3.0.3", "zod": "^3.23.8" }, "bin": { "conformal-scripts": "src/index.ts" } }, "sha512-Yb7Za6+jrz5qVPODcV8YxwhMejeb1DICy8gmZrWxNKmmukgSvD/+7Y6LfdI54ZIbpuL3PD8DDH2hv+PsUloDxw=="],
+    "@conformal/scripts": ["@conformal/scripts@0.4.2", "", { "dependencies": { "@commander-js/extra-typings": "^12.1.0", "@conformal/create-plugin": "^0.4.0", "@conformal/stamp": "^0.3.5", "commander": "^12.1.0", "tmp-promise": "^3.0.3", "zod": "^3.23.8" }, "bin": { "conformal-scripts": "src/index.ts" } }, "sha512-xTa6wJX8hspSYFxXDmll5ENWGHjMIKqiKP9wsIff89gLHc3FmQCGmA4X8LDGetJKmpafJ3mwm0sVBCgYrJ+NyQ=="],
 
     "@conformal/stamp": ["@conformal/stamp@0.3.5", "", { "dependencies": { "@commander-js/extra-typings": "^12.1.0", "@inquirer/prompts": "^5.3.8", "commander": "^12.1.0", "handlebars": "^4.7.8" } }, "sha512-I0sli0NBz9LKcr+RVmBhNBcoth1mAHTxr+Fc1cBLaablmmywLW5MjM6WnBpKYH7ChjRlEnSKhrwjniVdCQD1QQ=="],
 
