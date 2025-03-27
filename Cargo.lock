@@ -338,9 +338,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_poly"
-version = "0.3.4"
+version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc6cc1810ffcddc2420d9122ad7acfcf43d3efd8995fd3c5938dd21ccf68b57e"
+checksum = "658f13737e3b0307884dc381dcdb144580ca874e5d1c3307cbb3b363a7b66438"
 dependencies = [
  "arrayvec",
  "conformal_component",
@@ -1235,6 +1235,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1868808506b929d7b0cfa8f75951347aa71bb21144b7791bae35d9bccfcfe37a"
 dependencies = [
  "wasm-bindgen",
+]
+
+[[package]]
+name = "jx_alpha_component"
+version = "0.0.0"
+dependencies = [
+ "conformal_component",
+ "conformal_poly",
+ "itertools 0.13.0",
+]
+
+[[package]]
+name = "jx_alpha_vst"
+version = "0.0.0"
+dependencies = [
+ "conformal_vst_wrapper",
+ "jx_alpha_component",
+ "vst3",
 ]
 
 [[package]]

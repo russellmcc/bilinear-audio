@@ -1,0 +1,13 @@
+[package]
+name = "jx_alpha_component"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+itertools = "0.13.0"
+conformal_component = "0.3.5"
+conformal_poly = "0.3.6"
