@@ -1,5 +1,4 @@
 use dsp::osc_utils::polyblep2_residual;
-use itertools::izip;
 
 #[derive(Default, Debug, Clone)]
 pub struct Oscillator {
@@ -38,13 +37,31 @@ pub struct Shape {
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub enum SubShape {
+    #[default]
+    Off,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Settings {
     pub shapes: [Shape; 2],
+    pub sub_shape: SubShape,
     pub increments: [f32; 2],
 }
 
 fn saw(phase: f32, increment: f32) -> f32 {
     (phase - 0.5) * 2.0 - polyblep2_residual(phase, increment)
+}
+
+fn single_osc(phase: f32, increment: f32, shape: Shape) -> f32 {
+    let out = match shape.saw {
+        SawShape::Off => 0.0,
+        SawShape::Saw => saw(phase, increment),
+    };
+
+    match shape.pulse {
+        PulseShape::Off => out,
+    }
 }
 
 impl Oscillators {
@@ -60,19 +77,14 @@ impl Oscillators {
         }
     }
 
-    pub fn run(&mut self, Settings { increments, .. }: Settings) -> [f32; 2] {
-        let mut output = [0.0; 2];
-        for (oscillator, output, increment) in
-            izip!(self.oscillators.iter_mut(), output.iter_mut(), increments)
-        {
-            // Always use saw shape for now
-            *output = saw(oscillator.phase, increment);
-
-            // Update the phase and wrap it to [0, 1)
-            oscillator.phase += increment;
-            oscillator.phase -= oscillator.phase.floor();
-        }
-        output
+    pub fn run(
+        &mut self,
+        Settings {
+            increments, shapes, ..
+        }: Settings,
+    ) -> f32 {
+        // Currently we only support dco1
+        single_osc(self.oscillators[0].phase, increments[0], shapes[0])
     }
 }
 

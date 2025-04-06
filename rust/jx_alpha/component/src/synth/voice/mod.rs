@@ -80,8 +80,8 @@ impl VoiceTrait for Voice {
                 *sample = self.oscillators.run(oscillators::Settings {
                     increments: [increment, increment],
                     shapes: Default::default(),
-                })[0]
-                    * gain
+                    sub_shape: Default::default(),
+                }) * gain
                     / 100.;
             }
         }
