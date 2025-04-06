@@ -79,6 +79,7 @@ impl VoiceTrait for Voice {
                 let increment = increment(adjusted_pitch, self.sampling_rate);
                 *sample = self.oscillators.run(oscillators::Settings {
                     increments: [increment, increment],
+                    shapes: Default::default(),
                 })[0]
                     * gain
                     / 100.;

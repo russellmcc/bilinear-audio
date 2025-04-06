@@ -1,4 +1,6 @@
-use crate::synth::osc_utils::{polyblep2_residual, pulse};
+use dsp::osc_utils::polyblep2_residual;
+
+use crate::synth::osc_utils::pulse;
 
 #[cfg(test)]
 mod tests;

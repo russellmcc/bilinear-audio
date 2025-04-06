@@ -16,8 +16,29 @@ pub struct Oscillators {
     oscillators: [Oscillator; 2],
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub enum SawShape {
+    Off,
+
+    #[default]
+    Saw,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub enum PulseShape {
+    #[default]
+    Off,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Shape {
+    pub saw: SawShape,
+    pub pulse: PulseShape,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Settings {
+    pub shapes: [Shape; 2],
     pub increments: [f32; 2],
 }
 
@@ -34,7 +55,7 @@ impl Oscillators {
         }
     }
 
-    pub fn run(&mut self, Settings { increments }: Settings) -> [f32; 2] {
+    pub fn run(&mut self, Settings { increments, .. }: Settings) -> [f32; 2] {
         let mut output = [0.0; 2];
         for (oscillator, output, increment) in
             izip!(self.oscillators.iter_mut(), output.iter_mut(), increments)
