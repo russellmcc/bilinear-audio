@@ -2,6 +2,8 @@ use conformal_component::{events::NoteData, parameters, pzip};
 use conformal_poly::{EventData, Voice as VoiceTrait};
 use itertools::izip;
 
+mod oscillators;
+
 const PITCH_BEND_WIDTH: f32 = 2.;
 
 /// Converts a MIDI pitch to a phase increment
@@ -15,8 +17,8 @@ pub struct SharedData {}
 #[derive(Clone, Debug, Default)]
 pub struct Voice {
     pitch: Option<f32>,
-    phase: f32,
     sampling_rate: f32,
+    oscillators: oscillators::Oscillators,
 }
 
 impl VoiceTrait for Voice {
@@ -25,7 +27,7 @@ impl VoiceTrait for Voice {
     fn new(_max_samples_per_process_call: usize, sampling_rate: f32) -> Self {
         Self {
             pitch: None,
-            phase: 0.,
+            oscillators: oscillators::Oscillators::new(),
             sampling_rate,
         }
     }
@@ -39,7 +41,7 @@ impl VoiceTrait for Voice {
             }
             EventData::NoteOff { .. } => {
                 self.pitch = None;
-                self.phase = 0.;
+                self.oscillators.reset();
             }
         }
     }
@@ -75,10 +77,11 @@ impl VoiceTrait for Voice {
                 let total_pitch_bend = global_pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
                 let adjusted_pitch = pitch + total_pitch_bend;
                 let increment = increment(adjusted_pitch, self.sampling_rate);
-                *sample = (self.phase * std::f32::consts::TAU).sin() * gain / 100.;
-                // Update the phase and wrap it to [0, 1)
-                self.phase += increment;
-                self.phase -= self.phase.floor();
+                *sample = self.oscillators.run(oscillators::Settings {
+                    increments: [increment, increment],
+                })[0]
+                    * gain
+                    / 100.;
             }
         }
     }
@@ -89,6 +92,6 @@ impl VoiceTrait for Voice {
 
     fn reset(&mut self) {
         self.pitch = None;
-        self.phase = 0.;
+        self.oscillators.reset();
     }
 }

@@ -11,3 +11,6 @@ workspace = true
 itertools = "0.13.0"
 conformal_component = "0.3.5"
 conformal_poly = "0.3.6"
+
+[dev-dependencies]
+snapshots = { path = "../../shared/snapshots" }

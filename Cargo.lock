@@ -1244,6 +1244,7 @@ dependencies = [
  "conformal_component",
  "conformal_poly",
  "itertools 0.13.0",
+ "snapshots",
 ]
 
 [[package]]
