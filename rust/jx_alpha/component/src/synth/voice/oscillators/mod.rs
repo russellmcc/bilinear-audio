@@ -1,3 +1,4 @@
+use dsp::osc_utils::polyblep2_residual;
 use itertools::izip;
 
 #[derive(Default, Debug, Clone)]
@@ -42,6 +43,10 @@ pub struct Settings {
     pub increments: [f32; 2],
 }
 
+fn saw(phase: f32, increment: f32) -> f32 {
+    (phase - 0.5) * 2.0 - polyblep2_residual(phase, increment)
+}
+
 impl Oscillators {
     pub fn new() -> Self {
         Self {
@@ -60,7 +65,8 @@ impl Oscillators {
         for (oscillator, output, increment) in
             izip!(self.oscillators.iter_mut(), output.iter_mut(), increments)
         {
-            *output = (oscillator.phase * std::f32::consts::TAU).sin();
+            // Always use saw shape for now
+            *output = saw(oscillator.phase, increment);
 
             // Update the phase and wrap it to [0, 1)
             oscillator.phase += increment;

@@ -1243,6 +1243,7 @@ version = "0.0.0"
 dependencies = [
  "conformal_component",
  "conformal_poly",
+ "dsp",
  "itertools 0.13.0",
  "snapshots",
 ]
