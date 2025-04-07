@@ -1,6 +1,7 @@
 use conformal_component::{events::NoteData, parameters, pzip};
 use conformal_poly::{EventData, Voice as VoiceTrait};
 use itertools::izip;
+use oscillators::{OscillatorSettings, Shape};
 
 mod oscillators;
 
@@ -77,10 +78,19 @@ impl VoiceTrait for Voice {
                 let total_pitch_bend = global_pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
                 let adjusted_pitch = pitch + total_pitch_bend;
                 let increment = increment(adjusted_pitch, self.sampling_rate);
-                *sample = self.oscillators.run(oscillators::Settings {
-                    increments: [increment, increment],
-                    shapes: Default::default(),
-                    sub_shape: Default::default(),
+                *sample = self.oscillators.generate(&oscillators::Settings {
+                    oscillators: [
+                        OscillatorSettings {
+                            increment,
+                            shape: Shape::Saw,
+                            gain: 1.0,
+                        },
+                        OscillatorSettings {
+                            increment,
+                            shape: Shape::Saw,
+                            gain: 0.0,
+                        },
+                    ],
                 }) * gain
                     / 100.;
             }

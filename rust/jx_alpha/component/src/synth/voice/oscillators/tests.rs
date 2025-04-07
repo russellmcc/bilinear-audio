@@ -1,4 +1,3 @@
-use conformal_component::audio::all_approx_eq;
 use snapshots::assert_snapshot;
 
 use super::*;
@@ -11,7 +10,7 @@ const INCREMENT: f32 = PITCH_HZ / SAMPLE_RATE as f32;
 
 fn snapshot_for_settings(settings: Settings, length: usize) -> Vec<f32> {
     let mut oscillators = Oscillators::new();
-    std::iter::repeat_with(|| oscillators.run(settings))
+    std::iter::repeat_with(|| oscillators.generate(&settings))
         .take(length)
         .collect()
 }
@@ -24,32 +23,20 @@ fn default_saw_snapshot() {
         SAMPLE_RATE,
         snapshot_for_settings(
             Settings {
-                shapes: [Default::default(), Default::default()],
-                increments: [INCREMENT, INCREMENT],
-                sub_shape: Default::default(),
+                oscillators: [
+                    oscillator::Settings {
+                        increment: INCREMENT,
+                        shape: oscillator::Shape::Saw,
+                        gain: 1.0,
+                    },
+                    oscillator::Settings {
+                        increment: INCREMENT,
+                        shape: oscillator::Shape::Saw,
+                        gain: 0.0,
+                    },
+                ],
             },
             48000
         )
     );
-}
-
-#[test]
-fn all_off_silent() {
-    const LENGTH: usize = 50;
-    let snapshot = snapshot_for_settings(
-        Settings {
-            shapes: [
-                Shape {
-                    saw: SawShape::Off,
-                    pulse: PulseShape::Off,
-                },
-                Default::default(),
-            ],
-            increments: [INCREMENT, INCREMENT],
-            sub_shape: Default::default(),
-        },
-        LENGTH,
-    );
-    let silence = vec![0.0; LENGTH];
-    assert!(all_approx_eq(snapshot, silence, 1e-5));
 }
