@@ -70,3 +70,31 @@ fn default_pulse_snapshot() {
         )
     );
 }
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn small_pulse_width_snapshot() {
+    assert_snapshot!(
+        "pulse",
+        SAMPLE_RATE,
+        snapshot_for_settings(
+            &Settings {
+                oscillators: [
+                    oscillator::Settings {
+                        increment: INCREMENT,
+                        shape: oscillator::Shape::Pulse,
+                        gain: 1.0,
+                        width: 0.1,
+                    },
+                    oscillator::Settings {
+                        increment: INCREMENT,
+                        shape: oscillator::Shape::Saw,
+                        gain: 0.0,
+                        width: 0.5,
+                    },
+                ],
+            },
+            48000
+        )
+    );
+}
