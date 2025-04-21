@@ -5,10 +5,12 @@ pub struct Oscillator {
     phase: f32,
 }
 
+#[must_use]
 fn saw(phase: f32, increment: f32) -> f32 {
     (phase - 0.5) * 2.0 - polyblep2_residual(phase, increment)
 }
 
+#[must_use]
 fn rotate(phase: f32, x: f32) -> f32 {
     let phase = phase + (1.0 - x);
     if phase > 1.0 { phase - 1.0 } else { phase }
@@ -23,6 +25,23 @@ pub fn pulse(phase: f32, increment: f32, width: f32) -> f32 {
     } else {
         (if phase < width { -1.0 } else { 1.0 }) - polyblep2_residual(phase, increment)
             + polyblep2_residual(rotate(phase, width), increment)
+    }
+}
+
+#[must_use]
+pub fn pwm_saw(phase: f32, _increment: f32, width: f32) -> f32 {
+    let phase_key = {
+        let phase_key = phase * 2.0;
+        if phase_key > 1.0 {
+            phase_key - 1.0
+        } else {
+            phase_key
+        }
+    };
+    if phase_key < width {
+        -1.0
+    } else {
+        (phase - 0.5) * 2.0
     }
 }
 
@@ -56,6 +75,7 @@ impl Oscillator {
         let ret = match shape {
             Shape::Saw => saw(self.phase, *increment) * *gain,
             Shape::Pulse => pulse(self.phase, *increment, *width) * *gain,
+            Shape::PwmSaw => pwm_saw(self.phase, *increment, *width) * *gain,
             _ => 0.0,
         };
         self.phase += *increment;

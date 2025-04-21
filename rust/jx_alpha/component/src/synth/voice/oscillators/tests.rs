@@ -45,7 +45,7 @@ fn default_saw_snapshot() {
 
 #[test]
 #[cfg_attr(miri, ignore)]
-fn default_pulse_snapshot() {
+fn square_snapshot() {
     assert_snapshot!(
         "square",
         SAMPLE_RATE,
@@ -73,7 +73,7 @@ fn default_pulse_snapshot() {
 
 #[test]
 #[cfg_attr(miri, ignore)]
-fn small_pulse_width_snapshot() {
+fn pulse_snapshot() {
     assert_snapshot!(
         "pulse",
         SAMPLE_RATE,
@@ -85,6 +85,34 @@ fn small_pulse_width_snapshot() {
                         shape: oscillator::Shape::Pulse,
                         gain: 1.0,
                         width: 0.1,
+                    },
+                    oscillator::Settings {
+                        increment: INCREMENT,
+                        shape: oscillator::Shape::Saw,
+                        gain: 0.0,
+                        width: 0.5,
+                    },
+                ],
+            },
+            48000
+        )
+    );
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn pulse_saw_snapshot() {
+    assert_snapshot!(
+        "pulse_saw",
+        SAMPLE_RATE,
+        snapshot_for_settings(
+            &Settings {
+                oscillators: [
+                    oscillator::Settings {
+                        increment: INCREMENT,
+                        shape: oscillator::Shape::PwmSaw,
+                        gain: 1.0,
+                        width: 0.5,
                     },
                     oscillator::Settings {
                         increment: INCREMENT,
