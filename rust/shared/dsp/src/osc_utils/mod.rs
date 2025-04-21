@@ -6,13 +6,31 @@
 #[must_use]
 pub fn polyblep2_residual(phase: f32, increment: f32) -> f32 {
     if phase < increment {
-        // Generate the beginning residual.
+        // Generate the post-jump residual.
         let t = phase / increment;
         -((t - 1.0) * (t - 1.0))
     } else if phase > 1.0 - increment {
-        // Generate the ending residual.
+        // Generate the pre-jump residual.
         let t = (phase - 1.0) / increment;
         (t + 1.0) * (t + 1.0)
+    } else {
+        0.0
+    }
+}
+
+/// This is a second-order residual for the polyBLAMP, scaled for
+/// derivative discontinuities going from -increment to +increment,
+/// for example in a triangle wave.
+#[must_use]
+pub fn polyblamp2_residual(phase: f32, increment: f32) -> f32 {
+    if phase < increment {
+        // Generate the post-jump residual.
+        let t = phase / increment;
+        increment * 0.5 * (t - 1.0) * (t - 1.0)
+    } else if phase > 1.0 - increment {
+        // Generate the pre-jump residual.
+        let t = (phase - 1.0) / increment;
+        increment * 0.5 * (t + 1.0) * (t + 1.0)
     } else {
         0.0
     }
