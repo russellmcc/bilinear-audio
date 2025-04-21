@@ -19,8 +19,8 @@ pub fn polyblep2_residual(phase: f32, increment: f32) -> f32 {
 }
 
 /// This is a second-order residual for the polyBLAMP, scaled for
-/// derivative discontinuities going from -increment to +increment,
-/// for example in a triangle wave.
+/// derivative discontinuities going from derivatives of -increment to
+/// derivatives of +increment, for example the bottom of a triangle wave.
 #[must_use]
 pub fn polyblamp2_residual(phase: f32, increment: f32) -> f32 {
     if phase < increment {

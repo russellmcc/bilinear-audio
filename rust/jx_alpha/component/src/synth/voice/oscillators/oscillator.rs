@@ -1,4 +1,4 @@
-use dsp::osc_utils::polyblep2_residual;
+use dsp::osc_utils::{polyblamp2_residual, polyblep2_residual};
 
 #[derive(Default, Debug, Clone)]
 pub struct Oscillator {
@@ -29,20 +29,43 @@ pub fn pulse(phase: f32, increment: f32, width: f32) -> f32 {
 }
 
 #[must_use]
-pub fn pwm_saw(phase: f32, _increment: f32, width: f32) -> f32 {
-    let phase_key = {
-        let phase_key = phase * 2.0;
-        if phase_key > 1.0 {
-            phase_key - 1.0
-        } else {
-            phase_key
-        }
-    };
-    if phase_key < width {
+pub fn pwm_saw(phase: f32, increment: f32, width: f32) -> f32 {
+    // Naive waveform generation
+    let naive_signal = if phase < width / 2.0 {
+        -1.0
+    } else if phase < 0.5 {
+        (phase - 0.5) * 2.0
+    } else if phase < (width + 1.0) / 2.0 {
         -1.0
     } else {
+        // phase >= (width + 1.0) / 2.0
         (phase - 0.5) * 2.0
-    }
+    };
+
+    let mut output = naive_signal;
+
+    // discontinuity at phase = 0.0
+    output -= polyblep2_residual(phase, increment);
+    output -= 0.5 * polyblamp2_residual(phase, increment);
+
+    // discontinuity at phase = 0.5 * width
+    let p1 = 0.5 * width;
+    let t1 = rotate(phase, p1);
+    output += p1 * polyblep2_residual(t1, increment);
+    output += 0.5 * polyblamp2_residual(t1, increment);
+
+    // discontinuity at phase = 0.5
+    let t2 = rotate(phase, 0.5);
+    output -= 0.5 * polyblep2_residual(t2, increment);
+    output -= 0.5 * polyblamp2_residual(t2, increment);
+
+    // discontinuity at phase = 0.5 + 0.5 * width
+    let p3 = 0.5 * (width + 1.0);
+    let t3 = rotate(phase, p3);
+    output += p3 * polyblep2_residual(t3, increment);
+    output += 0.5 * polyblamp2_residual(t3, increment);
+
+    output
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
