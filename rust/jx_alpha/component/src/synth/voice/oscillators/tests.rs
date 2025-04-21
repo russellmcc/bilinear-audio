@@ -3,10 +3,14 @@ use snapshots::assert_snapshot;
 use super::*;
 
 const PITCH_HZ: f32 = 4242.0;
+const LOW_PITCH_HZ: f32 = 1234.0;
 const SAMPLE_RATE: i32 = 48000;
 
 #[allow(clippy::cast_precision_loss)]
 const INCREMENT: f32 = PITCH_HZ / (SAMPLE_RATE as f32);
+
+#[allow(clippy::cast_precision_loss)]
+const LOW_INCREMENT: f32 = LOW_PITCH_HZ / (SAMPLE_RATE as f32);
 
 fn snapshot_for_settings(settings: &Settings, length: usize) -> Vec<f32> {
     let mut oscillators = Oscillators::new();
@@ -109,7 +113,7 @@ fn pulse_saw_snapshot() {
             &Settings {
                 oscillators: [
                     oscillator::Settings {
-                        increment: INCREMENT,
+                        increment: LOW_INCREMENT,
                         shape: oscillator::Shape::PwmSaw,
                         gain: 1.0,
                         width: 0.5,
