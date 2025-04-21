@@ -31,7 +31,7 @@ impl Oscillators {
     pub fn generate(&mut self, settings: &Settings) -> f32 {
         let mut output = 0.0;
         for (oscillator, settings) in self.oscillators.iter_mut().zip(settings.oscillators.iter()) {
-            oscillator.generate(settings, &mut output);
+            output += oscillator.generate(settings);
         }
         output
     }

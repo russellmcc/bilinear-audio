@@ -84,11 +84,13 @@ impl VoiceTrait for Voice {
                             increment,
                             shape: Shape::Saw,
                             gain: 1.0,
+                            width: 0.5,
                         },
                         OscillatorSettings {
                             increment,
                             shape: Shape::Saw,
                             gain: 0.0,
+                            width: 0.5,
                         },
                     ],
                 }) * gain
