@@ -23,14 +23,14 @@ pub fn polyblep2_residual(phase: f32, increment: f32) -> f32 {
 /// derivatives of +increment, for example the bottom of a triangle wave.
 #[must_use]
 pub fn polyblamp2_residual(phase: f32, increment: f32) -> f32 {
-    if phase < increment {
+    if phase < increment * 0.5 {
         // Generate the post-jump residual.
         let t = phase / increment;
-        increment * 0.5 * (t - 1.0) * (t - 1.0)
-    } else if phase > 1.0 - increment {
+        increment * (t - 0.5) * (t - 0.5)
+    } else if phase > 1.0 - increment * 0.5 {
         // Generate the pre-jump residual.
         let t = (phase - 1.0) / increment;
-        increment * 0.5 * (t + 1.0) * (t + 1.0)
+        increment * (t + 0.5) * (t + 0.5)
     } else {
         0.0
     }
