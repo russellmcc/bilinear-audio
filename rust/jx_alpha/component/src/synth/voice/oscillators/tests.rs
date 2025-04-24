@@ -158,3 +158,31 @@ fn comb_saw_snapshot() {
         )
     );
 }
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn noise_snapshot() {
+    assert_snapshot!(
+        "noise",
+        SAMPLE_RATE,
+        snapshot_for_settings(
+            &Settings {
+                oscillators: [
+                    oscillator::Settings {
+                        increment: LOW_INCREMENT,
+                        shape: oscillator::Shape::Noise,
+                        gain: 1.0,
+                        width: 0.5,
+                    },
+                    oscillator::Settings {
+                        increment: INCREMENT,
+                        shape: oscillator::Shape::Saw,
+                        gain: 0.0,
+                        width: 0.5,
+                    },
+                ],
+            },
+            48000
+        )
+    );
+}

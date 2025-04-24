@@ -1,11 +1,22 @@
 use core::f32::consts::TAU;
 use dsp::osc_utils::{polyblamp2_residual, polyblep2_residual};
+use rand::{Rng, SeedableRng};
+use rand_xoshiro::Xoshiro256PlusPlus;
 
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Oscillator {
     phase: f32,
+    rng: Xoshiro256PlusPlus,
 }
 
+impl Default for Oscillator {
+    fn default() -> Self {
+        Self {
+            phase: 0.0,
+            rng: Xoshiro256PlusPlus::seed_from_u64(369),
+        }
+    }
+}
 #[must_use]
 fn saw(phase: f32, increment: f32) -> f32 {
     (phase - 0.5) * 2.0 - polyblep2_residual(phase, increment)
@@ -109,7 +120,7 @@ impl Oscillator {
             Shape::Pulse => pulse(self.phase, *increment, *width) * *gain,
             Shape::PwmSaw => pwm_saw(self.phase, *increment, *width) * *gain,
             Shape::CombSaw => comb_saw(self.phase, *increment) * *gain,
-            _ => 0.0,
+            Shape::Noise => self.rng.gen_range(-1.0..=1.0) * *gain,
         };
         self.phase += *increment;
         if self.phase > 1.0 {
