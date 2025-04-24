@@ -1,3 +1,4 @@
+use core::f32::consts::TAU;
 use dsp::osc_utils::{polyblamp2_residual, polyblep2_residual};
 
 #[derive(Default, Debug, Clone)]
@@ -68,6 +69,14 @@ pub fn pwm_saw(phase: f32, increment: f32, width: f32) -> f32 {
     output
 }
 
+#[must_use]
+pub fn comb_saw(phase: f32, increment: f32) -> f32 {
+    // Note the derivative at phase = 0.0 jumps from TAU * 8.0 * increment to 0.0,
+    // and the residual is normalized to a jump of 2.0 * increment,
+    // so we need to scale the residual by 4.0 * TAU to compensate.
+    (phase * TAU * 8.0).sin() * phase - TAU * 4.0 * polyblamp2_residual(phase, increment)
+}
+
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Settings {
     pub increment: f32,
@@ -99,6 +108,7 @@ impl Oscillator {
             Shape::Saw => saw(self.phase, *increment) * *gain,
             Shape::Pulse => pulse(self.phase, *increment, *width) * *gain,
             Shape::PwmSaw => pwm_saw(self.phase, *increment, *width) * *gain,
+            Shape::CombSaw => comb_saw(self.phase, *increment) * *gain,
             _ => 0.0,
         };
         self.phase += *increment;

@@ -130,3 +130,31 @@ fn pulse_saw_snapshot() {
         )
     );
 }
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn comb_saw_snapshot() {
+    assert_snapshot!(
+        "comb_saw",
+        SAMPLE_RATE,
+        snapshot_for_settings(
+            &Settings {
+                oscillators: [
+                    oscillator::Settings {
+                        increment: LOW_INCREMENT,
+                        shape: oscillator::Shape::CombSaw,
+                        gain: 1.0,
+                        width: 0.5,
+                    },
+                    oscillator::Settings {
+                        increment: INCREMENT,
+                        shape: oscillator::Shape::Saw,
+                        gain: 0.0,
+                        width: 0.5,
+                    },
+                ],
+            },
+            48000
+        )
+    );
+}
