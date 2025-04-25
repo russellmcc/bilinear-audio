@@ -1,0 +1,21 @@
+[package]
+name = "jx_alpha_component"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+itertools = "0.13.0"
+conformal_component = "0.3.5"
+conformal_poly = "0.3.6"
+rand_xoshiro = "0.6.0"
+rand = "0.8.5"
+num-derive = "0.4.2"
+num-traits = "0.2.19"
+dsp = { path = "../../shared/dsp" }
+
+[dev-dependencies]
+snapshots = { path = "../../shared/snapshots" }

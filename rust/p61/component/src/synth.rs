@@ -8,10 +8,10 @@ use conformal_component::{
 };
 use rtsan_standalone::nonblocking;
 
-use self::{osc_utils::increment, voice::SharedData};
+use self::voice::SharedData;
 
 use conformal_poly::Poly;
-use dsp::f32::rescale;
+use dsp::{f32::rescale, osc_utils::increment};
 
 mod env;
 mod mg;

@@ -1,5 +1,8 @@
 use conformal_poly::{Event, EventData, NoteExpressionCurve, NoteExpressionPoint, Voice as VoiceT};
-use dsp::f32::{lerp, rescale};
+use dsp::{
+    f32::{lerp, rescale},
+    osc_utils::increment,
+};
 
 use conformal_component::{parameters, pzip};
 
@@ -15,7 +18,7 @@ use itertools::izip;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use super::{env::adsr, osc_utils::increment};
+use super::env::adsr;
 
 #[derive(Debug, Default)]
 struct Note {
