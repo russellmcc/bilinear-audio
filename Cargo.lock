@@ -1245,6 +1245,8 @@ dependencies = [
  "conformal_poly",
  "dsp",
  "itertools 0.13.0",
+ "num-derive",
+ "num-traits",
  "rand 0.8.5",
  "rand_xoshiro",
  "snapshots",

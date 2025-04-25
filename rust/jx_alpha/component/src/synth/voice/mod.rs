@@ -1,6 +1,7 @@
 use conformal_component::{events::NoteData, parameters, pzip};
 use conformal_poly::{EventData, Voice as VoiceTrait};
 use itertools::izip;
+use num_traits::FromPrimitive;
 use oscillators::{OscillatorSettings, Shape};
 
 mod oscillators;
@@ -58,9 +59,9 @@ impl VoiceTrait for Voice {
         output: &mut [f32],
     ) {
         let mut events = events.into_iter().peekable();
-        for ((index, sample), (gain, global_pitch_bend), expression) in izip!(
+        for ((index, sample), (gain, dco1_shape_int, global_pitch_bend), expression) in izip!(
             output.iter_mut().enumerate(),
-            pzip!(params[numeric "gain", numeric "pitch_bend"]),
+            pzip!(params[numeric "gain", enum "dco1_shape", numeric "pitch_bend"]),
             note_expressions.iter_by_sample(),
         ) {
             while let Some(conformal_poly::Event {
@@ -82,7 +83,7 @@ impl VoiceTrait for Voice {
                     oscillators: [
                         OscillatorSettings {
                             increment,
-                            shape: Shape::Saw,
+                            shape: FromPrimitive::from_u32(dco1_shape_int).unwrap(),
                             gain: 1.0,
                             width: 0.5,
                         },

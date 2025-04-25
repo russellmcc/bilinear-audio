@@ -1,5 +1,6 @@
 use core::f32::consts::TAU;
 use dsp::osc_utils::{polyblamp2_residual, polyblep2_residual};
+use num_derive::FromPrimitive;
 use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro256PlusPlus;
 
@@ -130,7 +131,7 @@ impl Oscillator {
     }
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, FromPrimitive)]
 pub enum Shape {
     /// Standard sawtooth wave
     #[default]
