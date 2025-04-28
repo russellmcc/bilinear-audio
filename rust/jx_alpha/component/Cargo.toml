@@ -19,3 +19,6 @@ dsp = { path = "../../shared/dsp" }
 
 [dev-dependencies]
 snapshots = { path = "../../shared/snapshots" }
+more-asserts = "0.3.1"
+dsp = { path = "../../shared/dsp", features = ["test-utils"] }
+assert_approx_eq = "1.1.0"

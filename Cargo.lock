@@ -1241,10 +1241,12 @@ dependencies = [
 name = "jx_alpha_component"
 version = "0.0.0"
 dependencies = [
+ "assert_approx_eq",
  "conformal_component",
  "conformal_poly",
  "dsp",
  "itertools 0.13.0",
+ "more-asserts",
  "num-derive",
  "num-traits",
  "rand 0.8.5",
