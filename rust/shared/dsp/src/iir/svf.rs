@@ -56,7 +56,7 @@ pub fn calc_two_r(q: f64) -> f64 {
 }
 
 impl Svf {
-    fn process_single(&mut self, input: Input) -> Output {
+    pub fn process_single(&mut self, input: Input) -> Output {
         let Input { x, params } = input;
         let RawParams { g, two_r: damping } = params;
         // following https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesign_2.1.0.pdf

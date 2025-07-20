@@ -106,7 +106,7 @@ mod tests {
             *sample = vca.process(
                 *sample,
                 rescale_inverted(index as f32, 0.0..=48000.0, 0.0..=1.0),
-            );
+            ) / 2.0;
         }
         assert_snapshot!("vca/sweep", 48000, processed);
     }
