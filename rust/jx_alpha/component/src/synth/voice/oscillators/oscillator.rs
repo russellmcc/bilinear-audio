@@ -48,7 +48,7 @@ pub fn pwm_saw(phase: f32, increment: f32, width: f32) -> f32 {
         -1.0
     } else if phase < 0.5 {
         (phase - 0.5) * 2.0
-    } else if phase < (width + 1.0) / 2.0 {
+    } else if phase < f32::midpoint(width, 1.0) {
         -1.0
     } else {
         // phase >= (width + 1.0) / 2.0

@@ -149,7 +149,8 @@ pub fn _do_assert_snapshot(
                     println!("Snapshot {name} did not match: {comparison}");
                     create_snapshot(snapshot_new_path.clone(), sampling_rate, &value);
                     panic!(
-                        "Snapshot created for comparison at {snapshot_new_path:?}, Rerun with UPDATE_SNAPSHOTS=1 to update snapshot"
+                        "Snapshot created for comparison at {}, Rerun with UPDATE_SNAPSHOTS=1 to update snapshot",
+                        snapshot_new_path.display()
                     );
                 }
                 Mode::Update => {
@@ -163,13 +164,13 @@ pub fn _do_assert_snapshot(
     } else {
         match mode {
             Mode::Ci => panic!(
-                "Snapshot does not exist {:?}",
-                get_snapshot_path(name, file, cargo_manifest_dir, false)
+                "Snapshot does not exist {}",
+                get_snapshot_path(name, file, cargo_manifest_dir, false).display()
             ),
             Mode::Default => {
                 println!("Snapshot does not exist, creating");
                 create_snapshot(snapshot_path.clone(), sampling_rate, &value);
-                panic!("Snapshot created for review at {snapshot_path:?}");
+                panic!("Snapshot created for review at {}", snapshot_path.display());
             }
             Mode::Update => {
                 println!("Snapshot does not exist, creating");

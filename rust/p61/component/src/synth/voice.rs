@@ -513,7 +513,6 @@ impl VoiceT for Voice {
         }
     }
 
-    #[must_use]
     fn quiescent(&self) -> bool {
         self.adsr.quiescent() && self.gate.quiescent()
     }
