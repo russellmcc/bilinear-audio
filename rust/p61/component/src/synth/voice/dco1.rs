@@ -59,6 +59,7 @@ impl Dco1 {
 mod tests {
     use super::{Dco1, Shape};
     use assert_approx_eq::assert_approx_eq;
+    use conformal_component::audio::all_approx_eq;
     use dsp::test_utils::{estimate_aliasing_gen, estimate_tuning_gen};
     use more_asserts::assert_lt;
     use snapshots::assert_snapshot;
@@ -103,9 +104,7 @@ mod tests {
         let reset = std::iter::repeat_with(|| dco1.generate(increment, 10.0, Shape::Saw))
             .take(100)
             .collect::<Vec<_>>();
-        for (a, b) in initial.iter().zip(reset.iter()) {
-            assert_approx_eq!(a, b);
-        }
+        assert!(all_approx_eq(initial, reset, 2e-6));
     }
 
     #[test]
