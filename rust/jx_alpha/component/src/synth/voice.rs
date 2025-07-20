@@ -5,6 +5,7 @@ use num_traits::FromPrimitive;
 use oscillators::{OscillatorSettings, Shape};
 
 mod oscillators;
+mod vcf;
 
 const PITCH_BEND_WIDTH: f32 = 2.;
 
