@@ -109,7 +109,7 @@ mod tests {
         let mut blocker = DcBlocker::new(48000.0);
         let mut processed = white_noise(48000);
         for sample in &mut processed {
-            *sample = blocker.process(*sample);
+            *sample = blocker.process(*sample / 2.);
         }
         assert_snapshot!("dc_blocker/snapshot", 48000, processed);
     }

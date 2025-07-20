@@ -296,7 +296,7 @@ mod tests {
                 *sample,
                 0.5 * rescale(index as f32, 0.0..=(num_samples as f32), -7.0..=0.0).exp2(),
                 10.0,
-            );
+            ) / 10.0;
         }
         assert_snapshot!("vcf/sweep", 48000, processed);
     }
@@ -313,7 +313,7 @@ mod tests {
                 *sample,
                 rescale(index as f32, 0.0..=(num_samples as f32), 0.0..=0.5),
                 10.0,
-            );
+            ) / 10.0;
         }
         assert_snapshot!("vcf/linear_sweep", 48000, processed);
     }

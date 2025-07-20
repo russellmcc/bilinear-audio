@@ -184,7 +184,7 @@ mod tests {
                     i as f32 / num_samples as f32 * max_increment,
                     Shape::Saw,
                     Octave::Medium,
-                )
+                ) / 2.0
             })
         );
     }
