@@ -1,5 +1,6 @@
 use conformal_component::{events::NoteData, parameters, pzip};
 use conformal_poly::{EventData, Voice as VoiceTrait};
+use dsp::f32::rescale;
 use itertools::izip;
 use num_traits::FromPrimitive;
 use oscillators::{OscillatorSettings, Shape};
@@ -22,6 +23,7 @@ pub struct Voice {
     pitch: Option<f32>,
     sampling_rate: f32,
     oscillators: oscillators::Oscillators,
+    vcf: vcf::Vcf,
 }
 
 impl VoiceTrait for Voice {
@@ -32,6 +34,7 @@ impl VoiceTrait for Voice {
             pitch: None,
             oscillators: oscillators::Oscillators::new(),
             sampling_rate,
+            vcf: vcf::Vcf::default(),
         }
     }
 
@@ -44,7 +47,6 @@ impl VoiceTrait for Voice {
             }
             EventData::NoteOff { .. } => {
                 self.pitch = None;
-                self.oscillators.reset();
             }
         }
     }
@@ -60,9 +62,13 @@ impl VoiceTrait for Voice {
         output: &mut [f32],
     ) {
         let mut events = events.into_iter().peekable();
-        for ((index, sample), (gain, dco1_shape_int, global_pitch_bend), expression) in izip!(
+        for (
+            (index, sample),
+            (gain, dco1_shape_int, global_pitch_bend, vcf_cutoff, resonance),
+            expression,
+        ) in izip!(
             output.iter_mut().enumerate(),
-            pzip!(params[numeric "gain", enum "dco1_shape", numeric "pitch_bend"]),
+            pzip!(params[numeric "gain", enum "dco1_shape", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance"]),
             note_expressions.iter_by_sample(),
         ) {
             while let Some(conformal_poly::Event {
@@ -79,17 +85,17 @@ impl VoiceTrait for Voice {
             if let Some(pitch) = self.pitch {
                 let total_pitch_bend = global_pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
                 let adjusted_pitch = pitch + total_pitch_bend;
-                let increment = increment(adjusted_pitch, self.sampling_rate);
+                let osc_incr = increment(adjusted_pitch, self.sampling_rate);
                 *sample = self.oscillators.generate(&oscillators::Settings {
                     oscillators: [
                         OscillatorSettings {
-                            increment,
+                            increment: osc_incr,
                             shape: FromPrimitive::from_u32(dco1_shape_int).unwrap(),
                             gain: 1.0,
                             width: 0.5,
                         },
                         OscillatorSettings {
-                            increment,
+                            increment: osc_incr,
                             shape: Shape::Saw,
                             gain: 0.0,
                             width: 0.5,
@@ -97,6 +103,14 @@ impl VoiceTrait for Voice {
                     ],
                 }) * gain
                     / 100.;
+
+                let cutoff_incr = increment(vcf_cutoff, self.sampling_rate);
+                let resonance = rescale(resonance, 0.0..=100.0, 0.0..=1.0);
+                let vcf_settings = vcf::Settings {
+                    cutoff_incr,
+                    resonance,
+                };
+                *sample = self.vcf.process(*sample, &vcf_settings);
             }
         }
     }
@@ -108,5 +122,6 @@ impl VoiceTrait for Voice {
     fn reset(&mut self) {
         self.pitch = None;
         self.oscillators.reset();
+        self.vcf.reset();
     }
 }
