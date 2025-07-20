@@ -132,6 +132,12 @@ pub fn _do_assert_snapshot(
     // first, gather values
     let value = value.into_iter().collect::<Vec<_>>();
 
+    // Check if any value is over 1.0 - if so, this won't fit in an integer file, so we need to fail.
+    assert!(
+        !value.iter().any(|x| x.abs() > 1.0),
+        "Snapshot {name} contains values over 1.0, which won't fit in an integer file"
+    );
+
     // Next, try to load the snapshot.
     if let Ok((old_value, old_sampling_rate)) = wavers::read::<f32, _>(snapshot_path.clone()) {
         let comparison = compare_snapshot((&old_value, old_sampling_rate), (&value, sampling_rate));
