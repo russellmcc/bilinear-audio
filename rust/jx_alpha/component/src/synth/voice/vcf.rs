@@ -23,9 +23,8 @@ pub struct Vcf {
 impl Vcf {
     #[allow(clippy::cast_possible_truncation)]
     pub fn process(&mut self, input: f32, settings: &Settings) -> f32 {
-        // TODO: scale resonance properly.
         let g = calc_g(f64::from(settings.cutoff_incr));
-        let q = f64::from(lerp(SQRT_2 / 2.0, 2.0, settings.resonance));
+        let q = f64::from(lerp(SQRT_2 / 2.0, 3.0, settings.resonance));
         let two_r = calc_two_r(q);
         let params = svf::RawParams { g, two_r };
         let output0 = self.stages[0].process_single(svf::Input {
@@ -196,7 +195,7 @@ mod tests {
         let mut vcf = Vcf::default();
         let input = white_noise(48000)
             .into_iter()
-            .map(|x| x * 0.5)
+            .map(|x| x * 0.3)
             .collect::<Vec<_>>();
         let processed = process_swept_settings(
             &input,
@@ -221,7 +220,7 @@ mod tests {
         let mut vcf = Vcf::default();
         let input = white_noise(48000)
             .into_iter()
-            .map(|x| x * 0.5)
+            .map(|x| x * 0.3)
             .collect::<Vec<_>>();
         let processed = process_swept_settings(
             &input,
