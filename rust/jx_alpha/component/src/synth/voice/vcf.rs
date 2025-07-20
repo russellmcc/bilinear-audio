@@ -31,7 +31,7 @@ impl Vcf {
         let output0 = self.stages[0].process_single(svf::Input {
             // Note that we scale the input by "R" parameter to reduce gain as resonance increases.
             // We normalize this so the gain is 1.0 at resonance = 0.0.
-            x: ((1.0 - std::f64::consts::SQRT_2 / 2.0) + two_r * 0.5) * f64::from(input),
+            x: ((1.0 - std::f64::consts::SQRT_2 * 0.5) + two_r * 0.5) * f64::from(input),
             params,
         });
         let output1 = self.stages[1].process_single(svf::Input {
@@ -213,5 +213,30 @@ mod tests {
             ],
         );
         assert_snapshot!("vcf/sweep_high_res", 48000, processed);
+    }
+
+    #[test]
+    #[cfg_attr(miri, ignore)]
+    fn res_sweep_snapshot() {
+        let mut vcf = Vcf::default();
+        let input = white_noise(48000)
+            .into_iter()
+            .map(|x| x * 0.5)
+            .collect::<Vec<_>>();
+        let processed = process_swept_settings(
+            &input,
+            &mut vcf,
+            [
+                &Settings {
+                    cutoff_incr: 0.1,
+                    resonance: 0.0,
+                },
+                &Settings {
+                    cutoff_incr: 0.1,
+                    resonance: 1.0,
+                },
+            ],
+        );
+        assert_snapshot!("vcf/res_sweep", 48000, processed);
     }
 }
