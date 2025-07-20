@@ -23,14 +23,15 @@ pub struct Vcf {
 impl Vcf {
     #[allow(clippy::cast_possible_truncation)]
     pub fn process(&mut self, input: f32, settings: &Settings) -> f32 {
-        // TODO: gain-compensate for resonance
         // TODO: scale resonance properly.
         let g = calc_g(f64::from(settings.cutoff_incr));
         let q = f64::from(lerp(SQRT_2 / 2.0, 2.0, settings.resonance));
         let two_r = calc_two_r(q);
         let params = svf::RawParams { g, two_r };
         let output0 = self.stages[0].process_single(svf::Input {
-            x: f64::from(input),
+            // Note that we scale the input by "R" parameter to reduce gain as resonance increases.
+            // We normalize this so the gain is 1.0 at resonance = 0.0.
+            x: ((1.0 - std::f64::consts::SQRT_2 / 2.0) + two_r * 0.5) * f64::from(input),
             params,
         });
         let output1 = self.stages[1].process_single(svf::Input {
@@ -195,7 +196,7 @@ mod tests {
         let mut vcf = Vcf::default();
         let input = white_noise(48000)
             .into_iter()
-            .map(|x| x * 0.1)
+            .map(|x| x * 0.5)
             .collect::<Vec<_>>();
         let processed = process_swept_settings(
             &input,
