@@ -5,6 +5,7 @@ use itertools::izip;
 use num_traits::FromPrimitive;
 use oscillators::{OscillatorSettings, Shape};
 
+mod env;
 mod oscillators;
 mod vcf;
 
@@ -18,23 +19,47 @@ fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
 #[derive(Default, Debug, Clone)]
 pub struct SharedData {}
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct Voice {
-    pitch: Option<f32>,
+    pitch: f32,
     sampling_rate: f32,
     oscillators: oscillators::Oscillators,
     vcf: vcf::Vcf,
+    env1: env::Env,
+    env2: env::Env,
+
+    // Optimization opportunity: we're using a full env here but don't need all the logic.
+    gate_coeffs: env::Coeffs,
+    gate: env::Env,
 }
+
+const GATE_ATTACK_TIME_SECONDS: f32 = 0.005;
+const GATE_RELEASE_TIME_SECONDS: f32 = GATE_ATTACK_TIME_SECONDS;
 
 impl VoiceTrait for Voice {
     type SharedData<'a> = SharedData;
 
     fn new(_max_samples_per_process_call: usize, sampling_rate: f32) -> Self {
         Self {
-            pitch: None,
+            pitch: 20.0,
             oscillators: oscillators::Oscillators::new(),
             sampling_rate,
             vcf: vcf::Vcf::default(),
+            env1: env::Env::default(),
+            env2: env::Env::default(),
+            gate_coeffs: env::calc_coeffs(
+                &env::Params {
+                    attack_time: GATE_ATTACK_TIME_SECONDS,
+                    attack_target: 1.0,
+                    decay_time: 0.0,
+                    decay_target: 1.0,
+                    to_sustain_time: 0.0,
+                    sustain: 1.0,
+                    release_time: GATE_RELEASE_TIME_SECONDS,
+                },
+                sampling_rate,
+            ),
+            gate: env::Env::default(),
         }
     }
 
@@ -43,10 +68,15 @@ impl VoiceTrait for Voice {
             EventData::NoteOn {
                 data: NoteData { pitch, .. },
             } => {
-                self.pitch = Some(f32::from(*pitch));
+                self.pitch = f32::from(*pitch);
+                self.env1.on();
+                self.env2.on();
+                self.gate.on();
             }
             EventData::NoteOff { .. } => {
-                self.pitch = None;
+                self.env1.off();
+                self.env2.off();
+                self.gate.off();
             }
         }
     }
@@ -82,46 +112,48 @@ impl VoiceTrait for Voice {
                 self.handle_event(data);
                 events.next();
             }
-            if let Some(pitch) = self.pitch {
-                let total_pitch_bend = global_pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
-                let adjusted_pitch = pitch + total_pitch_bend;
-                let osc_incr = increment(adjusted_pitch, self.sampling_rate);
-                *sample = self.oscillators.generate(&oscillators::Settings {
-                    oscillators: [
-                        OscillatorSettings {
-                            increment: osc_incr,
-                            shape: FromPrimitive::from_u32(dco1_shape_int).unwrap(),
-                            gain: 1.0,
-                            width: 0.5,
-                        },
-                        OscillatorSettings {
-                            increment: osc_incr,
-                            shape: Shape::Saw,
-                            gain: 0.0,
-                            width: 0.5,
-                        },
-                    ],
-                }) * gain
-                    / 100.;
+            let total_pitch_bend = global_pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
+            let adjusted_pitch = self.pitch + total_pitch_bend;
+            let osc_incr = increment(adjusted_pitch, self.sampling_rate);
+            *sample = self.oscillators.generate(&oscillators::Settings {
+                oscillators: [
+                    OscillatorSettings {
+                        increment: osc_incr,
+                        shape: FromPrimitive::from_u32(dco1_shape_int).unwrap(),
+                        gain: 1.0,
+                        width: 0.5,
+                    },
+                    OscillatorSettings {
+                        increment: osc_incr,
+                        shape: Shape::Saw,
+                        gain: 0.0,
+                        width: 0.5,
+                    },
+                ],
+            }) * gain
+                / 100.;
 
-                let cutoff_incr = increment(vcf_cutoff, self.sampling_rate);
-                let resonance = rescale(resonance, 0.0..=100.0, 0.0..=1.0);
-                let vcf_settings = vcf::Settings {
-                    cutoff_incr,
-                    resonance,
-                };
-                *sample = self.vcf.process(*sample, &vcf_settings);
-            }
+            let cutoff_incr = increment(vcf_cutoff, self.sampling_rate);
+            let resonance = rescale(resonance, 0.0..=100.0, 0.0..=1.0);
+            let vcf_settings = vcf::Settings {
+                cutoff_incr,
+                resonance,
+            };
+            *sample =
+                self.gate.process(&self.gate_coeffs) * self.vcf.process(*sample, &vcf_settings);
         }
     }
 
     fn quiescent(&self) -> bool {
-        self.pitch.is_none()
+        self.env2.quiescent()
     }
 
     fn reset(&mut self) {
-        self.pitch = None;
+        self.pitch = 20.0;
         self.oscillators.reset();
         self.vcf.reset();
+        self.env1.reset();
+        self.env2.reset();
+        self.gate.reset();
     }
 }
