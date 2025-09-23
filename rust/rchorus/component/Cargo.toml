@@ -9,9 +9,9 @@ publish = false
 num-traits = "0.2.19"
 num-derive = "0.4.2"
 itertools = "0.13.0"
-conformal_component = "0.3.4"
+conformal_component = "0.3.5"
 dsp = { path = "../../shared/dsp" }
-rtsan-standalone = "0.1.1"
+rtsan-standalone = "0.1.2"
 
 [lints]
 workspace = true

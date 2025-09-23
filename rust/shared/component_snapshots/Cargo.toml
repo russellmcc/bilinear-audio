@@ -9,5 +9,5 @@ publish = false
 workspace = true
 
 [dependencies]
-conformal_component = "0.3.4"
+conformal_component = "0.3.5"
 dsp = { path = "../dsp", features = ["test-utils"] }

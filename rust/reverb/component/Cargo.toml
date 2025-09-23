@@ -6,12 +6,12 @@ publish = false
 
 [dependencies]
 bitvec = "1.0.1"
-conformal_component = "0.3.4"
+conformal_component = "0.3.5"
 rand = "0.8.5"
 rand_xoshiro = "0.6.0"
 dsp = { path = "../../shared/dsp" }
 arrayvec = "0.7.6"
-rtsan-standalone = "0.1.1"
+rtsan-standalone = "0.1.2"
 
 [lints]
 workspace = true
