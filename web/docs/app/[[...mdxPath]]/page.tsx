@@ -1,4 +1,3 @@
-import { $NextraMetadata, Heading } from "nextra";
 import { useMDXComponents as mdxComponents } from "nextra-theme-docs";
 import { generateStaticParamsFor, importPage } from "nextra/pages";
 
@@ -12,19 +11,9 @@ type PageProps = {
   params: Promise<PageParams>;
 };
 
-type ContentProps = Omit<PageProps, "params"> & {
-  params: PageParams;
-};
-
-type PageData = {
-  default: React.ComponentType<ContentProps>;
-  toc: Heading[];
-  metadata: $NextraMetadata;
-};
-
 export const generateMetadata = async (props: PageProps) => {
   const { mdxPath } = await props.params;
-  const { metadata } = (await importPage(mdxPath)) as PageData;
+  const { metadata } = await importPage(mdxPath);
   const path = mdxPath ?? [];
   // If this isn't the root, add Bilinear Audio as a suffix.
   if (path.length > 0) {
@@ -35,12 +24,14 @@ export const generateMetadata = async (props: PageProps) => {
 
 const Page = async (props: PageProps) => {
   const params = await props.params;
-  const data = (await importPage(params.mdxPath)) as PageData;
-  const { default: MDXContent, toc, metadata } = data;
+  const data = await importPage(params.mdxPath);
+  const { default: MDXContent, toc, metadata, sourceCode } = data;
+  // seems to be a but in the linter
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const Wrapper = mdxComponents().wrapper;
 
   return (
-    <Wrapper toc={toc} metadata={metadata}>
+    <Wrapper toc={toc} metadata={metadata} sourceCode={sourceCode}>
       <MDXContent {...props} params={params} />
     </Wrapper>
   );
