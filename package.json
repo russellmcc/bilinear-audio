@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@conformal/plugin": "^0.4.0",
-    "@conformal/scripts": "^0.5.0",
+    "@conformal/scripts": "^0.7.0",
     "@happy-dom/global-registrator": "^17.6.3",
     "@next/eslint-plugin-next": "^15.5.3",
     "@storybook/addon-essentials": "^8.6.14",
