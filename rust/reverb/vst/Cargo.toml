@@ -11,6 +11,6 @@ workspace = true
 crate-type = ["cdylib"]
 
 [dependencies]
-conformal_vst_wrapper = "0.3.6"
-vst3 = "0.1.2"
+conformal_vst_wrapper = "0.3.8"
+vst3 = "0.2.0"
 reverb_component = { path = "../component" }
