@@ -10,6 +10,7 @@
     "check-lfs": "conformal-scripts check-lfs",
     "check-todo": "conformal-scripts check-todo",
     "check-format": "conformal-scripts check-format",
+    "check-licenses": "conformal-scripts check-licenses",
     "create-plugin": "conformal-scripts create-plugin",
     "format": "conformal-scripts format",
     "web-dev": "conformal-scripts web-script -s dev",
@@ -29,7 +30,7 @@
   },
   "dependencies": {
     "@conformal/plugin": "^0.4.0",
-    "@conformal/scripts": "^0.7.0",
+    "@conformal/scripts": "^0.8.0",
     "@happy-dom/global-registrator": "^17.6.3",
     "@next/eslint-plugin-next": "^15.5.3",
     "@storybook/addon-essentials": "^8.6.14",
