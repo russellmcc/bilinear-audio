@@ -25,6 +25,7 @@
   "devDependencies": {
     "@types/react": "catalog:",
     "eslint-config-custom": "workspace:*",
+    "@next/eslint-plugin-next": "catalog:",
     "@types/node": "^24.10.0"
   },
   "type": "module"
