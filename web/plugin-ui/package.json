@@ -13,5 +13,16 @@
   "author": "Bilinear Audio Authors",
   "main": "src/index.ts",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "music-ui": "workspace:*",
+    "react": "catalog:",
+    "@conformal/plugin": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@vitejs/plugin-react-swc": "catalog:",
+    "vite": "catalog:",
+    "eslint-config-custom": "workspace:*"
+  }
 }

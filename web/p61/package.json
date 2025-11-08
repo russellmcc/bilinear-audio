@@ -22,7 +22,28 @@
   "license": "ISC",
   "dependencies": {
     "music-ui": "workspace:*",
-    "plugin-ui": "workspace:*"
+    "plugin-ui": "workspace:*",
+    "@conformal/plugin": "catalog:",
+    "@types/d3-shape": "catalog:",
+    "d3-shape": "catalog:",
+    "react-dom": "catalog:",
+    "react": "catalog:",
+    "jotai": "catalog:"
+  },
+  "devDependencies": {
+    "autoprefixer": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "storybook": "catalog:",
+    "@storybook/preview-api": "catalog:",
+    "@storybook/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@types/react": "catalog:",
+    "@vitejs/plugin-react-swc": "catalog:",
+    "vite": "catalog:",
+    "rollup-plugin-license": "catalog:",
+    "eslint-plugin-tailwindcss": "catalog:",
+    "eslint-config-custom": "workspace:*"
   },
   "type": "module"
 }

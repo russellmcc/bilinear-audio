@@ -11,5 +11,19 @@
     "package": "conformal-scripts package",
     "validate": "conformal-scripts validate"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@conformal/plugin": "catalog:",
+    "react-dom": "catalog:",
+    "react": "catalog:",
+    "jotai": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react-dom": "catalog:",
+    "@types/react": "catalog:",
+    "@vitejs/plugin-react-swc": "catalog:",
+    "vite": "catalog:",
+    "rollup-plugin-license": "catalog:",
+    "eslint-config-custom": "workspace:*"
+  }
 }
