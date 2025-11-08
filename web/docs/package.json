@@ -12,5 +12,20 @@
     "dev": "bun x next dev",
     "build": "bun x --bun next build"
   },
+  "dependencies": {
+    "next": "catalog:",
+    "nextra": "catalog:",
+    "nextra-theme-docs": "catalog:",
+    "react": "catalog:"
+  },
+  "peerDependencies": {
+    "@theguild/remark-mermaid": "*",
+    "typescript": "*"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "eslint-config-custom": "workspace:*",
+    "@types/node": "^24.10.0"
+  },
   "type": "module"
 }

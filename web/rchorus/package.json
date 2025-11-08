@@ -14,7 +14,22 @@
   "author": "Bilinear Audio Authors",
   "license": "ISC",
   "dependencies": {
-    "music-ui": "workspace:*"
+    "music-ui": "workspace:*",
+    "@conformal/plugin": "catalog:",
+    "react-dom": "catalog:",
+    "react": "catalog:",
+    "jotai": "catalog:"
+  },
+  "peerDependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/react-dom": "catalog:",
+    "@types/react": "catalog:",
+    "@vitejs/plugin-react-swc": "catalog:",
+    "vite": "catalog:",
+    "rollup-plugin-license": "catalog:",
+    "eslint-config-custom": "workspace:*"
   },
   "type": "module"
 }

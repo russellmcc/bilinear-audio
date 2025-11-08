@@ -24,5 +24,19 @@
       "import": "./src/draft-ui/index.ts"
     }
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@use-gesture/react": "catalog:",
+    "react": "catalog:",
+    "dequal": "catalog:"
+  },
+  "devDependencies": {
+    "storybook": "catalog:",
+    "@storybook/preview-api": "catalog:",
+    "@storybook/react": "catalog:",
+    "@types/react": "catalog:",
+    "@vitejs/plugin-react-swc": "catalog:",
+    "vite": "catalog:",
+    "eslint-config-custom": "workspace:*"
+  }
 }
