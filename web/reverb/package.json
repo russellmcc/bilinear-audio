@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "bun index.html --port=5173",
     "build": "tsc && vite build",
-    "lint": "tsc && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "tsc && eslint . --max-warnings 0",
     "preview": "vite preview",
     "check-format": "prettier --ignore-path .gitignore -c .",
     "format": "prettier --ignore-path .gitignore --write .",
