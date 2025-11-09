@@ -4,7 +4,7 @@ import {
   useBooleanAtom,
 } from "@conformal/plugin";
 import { typedInfos } from "./mock_infos";
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo } from "react";
 
 const presetParams = [
   "rate",
@@ -26,49 +26,75 @@ const presetParamInfos: {
   routing: typedInfos.routing,
 } as const;
 
-const atomGetter = {
+const atomSetters = {
   numeric: useNumericAtom,
   enum: useStringAtom,
   switch: useBooleanAtom,
 } as const;
+type ParamType = keyof typeof atomSetters;
+
+type SetterForParamType<T extends ParamType> = ReturnType<
+  (typeof atomSetters)[T]
+>[1];
+
+const useSelectSetter = <T extends ParamType>(
+  t: T,
+  key: string,
+): SetterForParamType<T> => atomSetters[t](key)[1];
+
+type ParamTypeOf<K extends PresetParam> =
+  (typeof presetParamInfos)[K]["type_specific"]["t"];
+
+type ValueOf<K extends PresetParam> = Parameters<
+  SetterForParamType<ParamTypeOf<K>>
+>[0];
 
 export type Preset = {
-  [Parameter in PresetParam]: Parameters<
-    ReturnType<
-      (typeof atomGetter)[(typeof presetParamInfos)[Parameter]["type_specific"]["t"]]
-    >[1]
-  >[0];
+  [Parameter in PresetParam]: ValueOf<Parameter>;
 };
 
 type Setters = {
-  [K in PresetParam]: (value: Preset[K]) => void;
+  [Param in PresetParam]: SetterForParamType<ParamTypeOf<Param>>;
+};
+
+const useSetter = <Param extends PresetParam>(param: Param) => {
+  const t: ParamTypeOf<Param> = presetParamInfos[param].type_specific.t;
+  return useSelectSetter(t, `params/${param}`);
+};
+
+const applyMapped = <M extends Record<string, unknown>, K extends keyof M>(
+  keys: readonly K[],
+  map: M,
+  setters: { [P in K]: (v: M[P]) => void },
+) => {
+  keys.forEach((k) => {
+    setters[k](map[k]);
+  });
 };
 
 export const useApplyPreset = () => {
-  const setters = Object.fromEntries(
-    presetParams.map((param) => [
-      param,
-      atomGetter[presetParamInfos[param].type_specific.t](`params/${param}`)[1],
-    ]),
-    // Ugh, I really tried to avoid this type assertion, but I think there's no
-    // way to get typescript to accept this fromEntries call.
-  ) as Setters;
+  const rate = useSetter("rate");
+  const depth = useSetter("depth");
+  const mix = useSetter("mix");
+  const highpass_cutoff = useSetter("highpass_cutoff");
+  const routing = useSetter("routing");
+  const setters: Setters = useMemo(
+    () => ({
+      rate,
+      depth,
+      mix,
+      highpass_cutoff,
+      routing,
+    }),
+    [depth, highpass_cutoff, mix, rate, routing],
+  );
 
-  const settersRef = useRef(setters);
-  settersRef.current = setters;
-
-  const applyPreset = useCallback((preset: Preset) => {
-    const applyParam = <K extends PresetParam>(
-      value: Preset[K],
-      setter: Setters[K],
-    ) => {
-      setter(value);
-    };
-
-    presetParams.forEach((key) => {
-      applyParam(preset[key], settersRef.current[key]);
-    });
-  }, []);
+  const applyPreset = useCallback(
+    (preset: Preset) => {
+      applyMapped(presetParams, preset, setters);
+    },
+    [setters],
+  );
 
   return applyPreset;
 };

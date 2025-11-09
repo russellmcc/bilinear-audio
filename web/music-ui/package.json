@@ -35,13 +35,14 @@
     "@storybook/preview-api": "catalog:",
     "@storybook/react": "catalog:",
     "@types/react": "catalog:",
-    "@vitejs/plugin-react-swc": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "vite": "catalog:",
     "eslint-config-custom": "workspace:*",
     "@storybook/react-vite": "catalog:",
     "@storybook/theming": "catalog:",
     "@storybook/addon-links": "catalog:",
     "@storybook/addon-essentials": "catalog:",
-    "@storybook/addon-interactions": "catalog:"
+    "@storybook/addon-interactions": "catalog:",
+    "babel-plugin-react-compiler": "catalog:"
   }
 }

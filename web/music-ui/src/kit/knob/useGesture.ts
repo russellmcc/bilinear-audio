@@ -1,5 +1,5 @@
 import { Handler, useDrag } from "@use-gesture/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { clamp } from "music-ui/util";
 
 const KEYBOARD_STEP = 10;
@@ -22,7 +22,10 @@ const useGesture = ({
   onValue,
 }: GestureProps) => {
   const lastValue = useRef<number>(value);
-  lastValue.current = value;
+  useEffect(() => {
+    lastValue.current = value;
+  }, [value]);
+
   const grabCallback: Handler<"drag"> = useCallback(
     ({ active, delta, memo, shiftKey }) => {
       if (memo === undefined) {
