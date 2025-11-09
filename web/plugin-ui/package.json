@@ -23,6 +23,7 @@
     "@types/react": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "vite": "catalog:",
-    "eslint-config-custom": "workspace:*"
+    "eslint-config-custom": "workspace:*",
+    "babel-plugin-react-compiler": "catalog:"
   }
 }

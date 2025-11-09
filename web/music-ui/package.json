@@ -42,6 +42,7 @@
     "@storybook/theming": "catalog:",
     "@storybook/addon-links": "catalog:",
     "@storybook/addon-essentials": "catalog:",
-    "@storybook/addon-interactions": "catalog:"
+    "@storybook/addon-interactions": "catalog:",
+    "babel-plugin-react-compiler": "catalog:"
   }
 }

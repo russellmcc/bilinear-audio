@@ -29,7 +29,8 @@
     "@vitejs/plugin-react": "catalog:",
     "vite": "catalog:",
     "rollup-plugin-license": "catalog:",
-    "eslint-config-custom": "workspace:*"
+    "eslint-config-custom": "workspace:*",
+    "babel-plugin-react-compiler": "catalog:"
   },
   "type": "module"
 }

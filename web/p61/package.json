@@ -42,6 +42,7 @@
     "@types/react": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "vite": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
     "rollup-plugin-license": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:",
     "eslint-config-custom": "workspace:*",
