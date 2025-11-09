@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "tsc && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "tsc && eslint . --max-warnings 0",
     "preview": "vite preview",
     "check-format": "prettier --ignore-path .gitignore -c .",
     "format": "prettier --ignore-path .gitignore --write .",
@@ -21,14 +21,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "music-ui": "workspace:*",
-    "plugin-ui": "workspace:*",
     "@conformal/plugin": "catalog:",
     "@types/d3-shape": "catalog:",
+    "@types/eslint-plugin-tailwindcss": "^3.17.0",
     "d3-shape": "catalog:",
-    "react-dom": "catalog:",
+    "jotai": "catalog:",
+    "music-ui": "workspace:*",
+    "plugin-ui": "workspace:*",
     "react": "catalog:",
-    "jotai": "catalog:"
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "autoprefixer": "catalog:",
@@ -43,7 +44,12 @@
     "vite": "catalog:",
     "rollup-plugin-license": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:",
-    "eslint-config-custom": "workspace:*"
+    "eslint-config-custom": "workspace:*",
+    "@storybook/react-vite": "catalog:",
+    "@storybook/theming": "catalog:",
+    "@storybook/addon-links": "catalog:",
+    "@storybook/addon-essentials": "catalog:",
+    "@storybook/addon-interactions": "catalog:"
   },
   "type": "module"
 }

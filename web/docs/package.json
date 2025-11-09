@@ -6,7 +6,7 @@
   "bugs": "https://github.com/russellmcc/bilinear-audio/issues",
   "license": "ISC",
   "scripts": {
-    "lint": "tsc && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "tsc && eslint . --max-warnings 0",
     "check-format": "prettier -c .",
     "format": "prettier --write .",
     "dev": "bun x next dev",
@@ -23,10 +23,11 @@
     "typescript": "*"
   },
   "devDependencies": {
+    "@types/node": "^24.10.0",
     "@types/react": "catalog:",
     "eslint-config-custom": "workspace:*",
-    "@next/eslint-plugin-next": "catalog:",
-    "@types/node": "^24.10.0"
+    "@eslint/eslintrc": "catalog:",
+    "@next/eslint-plugin-next": "catalog:"
   },
   "type": "module"
 }

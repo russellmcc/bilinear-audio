@@ -79,10 +79,11 @@ export const ValueLabelInternal = ({
 
   const onRef = useCallback(
     (el: HTMLDivElement | null) => {
+      const radios_ = radios;
       if (el === null) {
-        radios.current.delete(index);
+        radios_.current.delete(index);
       } else {
-        radios.current.set(index, el);
+        radios_.current.set(index, el);
       }
     },
     [index, radios],
