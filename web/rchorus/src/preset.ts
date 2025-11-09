@@ -26,30 +26,50 @@ const presetParamInfos: {
   routing: typedInfos.routing,
 } as const;
 
-const atomGetter = {
+const atomSetters = {
   numeric: useNumericAtom,
   enum: useStringAtom,
   switch: useBooleanAtom,
 } as const;
+type ParamType = keyof typeof atomSetters;
+
+type SetterForParamType<T extends ParamType> = ReturnType<
+  (typeof atomSetters)[T]
+>[1];
+
+const useSelectSetter = <T extends ParamType>(
+  t: T,
+  key: string,
+): SetterForParamType<T> => atomSetters[t](key)[1];
+
+type ParamTypeOf<K extends PresetParam> =
+  (typeof presetParamInfos)[K]["type_specific"]["t"];
+
+type ValueOf<K extends PresetParam> = Parameters<
+  SetterForParamType<ParamTypeOf<K>>
+>[0];
 
 export type Preset = {
-  [Parameter in PresetParam]: Parameters<
-    ReturnType<
-      (typeof atomGetter)[(typeof presetParamInfos)[Parameter]["type_specific"]["t"]]
-    >[1]
-  >[0];
+  [Parameter in PresetParam]: ValueOf<Parameter>;
 };
 
 type Setters = {
-  [K in PresetParam]: (value: Preset[K]) => void;
+  [Param in PresetParam]: SetterForParamType<ParamTypeOf<Param>>;
 };
 
-const useSetter = <P extends PresetParam>(param: P) => {
-  const type: (typeof presetParamInfos)[P]["type_specific"]["t"] =
-    presetParamInfos[param].type_specific.t;
-  const getter = atomGetter[type] as (typeof atomGetter)[typeof type];
-  const ret = getter(`params/${param}`)[1] as ReturnType<typeof getter>[1];
-  return ret;
+const useSetter = <Param extends PresetParam>(param: Param) => {
+  const t: ParamTypeOf<Param> = presetParamInfos[param].type_specific.t;
+  return useSelectSetter(t, `params/${param}`);
+};
+
+const applyMapped = <M extends Record<string, unknown>, K extends keyof M>(
+  keys: readonly K[],
+  map: M,
+  setters: { [P in K]: (v: M[P]) => void },
+) => {
+  keys.forEach((k) => {
+    setters[k](map[k]);
+  });
 };
 
 export const useApplyPreset = () => {
@@ -71,16 +91,7 @@ export const useApplyPreset = () => {
 
   const applyPreset = useCallback(
     (preset: Preset) => {
-      const applyParam = <K extends PresetParam>(
-        value: Preset[K],
-        setter: Setters[K],
-      ) => {
-        setter(value);
-      };
-
-      presetParams.forEach((key) => {
-        applyParam(preset[key], setters[key]);
-      });
+      applyMapped(presetParams, preset, setters);
     },
     [setters],
   );
