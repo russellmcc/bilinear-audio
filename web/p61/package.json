@@ -40,7 +40,7 @@
     "@storybook/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@types/react": "catalog:",
-    "@vitejs/plugin-react-swc": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "vite": "catalog:",
     "rollup-plugin-license": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:",

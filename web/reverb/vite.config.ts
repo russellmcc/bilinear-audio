@@ -1,4 +1,4 @@
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import license from "rollup-plugin-license";
 import { join } from "path";
 
