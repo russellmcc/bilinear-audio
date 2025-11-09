@@ -61,10 +61,10 @@ const useAnimation = <D, S>(animation: CustomAnimation<D, S>, data: D): S => {
     state: initialState,
   });
   const animationRef = useRef(animation);
-  animationRef.current = animation;
   const [state, setState] = useState<S>(initialState);
 
   useEffect(() => {
+    animationRef.current = animation;
     const shouldAnimate = animation.shouldAnimate(
       animationState.current.state,
       data,

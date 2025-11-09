@@ -54,9 +54,6 @@ export default defineConfig([
         { allowConstantExport: true },
       ],
       "react-hooks/exhaustive-deps": "error",
-      // This is inappropriately aggressive,
-      // prevents _writes_ to refs during render, which is totally fine.
-      "react-hooks/refs": "off",
       "prefer-arrow-functions/prefer-arrow-functions": [
         "error",
         {

@@ -4,7 +4,7 @@ import {
   useBooleanAtom,
 } from "@conformal/plugin";
 import { typedInfos } from "./mock_infos";
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo } from "react";
 
 const presetParams = [
   "rate",
@@ -44,31 +44,46 @@ type Setters = {
   [K in PresetParam]: (value: Preset[K]) => void;
 };
 
+const useSetter = <P extends PresetParam>(param: P) => {
+  const type: (typeof presetParamInfos)[P]["type_specific"]["t"] =
+    presetParamInfos[param].type_specific.t;
+  const getter = atomGetter[type] as (typeof atomGetter)[typeof type];
+  const ret = getter(`params/${param}`)[1] as ReturnType<typeof getter>[1];
+  return ret;
+};
+
 export const useApplyPreset = () => {
-  const setters = Object.fromEntries(
-    presetParams.map((param) => [
-      param,
-      atomGetter[presetParamInfos[param].type_specific.t](`params/${param}`)[1],
-    ]),
-    // Ugh, I really tried to avoid this type assertion, but I think there's no
-    // way to get typescript to accept this fromEntries call.
-  ) as Setters;
+  const rate = useSetter("rate");
+  const depth = useSetter("depth");
+  const mix = useSetter("mix");
+  const highpass_cutoff = useSetter("highpass_cutoff");
+  const routing = useSetter("routing");
+  const setters: Setters = useMemo(
+    () => ({
+      rate,
+      depth,
+      mix,
+      highpass_cutoff,
+      routing,
+    }),
+    [depth, highpass_cutoff, mix, rate, routing],
+  );
 
-  const settersRef = useRef(setters);
-  settersRef.current = setters;
+  const applyPreset = useCallback(
+    (preset: Preset) => {
+      const applyParam = <K extends PresetParam>(
+        value: Preset[K],
+        setter: Setters[K],
+      ) => {
+        setter(value);
+      };
 
-  const applyPreset = useCallback((preset: Preset) => {
-    const applyParam = <K extends PresetParam>(
-      value: Preset[K],
-      setter: Setters[K],
-    ) => {
-      setter(value);
-    };
-
-    presetParams.forEach((key) => {
-      applyParam(preset[key], settersRef.current[key]);
-    });
-  }, []);
+      presetParams.forEach((key) => {
+        applyParam(preset[key], setters[key]);
+      });
+    },
+    [setters],
+  );
 
   return applyPreset;
 };
