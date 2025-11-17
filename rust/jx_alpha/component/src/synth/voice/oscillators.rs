@@ -1,6 +1,7 @@
 use oscillator::Oscillator;
 
 mod oscillator;
+mod ring;
 
 #[derive(Default, Debug, Clone)]
 pub struct Oscillators {
