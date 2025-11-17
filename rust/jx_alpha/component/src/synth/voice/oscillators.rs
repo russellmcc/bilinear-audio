@@ -11,6 +11,7 @@ pub struct Oscillators {
 #[derive(Default, Debug, Clone)]
 pub struct Settings {
     pub oscillators: [oscillator::Settings; 2],
+    // TODO: look into how ring mod was parameterized in JX-8P
 }
 
 pub use oscillator::Settings as OscillatorSettings;
