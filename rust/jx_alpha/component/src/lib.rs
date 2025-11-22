@@ -1,7 +1,7 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 5] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 6] = [
     InfoRef {
         title: "Gain",
         short_title: "Gain",
@@ -53,6 +53,16 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 5] = [
             default: 64.0,
             valid_range: 0.0..=128.0,
             units: None,
+        },
+    },
+    InfoRef {
+        title: "Cross Modulation",
+        short_title: "X-Mod",
+        unique_id: "x_mod",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 0,
+            values: &["Off", "Ring"],
         },
     },
 ];
