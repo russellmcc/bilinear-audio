@@ -95,8 +95,6 @@ pub struct Settings {
 
     pub shape: Shape,
 
-    pub gain: f32,
-
     /// For width-modulatable shapes, the current width
     pub width: f32,
 }
@@ -111,19 +109,18 @@ impl Oscillator {
         Settings {
             increment,
             shape,
-            gain,
             width,
-        }: &Settings,
+        }: Settings,
     ) -> f32 {
-        assert!(*increment > 0.0 && *increment < 1.0);
+        assert!(increment > 0.0 && increment < 1.0);
         let ret = match shape {
-            Shape::Saw => saw(self.phase, *increment) * *gain,
-            Shape::Pulse => pulse(self.phase, *increment, *width) * *gain,
-            Shape::PwmSaw => pwm_saw(self.phase, *increment, *width) * *gain,
-            Shape::CombSaw => comb_saw(self.phase, *increment) * *gain,
-            Shape::Noise => self.rng.gen_range(-1.0..=1.0) * *gain,
+            Shape::Saw => saw(self.phase, increment),
+            Shape::Pulse => pulse(self.phase, increment, width),
+            Shape::PwmSaw => pwm_saw(self.phase, increment, width),
+            Shape::CombSaw => comb_saw(self.phase, increment),
+            Shape::Noise => self.rng.gen_range(-1.0..=1.0),
         };
-        self.phase += *increment;
+        self.phase += increment;
         if self.phase > 1.0 {
             self.phase -= 1.0;
         }

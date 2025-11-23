@@ -42,7 +42,7 @@ impl VoiceTrait for Voice {
     fn new(_max_samples_per_process_call: usize, sampling_rate: f32) -> Self {
         Self {
             pitch: 20.0,
-            oscillators: oscillators::Oscillators::new(),
+            oscillators: oscillators::Oscillators::default(),
             sampling_rate,
             vcf: vcf::Vcf::default(),
             env1: env::Env::default(),
@@ -94,11 +94,11 @@ impl VoiceTrait for Voice {
         let mut events = events.into_iter().peekable();
         for (
             (index, sample),
-            (gain, dco1_shape_int, global_pitch_bend, vcf_cutoff, resonance),
+            (gain, dco1_shape_int, global_pitch_bend, vcf_cutoff, resonance, x_mod),
             expression,
         ) in izip!(
             output.iter_mut().enumerate(),
-            pzip!(params[numeric "gain", enum "dco1_shape", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance"]),
+            pzip!(params[numeric "gain", enum "dco1_shape", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", enum "x_mod"]),
             note_expressions.iter_by_sample(),
         ) {
             while let Some(conformal_poly::Event {
@@ -130,6 +130,7 @@ impl VoiceTrait for Voice {
                         width: 0.5,
                     },
                 ],
+                x_mod: FromPrimitive::from_u32(x_mod).unwrap(),
             }) * gain
                 / 100.;
 

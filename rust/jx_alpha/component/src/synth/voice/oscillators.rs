@@ -1,39 +1,72 @@
+use num_derive::FromPrimitive;
 use oscillator::Oscillator;
 
 mod oscillator;
+mod ring;
 
 #[derive(Default, Debug, Clone)]
 pub struct Oscillators {
     oscillators: [Oscillator; 2],
+    ring: ring::Ring,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct OscillatorSettings {
+    pub increment: f32,
+
+    pub shape: Shape,
+
+    pub gain: f32,
+
+    /// For width-modulatable shapes, the current width
+    pub width: f32,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, FromPrimitive)]
+pub enum CrossModulation {
+    /// No cross modulation
+    #[default]
+    Off,
+
+    /// Ring modulation
+    Ring,
 }
 
 #[derive(Default, Debug, Clone)]
 pub struct Settings {
-    pub oscillators: [oscillator::Settings; 2],
+    pub oscillators: [OscillatorSettings; 2],
+    pub x_mod: CrossModulation,
 }
 
-pub use oscillator::Settings as OscillatorSettings;
+impl From<OscillatorSettings> for oscillator::Settings {
+    fn from(val: OscillatorSettings) -> Self {
+        oscillator::Settings {
+            increment: val.increment,
+            shape: val.shape,
+            width: val.width,
+        }
+    }
+}
+
 pub use oscillator::Shape;
 
 impl Oscillators {
-    pub fn new() -> Self {
-        Self {
-            oscillators: [Oscillator::default(), Oscillator::default()],
-        }
-    }
-
     pub fn reset(&mut self) {
         for oscillator in &mut self.oscillators {
             oscillator.reset();
         }
+        self.ring.reset();
     }
 
     pub fn generate(&mut self, settings: &Settings) -> f32 {
-        let mut output = 0.0;
-        for (oscillator, settings) in self.oscillators.iter_mut().zip(settings.oscillators.iter()) {
-            output += oscillator.generate(settings);
-        }
-        output
+        let osc0 = self.oscillators[0].generate(settings.oscillators[0].into());
+        let osc1 = self.oscillators[1].generate(settings.oscillators[1].into());
+        osc0 * settings.oscillators[0].gain
+            + settings.oscillators[1].gain
+                * match settings.x_mod {
+                    CrossModulation::Ring => self.ring.process(osc0, osc1),
+                    CrossModulation::Off => osc1,
+                }
     }
 }
 
@@ -54,7 +87,7 @@ mod tests {
     const LOW_INCREMENT: f32 = LOW_PITCH_HZ / (SAMPLE_RATE as f32);
 
     fn snapshot_for_settings(settings: &Settings, length: usize) -> Vec<f32> {
-        let mut oscillators = Oscillators::new();
+        let mut oscillators = Oscillators::default();
         std::iter::repeat_with(move || oscillators.generate(settings))
             .take(length)
             .collect()
@@ -69,19 +102,20 @@ mod tests {
             snapshot_for_settings(
                 &Settings {
                     oscillators: [
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
                             gain: 1.0,
                             width: 0.0,
                         },
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
                             gain: 0.0,
                             width: 0.0,
                         },
                     ],
+                    x_mod: CrossModulation::default(),
                 },
                 48000
             )
@@ -97,19 +131,20 @@ mod tests {
             snapshot_for_settings(
                 &Settings {
                     oscillators: [
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Pulse,
                             gain: 1.0,
                             width: 0.5,
                         },
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
                             gain: 0.0,
                             width: 0.5,
                         },
                     ],
+                    x_mod: CrossModulation::default(),
                 },
                 48000
             )
@@ -125,19 +160,20 @@ mod tests {
             snapshot_for_settings(
                 &Settings {
                     oscillators: [
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Pulse,
                             gain: 1.0,
                             width: 0.1,
                         },
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
                             gain: 0.0,
                             width: 0.5,
                         },
                     ],
+                    x_mod: CrossModulation::default(),
                 },
                 48000
             )
@@ -153,19 +189,20 @@ mod tests {
             snapshot_for_settings(
                 &Settings {
                     oscillators: [
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: LOW_INCREMENT,
                             shape: oscillator::Shape::PwmSaw,
                             gain: 1.0,
                             width: 0.5,
                         },
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
                             gain: 0.0,
                             width: 0.5,
                         },
                     ],
+                    x_mod: CrossModulation::default(),
                 },
                 48000
             )
@@ -181,19 +218,20 @@ mod tests {
             snapshot_for_settings(
                 &Settings {
                     oscillators: [
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: LOW_INCREMENT,
                             shape: oscillator::Shape::CombSaw,
                             gain: 1.0,
                             width: 0.5,
                         },
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
                             gain: 0.0,
                             width: 0.5,
                         },
                     ],
+                    x_mod: CrossModulation::default(),
                 },
                 48000
             )
@@ -209,19 +247,49 @@ mod tests {
             snapshot_for_settings(
                 &Settings {
                     oscillators: [
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: LOW_INCREMENT,
                             shape: oscillator::Shape::Noise,
                             gain: 1.0,
                             width: 0.5,
                         },
-                        oscillator::Settings {
+                        OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
                             gain: 0.0,
                             width: 0.5,
                         },
                     ],
+                    x_mod: CrossModulation::default(),
+                },
+                48000
+            )
+        );
+    }
+
+    #[test]
+    #[cfg_attr(miri, ignore)]
+    fn ring_snapshot() {
+        assert_snapshot!(
+            "oscillators/ring",
+            SAMPLE_RATE,
+            snapshot_for_settings(
+                &Settings {
+                    oscillators: [
+                        OscillatorSettings {
+                            increment: LOW_INCREMENT,
+                            shape: oscillator::Shape::Pulse,
+                            gain: 0.0,
+                            width: 0.5,
+                        },
+                        OscillatorSettings {
+                            increment: INCREMENT,
+                            shape: oscillator::Shape::Saw,
+                            gain: 1.0,
+                            width: 0.5,
+                        },
+                    ],
+                    x_mod: CrossModulation::Ring,
                 },
                 48000
             )
