@@ -1,13 +1,16 @@
 use num_derive::FromPrimitive;
 use oscillator::Oscillator;
 
+mod downsampler;
 mod oscillator;
 mod ring;
 
 #[derive(Default, Debug, Clone)]
 pub struct Oscillators {
+    #[allow(clippy::struct_field_names)]
     oscillators: [Oscillator; 2],
     ring: ring::Ring,
+    downsampler: downsampler::Downsampler,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
@@ -41,7 +44,7 @@ pub struct Settings {
 impl From<OscillatorSettings> for oscillator::Settings {
     fn from(val: OscillatorSettings) -> Self {
         oscillator::Settings {
-            increment: val.increment,
+            increment: val.increment / 2.0,
             shape: val.shape,
             width: val.width,
         }
@@ -56,9 +59,10 @@ impl Oscillators {
             oscillator.reset();
         }
         self.ring.reset();
+        self.downsampler.reset();
     }
 
-    pub fn generate(&mut self, settings: &Settings) -> f32 {
+    fn generate_high_rate(&mut self, settings: &Settings) -> f32 {
         let osc0 = self.oscillators[0].generate(settings.oscillators[0].into());
         let osc1 = self.oscillators[1].generate(settings.oscillators[1].into());
         osc0 * settings.oscillators[0].gain
@@ -68,10 +72,17 @@ impl Oscillators {
                     CrossModulation::Off => osc1,
                 }
     }
+
+    pub fn generate(&mut self, settings: &Settings) -> f32 {
+        let a = self.generate_high_rate(settings);
+        let b = self.generate_high_rate(settings);
+        self.downsampler.process([a, b])
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use conformal_component::audio::all_approx_eq;
     use snapshots::assert_snapshot;
 
     use super::*;
@@ -88,7 +99,7 @@ mod tests {
 
     fn snapshot_for_settings(settings: &Settings, length: usize) -> Vec<f32> {
         let mut oscillators = Oscillators::default();
-        std::iter::repeat_with(move || oscillators.generate(settings))
+        std::iter::repeat_with(move || oscillators.generate(settings) * 0.5)
             .take(length)
             .collect()
     }
@@ -294,5 +305,37 @@ mod tests {
                 48000
             )
         );
+    }
+
+    #[test]
+    #[cfg_attr(miri, ignore)]
+    fn reset() {
+        let mut oscillators = Oscillators::default();
+        let settings = Settings {
+            oscillators: [
+                OscillatorSettings {
+                    increment: LOW_INCREMENT,
+                    shape: oscillator::Shape::Pulse,
+                    gain: 0.0,
+                    width: 0.5,
+                },
+                OscillatorSettings {
+                    increment: INCREMENT,
+                    shape: oscillator::Shape::Saw,
+                    gain: 1.0,
+                    width: 0.5,
+                },
+            ],
+            x_mod: CrossModulation::Ring,
+        };
+        let length = 1024;
+        let initial = std::iter::repeat_with(|| oscillators.generate(&settings))
+            .take(length)
+            .collect::<Vec<_>>();
+        oscillators.reset();
+        let reset = std::iter::repeat_with(|| oscillators.generate(&settings))
+            .take(length)
+            .collect::<Vec<_>>();
+        assert!(all_approx_eq(initial, reset, 1e-6));
     }
 }

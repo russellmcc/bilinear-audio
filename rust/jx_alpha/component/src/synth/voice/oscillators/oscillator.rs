@@ -113,11 +113,12 @@ impl Oscillator {
         }: Settings,
     ) -> f32 {
         assert!(increment > 0.0 && increment < 1.0);
+        // note since we run these oversampled, we oversample the increment as well for the residual calculations
         let ret = match shape {
-            Shape::Saw => saw(self.phase, increment),
-            Shape::Pulse => pulse(self.phase, increment, width),
-            Shape::PwmSaw => pwm_saw(self.phase, increment, width),
-            Shape::CombSaw => comb_saw(self.phase, increment),
+            Shape::Saw => saw(self.phase, 2.0 * increment),
+            Shape::Pulse => pulse(self.phase, 2.0 * increment, width),
+            Shape::PwmSaw => pwm_saw(self.phase, 2.0 * increment, width),
+            Shape::CombSaw => comb_saw(self.phase, 2.0 * increment),
             Shape::Noise => self.rng.gen_range(-1.0..=1.0),
         };
         self.phase += increment;
