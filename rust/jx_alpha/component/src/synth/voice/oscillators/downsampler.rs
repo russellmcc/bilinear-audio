@@ -26,16 +26,16 @@ pub struct Downsampler {
 impl Downsampler {
     pub fn process(&mut self, input: [f32; 2]) -> f32 {
         let ia0 = input[1];
-        let ia1 = (ia0 - self.a1) * 0.06186171230589735 + self.a0;
-        let ia2 = (ia1 - self.a2) * 0.43390374982544216 + self.a1;
-        let ia3 = (ia2 - self.a3) * 0.8780880347898296 + self.a2;
+        let ia1 = (ia0 - self.a1) * 0.061_861_712 + self.a0;
+        let ia2 = (ia1 - self.a2) * 0.433_903_75 + self.a1;
+        let ia3 = (ia2 - self.a3) * 0.878_088_06 + self.a2;
         self.a0 = ia0;
         self.a1 = ia1;
         self.a2 = ia2;
         self.a3 = ia3;
         let ib0 = input[0];
-        let ib1 = (ib0 - self.b1) * 0.22343256419967508 + self.b0;
-        let ib2 = (ib1 - self.b2) * 0.6541402462509517 + self.b1;
+        let ib1 = (ib0 - self.b1) * 0.223_432_57 + self.b0;
+        let ib2 = (ib1 - self.b2) * 0.654_140_25 + self.b1;
         self.b0 = ib0;
         self.b1 = ib1;
         self.b2 = ib2;
