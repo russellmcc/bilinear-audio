@@ -7,5 +7,5 @@ runs:
       shell: bash
     - run: bun install --frozen-lockfile
       shell: bash
-    - run: bun run bootstrap --rust-version 1.91.0 --vst-sdk-version v3.8.0_build_66
+    - run: bun run bootstrap --rust-version 1.92.0 --vst-sdk-version v3.8.0_build_66
       shell: bash
