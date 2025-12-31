@@ -1,5 +1,8 @@
 use core::f32::consts::TAU;
-use dsp::osc_utils::{polyblamp2_residual, polyblep2_residual};
+use dsp::{
+    f32::rescale,
+    osc_utils::{polyblamp2_residual, polyblep2_residual},
+};
 use num_derive::FromPrimitive;
 use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro256PlusPlus;
@@ -130,6 +133,10 @@ impl Oscillator {
         ret
     }
 
+    pub fn current_phase(&self) -> f32 {
+        self.phase
+    }
+
     pub fn generate(
         &mut self,
         Settings {
@@ -145,6 +152,11 @@ impl Oscillator {
     /// Generate with hard-sync to another oscillator.
     ///
     /// Note that this must be run AFTER that oscillator has been updated.
+    ///
+    /// The approach here is to reset the phase whenever the conductor oscillator resets,
+    /// and also apply a BLEP to at least have some anti-aliasing. Note that we do NOT
+    /// handle higher-order (derivative) discontinuities, instead we rely on 2x oversampling to handle
+    /// the aliasing from that somewhat.
     pub fn generate_with_sync(
         &mut self,
         settings: Settings,
@@ -188,7 +200,7 @@ impl Oscillator {
             let t_pre = t_post - 1.0;
 
             // Note this residual scale assumes that at 0 phase we will be at -1.0, but this is true of all our shapes.
-            let residual_scale = (raw_out + 1.0) * 0.5;
+            let residual_scale = rescale(raw_out, -1.0..=1.0, 0.0..=1.0);
 
             // This is the same math in `polyblep2_residual` expressed a tiny bit differently.
             let pre_jump_residual = residual_scale * t_post * t_post;
