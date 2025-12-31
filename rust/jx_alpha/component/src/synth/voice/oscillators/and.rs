@@ -1,7 +1,19 @@
+use super::oscillator::get_jump_residuals;
+
 #[derive(Default, Debug, Clone)]
 enum State {
     #[default]
     Off,
+
+    TurnOn {
+        residual: f32,
+    },
+
+    On,
+
+    TurnOff {
+        residual: f32,
+    },
 }
 
 /// Emulates an imaginary cross mod based on and gates in an asic
@@ -28,7 +40,48 @@ impl And {
     }
 
     pub fn process(&mut self, input: f32, conductor_phase: f32, conductor_increment: f32) -> f32 {
-        if conductor_phase < 0.5 { -1.0 } else { input }
+        match self.state {
+            State::Off => {
+                if conductor_phase >= 0.5 {
+                    let rot_phase = conductor_phase - 0.5;
+                    if rot_phase > conductor_increment {
+                        self.state = State::On;
+                        input
+                    } else {
+                        // We are going to jump on next cycle, so we calculate the post-jump residual.
+                        let (pre_jump_residual, residual) =
+                            get_jump_residuals(rot_phase, conductor_increment, input);
+                        self.state = State::TurnOn { residual };
+                        -1.0 + pre_jump_residual
+                    }
+                } else {
+                    -1.0
+                }
+            }
+            State::TurnOn { residual } => {
+                self.state = State::On;
+                input + residual
+            }
+            State::On => {
+                if conductor_phase < 0.5 {
+                    if conductor_phase > conductor_increment {
+                        self.state = State::Off;
+                        -1.0
+                    } else {
+                        let (pre_jump_residual, residual) =
+                            get_jump_residuals(conductor_phase, conductor_increment, input);
+                        self.state = State::TurnOff { residual };
+                        input - pre_jump_residual
+                    }
+                } else {
+                    input
+                }
+            }
+            State::TurnOff { residual } => {
+                self.state = State::Off;
+                -1.0 - residual
+            }
+        }
     }
 }
 

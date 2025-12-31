@@ -96,6 +96,29 @@ pub fn comb_saw(phase: f32, increment: f32) -> f32 {
     (phase * TAU * 8.0).sin() * phase - TAU * 4.0 * polyblamp2_residual(phase, increment)
 }
 
+/// This is a special-purpose helper function to calculate the pre-and-post jump residuals
+/// for a sync-type jump controlled by one oscillator onto another.
+///
+/// phase and increment come from the conductor oscillator, and signal is the input of
+/// the synced oscillator. The output is the pre-and-post jump residuals.
+#[must_use]
+pub fn get_jump_residuals(phase: f32, increment: f32, signal: f32) -> (f32, f32) {
+    // Note we calcluate both the pre and post jump residuals here, since
+    // we have to keep a state to know where we jumped from (since the scale
+    // of the post-jump residual depends on where we jumped from).
+
+    let t_post = phase / increment;
+    let t_pre = t_post - 1.0;
+
+    // Note this residual scale assumes that at 0 phase we will be at -1.0, but this is true of all our shapes.
+    let residual_scale = rescale(signal, -1.0..=1.0, 0.0..=1.0);
+
+    // This is the same math in `polyblep2_residual` expressed a tiny bit differently.
+    let pre_jump_residual = residual_scale * t_post * t_post;
+    let post_jump_residual = residual_scale * -t_pre * t_pre;
+    (pre_jump_residual, post_jump_residual)
+}
+
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Settings {
     pub increment: f32,
@@ -193,18 +216,8 @@ impl Oscillator {
         );
 
         if conductor_osc.phase < conductor_increment {
-            // Note we calcluate both the pre and post jump residuals here, since
-            // we have to keep a state to know where we jumped from (since the scale
-            // of the post-jump residual depends on where we jumped from).
-            let t_post = conductor_osc.phase / conductor_increment;
-            let t_pre = t_post - 1.0;
-
-            // Note this residual scale assumes that at 0 phase we will be at -1.0, but this is true of all our shapes.
-            let residual_scale = rescale(raw_out, -1.0..=1.0, 0.0..=1.0);
-
-            // This is the same math in `polyblep2_residual` expressed a tiny bit differently.
-            let pre_jump_residual = residual_scale * t_post * t_post;
-            let post_jump_residual = residual_scale * -t_pre * t_pre;
+            let (pre_jump_residual, post_jump_residual) =
+                get_jump_residuals(conductor_osc.phase, conductor_increment, raw_out);
             self.sync_residual = Some(post_jump_residual);
 
             // Reset the phase when the conductor oscillator jumps.
