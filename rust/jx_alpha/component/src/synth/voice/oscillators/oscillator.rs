@@ -8,6 +8,8 @@ use rand_xoshiro::Xoshiro256PlusPlus;
 pub struct Oscillator {
     phase: f32,
     rng: Xoshiro256PlusPlus,
+
+    sync_residual: Option<f32>,
 }
 
 impl Default for Oscillator {
@@ -15,9 +17,11 @@ impl Default for Oscillator {
         Self {
             phase: 0.0,
             rng: Xoshiro256PlusPlus::seed_from_u64(369),
+            sync_residual: None,
         }
     }
 }
+
 #[must_use]
 fn saw(phase: f32, increment: f32) -> f32 {
     (phase - 0.5) * 2.0 - polyblep2_residual(phase, increment)
@@ -104,6 +108,28 @@ impl Oscillator {
         *self = Self::default();
     }
 
+    fn generate_internal(
+        &mut self,
+        increment: f32,
+        residual_increment: f32,
+        shape: Shape,
+        width: f32,
+    ) -> f32 {
+        assert!(increment > 0.0 && increment < 1.0);
+        let ret = match shape {
+            Shape::Saw => saw(self.phase, residual_increment),
+            Shape::Pulse => pulse(self.phase, residual_increment, width),
+            Shape::PwmSaw => pwm_saw(self.phase, residual_increment, width),
+            Shape::CombSaw => comb_saw(self.phase, residual_increment),
+            Shape::Noise => self.rng.gen_range(-1.0..=1.0),
+        };
+        self.phase += increment;
+        if self.phase > 1.0 {
+            self.phase -= 1.0;
+        }
+        ret
+    }
+
     pub fn generate(
         &mut self,
         Settings {
@@ -112,20 +138,70 @@ impl Oscillator {
             width,
         }: Settings,
     ) -> f32 {
-        assert!(increment > 0.0 && increment < 1.0);
         // note since we run these oversampled, we oversample the increment as well for the residual calculations
-        let ret = match shape {
-            Shape::Saw => saw(self.phase, 2.0 * increment),
-            Shape::Pulse => pulse(self.phase, 2.0 * increment, width),
-            Shape::PwmSaw => pwm_saw(self.phase, 2.0 * increment, width),
-            Shape::CombSaw => comb_saw(self.phase, 2.0 * increment),
-            Shape::Noise => self.rng.gen_range(-1.0..=1.0),
-        };
-        self.phase += increment;
-        if self.phase > 1.0 {
-            self.phase -= 1.0;
+        self.generate_internal(increment, 2.0 * increment, shape, width)
+    }
+
+    /// Generate with hard-sync to another oscillator.
+    ///
+    /// Note that this must be run AFTER that oscillator has been updated.
+    pub fn generate_with_sync(
+        &mut self,
+        settings: Settings,
+
+        conductor_osc: &Self,
+        conductor_increment: f32,
+    ) -> f32 {
+        if let Some(sync_residual) = self.sync_residual {
+            // This is the first sample after a sync, we have to ignore the residual we'd normally generate
+            // at the start of a cycle and output the naive aliased waveform with a post-jump residual instead.
+            let aliased_wave = match settings.shape {
+                Shape::Saw => (self.phase - 0.5) * 2.0,
+                Shape::Pulse | Shape::PwmSaw | Shape::Noise => -1.0,
+                Shape::CombSaw => (self.phase * TAU * 8.0).sin() * self.phase,
+            };
+            let output = aliased_wave - sync_residual;
+            self.phase += settings.increment;
+            if self.phase > 1.0 {
+                self.phase -= 1.0;
+            }
+            self.sync_residual = None;
+            return output;
         }
-        ret
+
+        assert!(conductor_increment > 0.0 && conductor_increment < 1.0);
+
+        // Note that the trick we use in non-synced mode to oversample the residual calculations
+        // will interfere with our sync residuals, so we just run at 1x increment.
+        let raw_out = self.generate_internal(
+            settings.increment,
+            settings.increment,
+            settings.shape,
+            settings.width,
+        );
+
+        if conductor_osc.phase < conductor_increment {
+            // Note we calcluate both the pre and post jump residuals here, since
+            // we have to keep a state to know where we jumped from (since the scale
+            // of the post-jump residual depends on where we jumped from).
+            let t_post = conductor_osc.phase / conductor_increment;
+            let t_pre = t_post - 1.0;
+
+            // Note this residual scale assumes that at 0 phase we will be at -1.0, but this is true of all our shapes.
+            let residual_scale = (raw_out + 1.0) * 0.5;
+
+            // This is the same math in `polyblep2_residual` expressed a tiny bit differently.
+            let pre_jump_residual = residual_scale * t_post * t_post;
+            let post_jump_residual = residual_scale * -t_pre * t_pre;
+            self.sync_residual = Some(post_jump_residual);
+
+            // Reset the phase when the conductor oscillator jumps.
+            self.phase = conductor_osc.phase * settings.increment / conductor_increment;
+
+            raw_out - pre_jump_residual
+        } else {
+            raw_out
+        }
     }
 }
 

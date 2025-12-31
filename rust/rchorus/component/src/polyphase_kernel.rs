@@ -5,7 +5,7 @@ pub struct PolyphaseKernel {
 
 impl PolyphaseKernel {
     pub fn split(kernel: &[f32], num_phases: u16) -> Self {
-        assert!(kernel.len() % num_phases as usize == 0);
+        assert!(kernel.len().is_multiple_of(num_phases as usize));
         let phase_len = kernel.len() / num_phases as usize;
         let mut phases = vec![vec![0f32; phase_len]; num_phases as usize];
         for (i, tap) in kernel.iter().enumerate() {

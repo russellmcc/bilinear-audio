@@ -1,7 +1,7 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 6] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 7] = [
     InfoRef {
         title: "Gain",
         short_title: "Gain",
@@ -63,6 +63,16 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 6] = [
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
             values: &["Off", "Ring"],
+        },
+    },
+    InfoRef {
+        title: "Sync",
+        short_title: "Sync",
+        unique_id: "sync",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 0,
+            values: &["Off", "Hard"],
         },
     },
 ];

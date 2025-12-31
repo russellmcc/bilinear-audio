@@ -35,10 +35,21 @@ pub enum CrossModulation {
     Ring,
 }
 
+#[derive(Default, Debug, Clone, Copy, PartialEq, FromPrimitive)]
+pub enum Sync {
+    /// No sync
+    #[default]
+    Off,
+
+    /// Hard sync where osc 1 resets on osc 0's cycle
+    Hard,
+}
+
 #[derive(Default, Debug, Clone)]
 pub struct Settings {
     pub oscillators: [OscillatorSettings; 2],
     pub x_mod: CrossModulation,
+    pub sync: Sync,
 }
 
 impl From<OscillatorSettings> for oscillator::Settings {
@@ -63,13 +74,22 @@ impl Oscillators {
     }
 
     fn generate_high_rate(&mut self, settings: &Settings) -> f32 {
-        let osc0 = self.oscillators[0].generate(settings.oscillators[0].into());
-        let osc1 = self.oscillators[1].generate(settings.oscillators[1].into());
-        osc0 * settings.oscillators[0].gain
+        let [osc0, osc1] = &mut self.oscillators;
+        let osc0_settings = settings.oscillators[0].into();
+        let osc0_out = osc0.generate(osc0_settings);
+        let osc1_out = match settings.sync {
+            Sync::Off => osc1.generate(settings.oscillators[1].into()),
+            Sync::Hard => osc1.generate_with_sync(
+                settings.oscillators[1].into(),
+                osc0,
+                osc0_settings.increment,
+            ),
+        };
+        osc0_out * settings.oscillators[0].gain
             + settings.oscillators[1].gain
                 * match settings.x_mod {
-                    CrossModulation::Ring => self.ring.process(osc0, osc1),
-                    CrossModulation::Off => osc1,
+                    CrossModulation::Ring => self.ring.process(osc0_out, osc1_out),
+                    CrossModulation::Off => osc1_out,
                 }
     }
 
@@ -126,9 +146,9 @@ mod tests {
                             width: 0.0,
                         },
                     ],
-                    x_mod: CrossModulation::default(),
+                    ..Default::default()
                 },
-                48000
+                48000,
             )
         );
     }
@@ -155,7 +175,7 @@ mod tests {
                             width: 0.5,
                         },
                     ],
-                    x_mod: CrossModulation::default(),
+                    ..Default::default()
                 },
                 48000
             )
@@ -184,7 +204,7 @@ mod tests {
                             width: 0.5,
                         },
                     ],
-                    x_mod: CrossModulation::default(),
+                    ..Default::default()
                 },
                 48000
             )
@@ -213,7 +233,7 @@ mod tests {
                             width: 0.5,
                         },
                     ],
-                    x_mod: CrossModulation::default(),
+                    ..Default::default()
                 },
                 48000
             )
@@ -242,7 +262,7 @@ mod tests {
                             width: 0.5,
                         },
                     ],
-                    x_mod: CrossModulation::default(),
+                    ..Default::default()
                 },
                 48000
             )
@@ -271,7 +291,7 @@ mod tests {
                             width: 0.5,
                         },
                     ],
-                    x_mod: CrossModulation::default(),
+                    ..Default::default()
                 },
                 48000
             )
@@ -301,8 +321,39 @@ mod tests {
                         },
                     ],
                     x_mod: CrossModulation::Ring,
+                    ..Default::default()
                 },
                 48000
+            )
+        );
+    }
+
+    #[test]
+    #[cfg_attr(miri, ignore)]
+    fn sync_snapshot() {
+        assert_snapshot!(
+            "oscillators/sync",
+            SAMPLE_RATE,
+            snapshot_for_settings(
+                &Settings {
+                    oscillators: [
+                        OscillatorSettings {
+                            increment: LOW_INCREMENT,
+                            shape: oscillator::Shape::Saw,
+                            gain: 0.0,
+                            width: 0.0,
+                        },
+                        OscillatorSettings {
+                            increment: INCREMENT,
+                            shape: oscillator::Shape::Saw,
+                            gain: 1.0,
+                            width: 0.0,
+                        },
+                    ],
+                    sync: Sync::Hard,
+                    ..Default::default()
+                },
+                48000,
             )
         );
     }
@@ -326,7 +377,7 @@ mod tests {
                     width: 0.5,
                 },
             ],
-            x_mod: CrossModulation::Ring,
+            ..Default::default()
         };
         let length = 1024;
         let initial = std::iter::repeat_with(|| oscillators.generate(&settings))

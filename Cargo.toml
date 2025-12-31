@@ -1,12 +1,26 @@
 [workspace]
-members = [ "rust/p61/component", "rust/p61/vst", "rust/shared/snapshots", "rust/rchorus/vst", "rust/rchorus/component", "rust/shared/dsp", "rust/shared/component_benchmarks", "rust/shared/component_snapshots", "rust/reverb/component", "rust/reverb/vst", "rust/jx_alpha/component", "rust/jx_alpha/vst" ]
+members = [
+    "rust/p61/component",
+    "rust/p61/vst",
+    "rust/shared/snapshots",
+    "rust/rchorus/vst",
+    "rust/rchorus/component",
+    "rust/shared/dsp",
+    "rust/shared/component_benchmarks",
+    "rust/shared/component_snapshots",
+    "rust/reverb/component",
+    "rust/reverb/vst",
+    "rust/jx_alpha/component",
+    "rust/jx_alpha/vst"
+]
 resolver = "2"
 
 [workspace.package]
-rust-version = "1.85.0"
+rust-version = "1.92.0"
 edition = "2024"
 
 [workspace.lints]
+
 [workspace.lints.rustdoc]
 private_doc_tests = "warn"
 unescaped_backticks = "warn"
