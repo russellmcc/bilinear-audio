@@ -1,5 +1,8 @@
 use core::f32::consts::TAU;
-use dsp::osc_utils::{polyblamp2_residual, polyblep2_residual};
+use dsp::{
+    f32::rescale,
+    osc_utils::{polyblamp2_residual, polyblep2_residual},
+};
 use num_derive::FromPrimitive;
 use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro256PlusPlus;
@@ -28,7 +31,7 @@ fn saw(phase: f32, increment: f32) -> f32 {
 }
 
 #[must_use]
-fn rotate(phase: f32, x: f32) -> f32 {
+pub fn rotate(phase: f32, x: f32) -> f32 {
     let phase = phase + (1.0 - x);
     if phase > 1.0 { phase - 1.0 } else { phase }
 }
@@ -93,6 +96,29 @@ pub fn comb_saw(phase: f32, increment: f32) -> f32 {
     (phase * TAU * 8.0).sin() * phase - TAU * 4.0 * polyblamp2_residual(phase, increment)
 }
 
+/// This is a special-purpose helper function to calculate the pre-and-post jump residuals
+/// for a sync-type jump controlled by one oscillator onto another.
+///
+/// phase and increment come from the conductor oscillator, and signal is the input of
+/// the synced oscillator. The output is the pre-and-post jump residuals.
+#[must_use]
+fn get_jump_residuals(phase: f32, increment: f32, signal: f32) -> (f32, f32) {
+    // Note we calcluate both the pre and post jump residuals here, since
+    // we have to keep a state to know where we jumped from (since the scale
+    // of the post-jump residual depends on where we jumped from).
+
+    let t_post = phase / increment;
+    let t_pre = t_post - 1.0;
+
+    // Note this residual scale assumes that at 0 phase we will be at -1.0, but this is true of all our shapes.
+    let residual_scale = rescale(signal, -1.0..=1.0, 0.0..=1.0);
+
+    // This is the same math in `polyblep2_residual` expressed a tiny bit differently.
+    let pre_jump_residual = residual_scale * t_post * t_post;
+    let post_jump_residual = residual_scale * -t_pre * t_pre;
+    (pre_jump_residual, post_jump_residual)
+}
+
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Settings {
     pub increment: f32,
@@ -130,6 +156,10 @@ impl Oscillator {
         ret
     }
 
+    pub fn current_phase(&self) -> f32 {
+        self.phase
+    }
+
     pub fn generate(
         &mut self,
         Settings {
@@ -145,6 +175,11 @@ impl Oscillator {
     /// Generate with hard-sync to another oscillator.
     ///
     /// Note that this must be run AFTER that oscillator has been updated.
+    ///
+    /// The approach here is to reset the phase whenever the conductor oscillator resets,
+    /// and also apply a BLEP to at least have some anti-aliasing. Note that we do NOT
+    /// handle higher-order (derivative) discontinuities, instead we rely on 2x oversampling to handle
+    /// the aliasing from that somewhat.
     pub fn generate_with_sync(
         &mut self,
         settings: Settings,
@@ -181,18 +216,8 @@ impl Oscillator {
         );
 
         if conductor_osc.phase < conductor_increment {
-            // Note we calcluate both the pre and post jump residuals here, since
-            // we have to keep a state to know where we jumped from (since the scale
-            // of the post-jump residual depends on where we jumped from).
-            let t_post = conductor_osc.phase / conductor_increment;
-            let t_pre = t_post - 1.0;
-
-            // Note this residual scale assumes that at 0 phase we will be at -1.0, but this is true of all our shapes.
-            let residual_scale = (raw_out + 1.0) * 0.5;
-
-            // This is the same math in `polyblep2_residual` expressed a tiny bit differently.
-            let pre_jump_residual = residual_scale * t_post * t_post;
-            let post_jump_residual = residual_scale * -t_pre * t_pre;
+            let (pre_jump_residual, post_jump_residual) =
+                get_jump_residuals(conductor_osc.phase, conductor_increment, raw_out);
             self.sync_residual = Some(post_jump_residual);
 
             // Reset the phase when the conductor oscillator jumps.

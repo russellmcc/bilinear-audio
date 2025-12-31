@@ -1,6 +1,7 @@
 use num_derive::FromPrimitive;
 use oscillator::Oscillator;
 
+mod and;
 mod downsampler;
 mod oscillator;
 mod ring;
@@ -10,6 +11,7 @@ pub struct Oscillators {
     #[allow(clippy::struct_field_names)]
     oscillators: [Oscillator; 2],
     ring: ring::Ring,
+    and: and::And,
     downsampler: downsampler::Downsampler,
 }
 
@@ -33,6 +35,9 @@ pub enum CrossModulation {
 
     /// Ring modulation
     Ring,
+
+    /// "And" modulation
+    And,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, FromPrimitive)]
@@ -71,6 +76,7 @@ impl Oscillators {
         }
         self.ring.reset();
         self.downsampler.reset();
+        self.and.reset();
     }
 
     fn generate_high_rate(&mut self, settings: &Settings) -> f32 {
@@ -89,6 +95,10 @@ impl Oscillators {
             + settings.oscillators[1].gain
                 * match settings.x_mod {
                     CrossModulation::Ring => self.ring.process(osc0_out, osc1_out),
+                    CrossModulation::And => {
+                        self.and
+                            .process(osc1_out, osc0.current_phase(), osc0_settings.increment)
+                    }
                     CrossModulation::Off => osc1_out,
                 }
     }
@@ -321,6 +331,36 @@ mod tests {
                         },
                     ],
                     x_mod: CrossModulation::Ring,
+                    ..Default::default()
+                },
+                48000
+            )
+        );
+    }
+
+    #[test]
+    #[cfg_attr(miri, ignore)]
+    fn and_snapshot() {
+        assert_snapshot!(
+            "oscillators/and",
+            SAMPLE_RATE,
+            snapshot_for_settings(
+                &Settings {
+                    oscillators: [
+                        OscillatorSettings {
+                            increment: LOW_INCREMENT,
+                            shape: oscillator::Shape::Pulse,
+                            gain: 0.0,
+                            width: 0.5,
+                        },
+                        OscillatorSettings {
+                            increment: INCREMENT,
+                            shape: oscillator::Shape::Saw,
+                            gain: 1.0,
+                            width: 0.5,
+                        },
+                    ],
+                    x_mod: CrossModulation::And,
                     ..Default::default()
                 },
                 48000

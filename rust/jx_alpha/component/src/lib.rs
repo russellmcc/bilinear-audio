@@ -62,7 +62,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 7] = [
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
-            values: &["Off", "Ring"],
+            values: &["Off", "Ring", "Bit"],
         },
     },
     InfoRef {
