@@ -94,11 +94,11 @@ impl VoiceTrait for Voice {
         let mut events = events.into_iter().peekable();
         for (
             (index, sample),
-            (gain, dco1_shape_int, global_pitch_bend, vcf_cutoff, resonance, x_mod),
+            (gain, dco1_shape_int, global_pitch_bend, vcf_cutoff, resonance, x_mod, sync),
             expression,
         ) in izip!(
             output.iter_mut().enumerate(),
-            pzip!(params[numeric "gain", enum "dco1_shape", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", enum "x_mod"]),
+            pzip!(params[numeric "gain", enum "dco1_shape", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", enum "x_mod", enum "sync"]),
             note_expressions.iter_by_sample(),
         ) {
             while let Some(conformal_poly::Event {
@@ -131,6 +131,7 @@ impl VoiceTrait for Voice {
                     },
                 ],
                 x_mod: FromPrimitive::from_u32(x_mod).unwrap(),
+                sync: FromPrimitive::from_u32(sync).unwrap(),
             }) * gain
                 / 100.;
 
