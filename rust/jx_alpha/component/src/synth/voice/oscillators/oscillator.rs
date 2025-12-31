@@ -31,7 +31,7 @@ fn saw(phase: f32, increment: f32) -> f32 {
 }
 
 #[must_use]
-fn rotate(phase: f32, x: f32) -> f32 {
+pub fn rotate(phase: f32, x: f32) -> f32 {
     let phase = phase + (1.0 - x);
     if phase > 1.0 { phase - 1.0 } else { phase }
 }
@@ -102,7 +102,7 @@ pub fn comb_saw(phase: f32, increment: f32) -> f32 {
 /// phase and increment come from the conductor oscillator, and signal is the input of
 /// the synced oscillator. The output is the pre-and-post jump residuals.
 #[must_use]
-pub fn get_jump_residuals(phase: f32, increment: f32, signal: f32) -> (f32, f32) {
+fn get_jump_residuals(phase: f32, increment: f32, signal: f32) -> (f32, f32) {
     // Note we calcluate both the pre and post jump residuals here, since
     // we have to keep a state to know where we jumped from (since the scale
     // of the post-jump residual depends on where we jumped from).

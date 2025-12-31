@@ -1,20 +1,4 @@
-use super::oscillator::get_jump_residuals;
-
-#[derive(Default, Debug, Clone)]
-enum State {
-    #[default]
-    Off,
-
-    TurnOn {
-        residual: f32,
-    },
-
-    On,
-
-    TurnOff {
-        residual: f32,
-    },
-}
+use dsp::{f32::rescale, osc_utils::polyblep2_residual};
 
 /// Emulates an imaginary cross mod based on and gates in an asic
 ///
@@ -30,58 +14,28 @@ enum State {
 /// aliasing from the sharp discontinuities. Note that we do not handle higher-order
 /// (derivative) discontinuities, so this still aliases a bunch :(.
 #[derive(Default, Debug, Clone)]
-pub struct And {
-    state: State,
-}
+pub struct And {}
 
 impl And {
     pub fn reset(&mut self) {
         *self = Self::default();
     }
 
+    #[allow(clippy::unused_self)] // We allow unused self here because we might make this stateful later and we don't want to change API.
     pub fn process(&mut self, input: f32, conductor_phase: f32, conductor_increment: f32) -> f32 {
-        match self.state {
-            State::Off => {
-                if conductor_phase >= 0.5 {
-                    let rot_phase = conductor_phase - 0.5;
-                    if rot_phase > conductor_increment {
-                        self.state = State::On;
-                        input
-                    } else {
-                        // We are going to jump on next cycle, so we calculate the post-jump residual.
-                        let (pre_jump_residual, residual) =
-                            get_jump_residuals(rot_phase, conductor_increment, input);
-                        self.state = State::TurnOn { residual };
-                        -1.0 + pre_jump_residual
-                    }
-                } else {
-                    -1.0
-                }
-            }
-            State::TurnOn { residual } => {
-                self.state = State::On;
-                input + residual
-            }
-            State::On => {
-                if conductor_phase < 0.5 {
-                    if conductor_phase > conductor_increment {
-                        self.state = State::Off;
-                        -1.0
-                    } else {
-                        let (pre_jump_residual, residual) =
-                            get_jump_residuals(conductor_phase, conductor_increment, input);
-                        self.state = State::TurnOff { residual };
-                        input - pre_jump_residual
-                    }
-                } else {
-                    input
-                }
-            }
-            State::TurnOff { residual } => {
-                self.state = State::Off;
-                -1.0 - residual
-            }
-        }
+        let mut output = if conductor_phase < 0.5 { -1.0 } else { input };
+
+        let scale = rescale(input, -1.0..=1.0, 0.0..=1.0);
+
+        let rot_phase = super::oscillator::rotate(conductor_phase, 0.5);
+
+        // rising edge correction at 0.5
+        output += scale * polyblep2_residual(rot_phase, conductor_increment);
+
+        // Falling edge correction at 0
+        output -= scale * polyblep2_residual(conductor_phase, conductor_increment);
+
+        output
     }
 }
 
@@ -96,9 +50,9 @@ mod tests {
     fn low_phase_stays_off() {
         let mut and = And::default();
         for _ in 0..100 {
-            and.process(1.0, 0.0, 0.01);
+            and.process(1.0, 0.05, 0.01);
         }
-        assert_approx_eq!(and.process(1.0, 0.0, 0.01), -1.0);
+        assert_approx_eq!(and.process(1.0, 0.05, 0.01), -1.0);
     }
 
     #[test]
