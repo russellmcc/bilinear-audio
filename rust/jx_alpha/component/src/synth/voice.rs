@@ -1,6 +1,6 @@
 use conformal_component::{events::NoteData, parameters, pzip};
 use conformal_poly::{EventData, Voice as VoiceTrait};
-use dsp::f32::rescale;
+use dsp::f32::{rescale, rescale_clamped};
 use itertools::izip;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -61,6 +61,48 @@ fn volume_to_gain(volume: f32) -> f32 {
         rescale(volume, 0.0..=BREAK_VOLUME, 0.0..=break_gain)
     } else {
         rescale(volume, BREAK_VOLUME..=0.1, break_log_gain..=0.0).exp()
+    }
+}
+
+fn env_param_to_time(param: f32) -> f32 {
+    // Measured time at param 0
+    const MIN_TIME: f32 = 0.004f32;
+    // Measured time at param 100
+    const MAX_TIME: f32 = 33.141f32;
+
+    // Note that the params are in log2 space
+    let min_time_log2 = MIN_TIME.log2();
+    let max_time_log2 = MAX_TIME.log2();
+
+    let time_log2 = rescale_clamped(param, 0.0..=100.0, min_time_log2..=max_time_log2);
+    time_log2.exp2()
+}
+
+fn env_params(
+    t1: f32,
+    l1: f32,
+    t2: f32,
+    l2: f32,
+    t3: f32,
+    l3: f32,
+    t4: f32,
+    pitch: f32,
+    key_follow: f32,
+) -> env::Params {
+    const NOMINAL_PITCH: f32 = 60.0;
+    // We've measured the param -> time calculation, but we have not measured the key follow scaling,
+    // we're inspired from "note 2" in the jx-8p manual and assuming it is correct.
+    // basically at 100% key follow, we half the time every octave.
+    let key_follow_shift =
+        (pitch - NOMINAL_PITCH) / 12.0 * rescale(key_follow, 0.0..=100.0, 0.0..=1.0);
+    env::Params {
+        attack_time: env_param_to_time(t1 + key_follow_shift),
+        attack_target: rescale(l1, 0.0..=100.0, 0.0..=1.0),
+        decay_time: env_param_to_time(t2 + key_follow_shift),
+        decay_target: rescale(l2, 0.0..=100.0, 0.0..=1.0),
+        to_sustain_time: env_param_to_time(t3 + key_follow_shift),
+        sustain: rescale(l3, 0.0..=100.0, 0.0..=1.0),
+        release_time: env_param_to_time(t4 + key_follow_shift),
     }
 }
 
@@ -139,11 +181,60 @@ impl VoiceTrait for Voice {
                 resonance,
                 vcf_key,
                 x_mod_int,
+                env1_t1,
+                env1_l1,
+                env1_t2,
+                env1_l2,
+                env1_t3,
+                env1_l3,
+                env1_t4,
+                env1_key,
+                env2_t1,
+                env2_l1,
+                env2_t2,
+                env2_l2,
+                env2_t3,
+                env2_l3,
+                env2_t4,
+                env2_key,
             ),
             expression,
         ) in izip!(
             output.iter_mut().enumerate(),
-            pzip!(params[numeric "level", enum "dco1_shape", numeric "dco1_pwm_depth", numeric "dco1_pwm_rate", numeric "dco1_tune", enum "dco2_shape", numeric "dco2_pwm_depth", numeric "dco2_pwm_rate", numeric "dco2_tune", numeric "mix_dco1", numeric "mix_dco2", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", numeric "vcf_key", enum "x_mod"]),
+            pzip!(params[
+                numeric "level",
+                enum "dco1_shape",
+                numeric "dco1_pwm_depth",
+                numeric "dco1_pwm_rate",
+                numeric "dco1_tune",
+                enum "dco2_shape",
+                numeric "dco2_pwm_depth",
+                numeric "dco2_pwm_rate",
+                numeric "dco2_tune",
+                numeric "mix_dco1",
+                numeric "mix_dco2",
+                numeric "pitch_bend",
+                numeric "vcf_cutoff",
+                numeric "resonance",
+                numeric "vcf_key",
+                enum "x_mod",
+                numeric "env1_t1",
+                numeric "env1_l1",
+                numeric "env1_t2",
+                numeric "env1_l2",
+                numeric "env1_t3",
+                numeric "env1_l3",
+                numeric "env1_t4",
+                numeric "env1_key",
+                numeric "env2_t1",
+                numeric "env2_l1",
+                numeric "env2_t2",
+                numeric "env2_l2",
+                numeric "env2_t3",
+                numeric "env2_l3",
+                numeric "env2_t4",
+                numeric "env2_key"
+            ]),
             note_expressions.iter_by_sample(),
         ) {
             while let Some(conformal_poly::Event {
@@ -157,8 +248,40 @@ impl VoiceTrait for Voice {
                 self.handle_event(data);
                 events.next();
             }
+
             let total_pitch_bend = global_pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
             let adjusted_pitch = self.pitch + total_pitch_bend;
+
+            let env1_coeffs = env::calc_coeffs(
+                &env_params(
+                    env1_t1,
+                    env1_l1,
+                    env1_t2,
+                    env1_l2,
+                    env1_t3,
+                    env1_l3,
+                    env1_t4,
+                    adjusted_pitch,
+                    env1_key,
+                ),
+                self.sampling_rate,
+            );
+            let _env1 = self.env1.process(&env1_coeffs);
+            let env2_coeffs = env::calc_coeffs(
+                &env_params(
+                    env2_t1,
+                    env2_l1,
+                    env2_t2,
+                    env2_l2,
+                    env2_t3,
+                    env2_l3,
+                    env2_t4,
+                    adjusted_pitch,
+                    env2_key,
+                ),
+                self.sampling_rate,
+            );
+            let _env2 = self.env2.process(&env2_coeffs);
             let osc0_incr = increment(adjusted_pitch + dco1_tune, self.sampling_rate);
             let osc1_incr = increment(adjusted_pitch + dco2_tune, self.sampling_rate);
             let x_mod: Dco2XMod = FromPrimitive::from_u32(x_mod_int).unwrap();

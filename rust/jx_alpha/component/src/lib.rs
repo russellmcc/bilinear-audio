@@ -1,7 +1,7 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 16] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
     InfoRef {
         title: "Level",
         short_title: "Level",
@@ -167,6 +167,182 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 16] = [
         title: "VCF Key Follow",
         short_title: "VCF Key Follow",
         unique_id: "vcf_key",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env1 T1",
+        short_title: "Env1 T1",
+        unique_id: "env1_t1",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env1 L1",
+        short_title: "Env1 L1",
+        unique_id: "env1_l1",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env1 T2",
+        short_title: "Env1 T2",
+        unique_id: "env1_t2",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env1 L2",
+        short_title: "Env1 L2",
+        unique_id: "env1_l2",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env1 T3",
+        short_title: "Env1 T3",
+        unique_id: "env1_t3",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env1 L3",
+        short_title: "Env1 L3",
+        unique_id: "env1_l3",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env1 T4",
+        short_title: "Env1 T4",
+        unique_id: "env1_t4",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env1 Key Follow",
+        short_title: "Env1 Key",
+        unique_id: "env1_key",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env2 T1",
+        short_title: "Env2 T1",
+        unique_id: "env2_t1",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env2 L1",
+        short_title: "Env2 L1",
+        unique_id: "env2_l1",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env2 T2",
+        short_title: "Env2 T2",
+        unique_id: "env2_t2",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env2 L2",
+        short_title: "Env2 L2",
+        unique_id: "env2_l2",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env2 T3",
+        short_title: "Env2 T3",
+        unique_id: "env2_t3",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env2 L3",
+        short_title: "Env2 L3",
+        unique_id: "env2_l3",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env2 T4",
+        short_title: "Env2 T4",
+        unique_id: "env2_t4",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Env2 Key Follow",
+        short_title: "Env2 Key",
+        unique_id: "env2_key",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 0.0,
