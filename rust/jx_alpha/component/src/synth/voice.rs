@@ -19,7 +19,7 @@ fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
 #[derive(Default, Debug, Clone)]
 pub struct SharedData {}
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Voice {
     pitch: f32,
     sampling_rate: f32,
@@ -94,11 +94,26 @@ impl VoiceTrait for Voice {
         let mut events = events.into_iter().peekable();
         for (
             (index, sample),
-            (gain, dco1_shape_int, global_pitch_bend, vcf_cutoff, resonance, x_mod, sync),
+            (
+                gain,
+                dco1_shape_int,
+                dco1_pwm_depth,
+                dco1_pwm_rate,
+                dco1_tune,
+                dco1_lfo,
+                dco1_env,
+                dco1_env_source_int,
+                dco1_env_dynamics_int,
+                global_pitch_bend,
+                vcf_cutoff,
+                resonance,
+                x_mod,
+                sync,
+            ),
             expression,
         ) in izip!(
             output.iter_mut().enumerate(),
-            pzip!(params[numeric "gain", enum "dco1_shape", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", enum "x_mod", enum "sync"]),
+            pzip!(params[numeric "gain", enum "dco1_shape", numeric "dco1_pwm_depth", numeric "dco1_pwm_rate", numeric "dco1_tune", numeric "dco1_lfo", numeric "dco1_env", enum "dco1_env_source", enum "dco1_env_dynamics", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", enum "x_mod", enum "sync"]),
             note_expressions.iter_by_sample(),
         ) {
             while let Some(conformal_poly::Event {
@@ -114,20 +129,23 @@ impl VoiceTrait for Voice {
             }
             let total_pitch_bend = global_pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
             let adjusted_pitch = self.pitch + total_pitch_bend;
-            let osc_incr = increment(adjusted_pitch, self.sampling_rate);
+            let osc0_incr = increment(adjusted_pitch + dco1_tune, self.sampling_rate);
+            let osc1_incr = increment(adjusted_pitch, self.sampling_rate);
             *sample = self.oscillators.generate(&oscillators::Settings {
                 oscillators: [
                     OscillatorSettings {
-                        increment: osc_incr,
+                        increment: osc0_incr,
                         shape: FromPrimitive::from_u32(dco1_shape_int).unwrap(),
                         gain: 1.0,
-                        width: 0.5,
+                        pwm_depth: dco1_pwm_depth,
+                        pwm_incr: dco1_pwm_rate / self.sampling_rate,
                     },
                     OscillatorSettings {
-                        increment: osc_incr,
+                        increment: osc1_incr,
                         shape: Shape::Saw,
                         gain: 0.0,
-                        width: 0.5,
+                        pwm_depth: 0.0,
+                        pwm_incr: 0.0,
                     },
                 ],
                 x_mod: FromPrimitive::from_u32(x_mod).unwrap(),

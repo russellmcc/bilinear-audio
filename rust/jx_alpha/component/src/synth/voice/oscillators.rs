@@ -6,10 +6,11 @@ mod downsampler;
 mod oscillator;
 mod ring;
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug)]
 pub struct Oscillators {
     #[allow(clippy::struct_field_names)]
     oscillators: [Oscillator; 2],
+    pwm_lfos: [dsp::sine_lfo::SineLfo; 2],
     ring: ring::Ring,
     and: and::And,
     downsampler: downsampler::Downsampler,
@@ -23,8 +24,13 @@ pub struct OscillatorSettings {
 
     pub gain: f32,
 
-    /// For width-modulatable shapes, the current width
-    pub width: f32,
+    /// For width-modulatable shapes, the pwm width
+    ///
+    /// Note that if rate is 0, this acts as a manual control of width.
+    pub pwm_depth: f32,
+
+    /// For width-modulatable shapes, the pwm incr
+    pub pwm_incr: f32,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, FromPrimitive)]
@@ -57,13 +63,15 @@ pub struct Settings {
     pub sync: Sync,
 }
 
-impl From<OscillatorSettings> for oscillator::Settings {
-    fn from(val: OscillatorSettings) -> Self {
-        oscillator::Settings {
-            increment: val.increment / 2.0,
-            shape: val.shape,
-            width: val.width,
-        }
+fn to_raw_settings(val: OscillatorSettings, lfo_out: f32) -> oscillator::Settings {
+    oscillator::Settings {
+        increment: val.increment / 2.0,
+        shape: val.shape,
+        width: if val.pwm_incr == 0.0 {
+            0.5 - (val.pwm_depth * 0.5)
+        } else {
+            (lfo_out * 0.5) * val.pwm_depth + 0.5
+        },
     }
 }
 
@@ -77,19 +85,21 @@ impl Oscillators {
         self.ring.reset();
         self.downsampler.reset();
         self.and.reset();
+        for lfo in &mut self.pwm_lfos {
+            lfo.reset();
+        }
     }
 
     fn generate_high_rate(&mut self, settings: &Settings) -> f32 {
         let [osc0, osc1] = &mut self.oscillators;
-        let osc0_settings = settings.oscillators[0].into();
+        let pwm0_out = self.pwm_lfos[0].generate(settings.oscillators[0].pwm_incr);
+        let pwm1_out = self.pwm_lfos[1].generate(settings.oscillators[1].pwm_incr);
+        let osc0_settings = to_raw_settings(settings.oscillators[0], pwm0_out);
+        let osc1_settings = to_raw_settings(settings.oscillators[1], pwm1_out);
         let osc0_out = osc0.generate(osc0_settings);
         let osc1_out = match settings.sync {
-            Sync::Off => osc1.generate(settings.oscillators[1].into()),
-            Sync::Hard => osc1.generate_with_sync(
-                settings.oscillators[1].into(),
-                osc0,
-                osc0_settings.increment,
-            ),
+            Sync::Off => osc1.generate(osc1_settings),
+            Sync::Hard => osc1.generate_with_sync(osc1_settings, osc0, osc0_settings.increment),
         };
         osc0_out * settings.oscillators[0].gain
             + settings.oscillators[1].gain
@@ -147,13 +157,12 @@ mod tests {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
                             gain: 1.0,
-                            width: 0.0,
+                            ..Default::default()
                         },
                         OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
-                            gain: 0.0,
-                            width: 0.0,
+                            ..Default::default()
                         },
                     ],
                     ..Default::default()
@@ -176,13 +185,12 @@ mod tests {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Pulse,
                             gain: 1.0,
-                            width: 0.5,
+                            ..Default::default()
                         },
                         OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
-                            gain: 0.0,
-                            width: 0.5,
+                            ..Default::default()
                         },
                     ],
                     ..Default::default()
@@ -205,13 +213,13 @@ mod tests {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Pulse,
                             gain: 1.0,
-                            width: 0.1,
+                            pwm_depth: 0.8,
+                            pwm_incr: 0.0,
                         },
                         OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
-                            gain: 0.0,
-                            width: 0.5,
+                            ..Default::default()
                         },
                     ],
                     ..Default::default()
@@ -234,13 +242,12 @@ mod tests {
                             increment: LOW_INCREMENT,
                             shape: oscillator::Shape::PwmSaw,
                             gain: 1.0,
-                            width: 0.5,
+                            ..Default::default()
                         },
                         OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
-                            gain: 0.0,
-                            width: 0.5,
+                            ..Default::default()
                         },
                     ],
                     ..Default::default()
@@ -263,13 +270,12 @@ mod tests {
                             increment: LOW_INCREMENT,
                             shape: oscillator::Shape::CombSaw,
                             gain: 1.0,
-                            width: 0.5,
+                            ..Default::default()
                         },
                         OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
-                            gain: 0.0,
-                            width: 0.5,
+                            ..Default::default()
                         },
                     ],
                     ..Default::default()
@@ -292,13 +298,12 @@ mod tests {
                             increment: LOW_INCREMENT,
                             shape: oscillator::Shape::Noise,
                             gain: 1.0,
-                            width: 0.5,
+                            ..Default::default()
                         },
                         OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
-                            gain: 0.0,
-                            width: 0.5,
+                            ..Default::default()
                         },
                     ],
                     ..Default::default()
@@ -320,14 +325,13 @@ mod tests {
                         OscillatorSettings {
                             increment: LOW_INCREMENT,
                             shape: oscillator::Shape::Pulse,
-                            gain: 0.0,
-                            width: 0.5,
+                            ..Default::default()
                         },
                         OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
                             gain: 1.0,
-                            width: 0.5,
+                            ..Default::default()
                         },
                     ],
                     x_mod: CrossModulation::Ring,
@@ -351,13 +355,15 @@ mod tests {
                             increment: LOW_INCREMENT,
                             shape: oscillator::Shape::Pulse,
                             gain: 0.0,
-                            width: 0.5,
+                            pwm_depth: 0.5,
+                            pwm_incr: 0.0,
                         },
                         OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
                             gain: 1.0,
-                            width: 0.5,
+                            pwm_depth: 0.5,
+                            pwm_incr: 0.0,
                         },
                     ],
                     x_mod: CrossModulation::And,
@@ -380,17 +386,74 @@ mod tests {
                         OscillatorSettings {
                             increment: LOW_INCREMENT,
                             shape: oscillator::Shape::Saw,
-                            gain: 0.0,
-                            width: 0.0,
+                            ..Default::default()
                         },
                         OscillatorSettings {
                             increment: INCREMENT,
                             shape: oscillator::Shape::Saw,
                             gain: 1.0,
-                            width: 0.0,
+                            ..Default::default()
                         },
                     ],
                     sync: Sync::Hard,
+                    ..Default::default()
+                },
+                48000,
+            )
+        );
+    }
+
+    #[test]
+    #[cfg_attr(miri, ignore)]
+    fn pwm_snapshot() {
+        assert_snapshot!(
+            "oscillators/pwm",
+            SAMPLE_RATE,
+            snapshot_for_settings(
+                &Settings {
+                    oscillators: [
+                        OscillatorSettings {
+                            increment: INCREMENT,
+                            shape: oscillator::Shape::Pulse,
+                            gain: 1.0,
+                            pwm_depth: 0.5,
+                            pwm_incr: 1.0 / SAMPLE_RATE as f32,
+                        },
+                        OscillatorSettings {
+                            increment: INCREMENT,
+                            shape: oscillator::Shape::Saw,
+                            ..Default::default()
+                        },
+                    ],
+                    ..Default::default()
+                },
+                48000,
+            )
+        );
+    }
+
+    #[test]
+    #[cfg_attr(miri, ignore)]
+    fn pwm_saw_snapshot() {
+        assert_snapshot!(
+            "oscillators/pwm_saw",
+            SAMPLE_RATE,
+            snapshot_for_settings(
+                &Settings {
+                    oscillators: [
+                        OscillatorSettings {
+                            increment: INCREMENT,
+                            shape: oscillator::Shape::PwmSaw,
+                            gain: 1.0,
+                            pwm_depth: 0.8,
+                            pwm_incr: 1.0 / SAMPLE_RATE as f32,
+                        },
+                        OscillatorSettings {
+                            increment: INCREMENT,
+                            shape: oscillator::Shape::Saw,
+                            ..Default::default()
+                        },
+                    ],
                     ..Default::default()
                 },
                 48000,
@@ -407,14 +470,13 @@ mod tests {
                 OscillatorSettings {
                     increment: LOW_INCREMENT,
                     shape: oscillator::Shape::Pulse,
-                    gain: 0.0,
-                    width: 0.5,
+                    ..Default::default()
                 },
                 OscillatorSettings {
                     increment: INCREMENT,
                     shape: oscillator::Shape::Saw,
                     gain: 1.0,
-                    width: 0.5,
+                    ..Default::default()
                 },
             ],
             ..Default::default()
