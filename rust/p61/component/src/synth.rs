@@ -14,18 +14,17 @@ use conformal_poly::Poly;
 use dsp::{f32::rescale, osc_utils::increment};
 
 mod env;
-mod mg;
 mod osc_utils;
 mod voice;
 
 #[derive(Debug)]
 pub struct Synth {
     poly: Poly<voice::Voice>,
-    mg: mg::Mg,
+    mg: dsp::sine_lfo::SineLfo,
     mg_env: env::duck::Ar,
     mg_scratch: Vec<f32>,
 
-    wheel_mg: mg::Mg,
+    wheel_mg: dsp::sine_lfo::SineLfo,
     wheel_scratch: Vec<f32>,
 
     sampling_rate: f32,
