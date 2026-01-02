@@ -1,7 +1,7 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 10] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 14] = [
     InfoRef {
         title: "Gain",
         short_title: "Gain",
@@ -57,6 +57,49 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 10] = [
         },
     },
     InfoRef {
+        title: "DCO2 Shape",
+        short_title: "DCO2 Shape",
+        unique_id: "dco2_shape",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 0,
+            values: &["Saw", "Pulse", "PwmSaw", "CombSaw", "Noise"],
+        },
+    },
+    InfoRef {
+        title: "DCO2 PWM Depth",
+        short_title: "DCO2 PWM Depth",
+        unique_id: "dco2_pwm_depth",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 50.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "DCO2 PWM Rate",
+        short_title: "DCO2 PWM Rate",
+        unique_id: "dco2_pwm_rate",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 1.0,
+            valid_range: 0.0..=10.0,
+            units: Some("Hz"),
+        },
+    },
+    InfoRef {
+        title: "DCO2 Tune",
+        short_title: "DCO2 Tune",
+        unique_id: "dco2_tune",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: -36.0..=24.0,
+            units: Some("Semitones"),
+        },
+    },
+    InfoRef {
         title: "HPF Mode",
         short_title: "HPF Mode",
         unique_id: "hpf_mode",
@@ -89,23 +132,13 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 10] = [
         },
     },
     InfoRef {
-        title: "Cross Modulation",
-        short_title: "X-Mod",
+        title: "DCO2 Cross Modulation",
+        short_title: "DCO2 X-Mod",
         unique_id: "x_mod",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
-            values: &["Off", "Ring", "Bit"],
-        },
-    },
-    InfoRef {
-        title: "Sync",
-        short_title: "Sync",
-        unique_id: "sync",
-        flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 0,
-            values: &["Off", "Hard"],
+            values: &["Off", "Ring", "Bit", "Sync", "Sync+Ring"],
         },
     },
 ];

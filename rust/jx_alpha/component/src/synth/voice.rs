@@ -2,6 +2,7 @@ use conformal_component::{events::NoteData, parameters, pzip};
 use conformal_poly::{EventData, Voice as VoiceTrait};
 use dsp::f32::rescale;
 use itertools::izip;
+use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use oscillators::{OscillatorSettings, Shape};
 
@@ -18,6 +19,16 @@ fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
 
 #[derive(Default, Debug, Clone)]
 pub struct SharedData {}
+
+#[derive(FromPrimitive, Copy, Clone, Debug, PartialEq, Default)]
+pub enum Dco2XMod {
+    #[default]
+    Off,
+    Ring,
+    Bit,
+    Sync,
+    SyncPlusRing,
+}
 
 #[derive(Debug)]
 pub struct Voice {
@@ -100,16 +111,19 @@ impl VoiceTrait for Voice {
                 dco1_pwm_depth,
                 dco1_pwm_rate,
                 dco1_tune,
+                dco2_shape_int,
+                dco2_pwm_depth,
+                dco2_pwm_rate,
+                dco2_tune,
                 global_pitch_bend,
                 vcf_cutoff,
                 resonance,
-                x_mod,
-                sync,
+                x_mod_int,
             ),
             expression,
         ) in izip!(
             output.iter_mut().enumerate(),
-            pzip!(params[numeric "gain", enum "dco1_shape", numeric "dco1_pwm_depth", numeric "dco1_pwm_rate", numeric "dco1_tune", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", enum "x_mod", enum "sync"]),
+            pzip!(params[numeric "gain", enum "dco1_shape", numeric "dco1_pwm_depth", numeric "dco1_pwm_rate", numeric "dco1_tune", enum "dco2_shape", numeric "dco2_pwm_depth", numeric "dco2_pwm_rate", numeric "dco2_tune", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", enum "x_mod"]),
             note_expressions.iter_by_sample(),
         ) {
             while let Some(conformal_poly::Event {
@@ -126,7 +140,8 @@ impl VoiceTrait for Voice {
             let total_pitch_bend = global_pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
             let adjusted_pitch = self.pitch + total_pitch_bend;
             let osc0_incr = increment(adjusted_pitch + dco1_tune, self.sampling_rate);
-            let osc1_incr = increment(adjusted_pitch, self.sampling_rate);
+            let osc1_incr = increment(adjusted_pitch + dco2_tune, self.sampling_rate);
+            let x_mod: Dco2XMod = FromPrimitive::from_u32(x_mod_int).unwrap();
             *sample = self.oscillators.generate(&oscillators::Settings {
                 oscillators: [
                     OscillatorSettings {
@@ -138,14 +153,23 @@ impl VoiceTrait for Voice {
                     },
                     OscillatorSettings {
                         increment: osc1_incr,
-                        shape: Shape::Saw,
+                        shape: FromPrimitive::from_u32(dco2_shape_int).unwrap(),
                         gain: 0.0,
-                        pwm_depth: 0.0,
-                        pwm_incr: 0.0,
+                        pwm_depth: dco2_pwm_depth,
+                        pwm_incr: dco2_pwm_rate / self.sampling_rate,
                     },
                 ],
-                x_mod: FromPrimitive::from_u32(x_mod).unwrap(),
-                sync: FromPrimitive::from_u32(sync).unwrap(),
+                x_mod: match x_mod {
+                    Dco2XMod::Off => oscillators::CrossModulation::Off,
+                    Dco2XMod::Ring => oscillators::CrossModulation::Ring,
+                    Dco2XMod::Bit => oscillators::CrossModulation::And,
+                    Dco2XMod::Sync => oscillators::CrossModulation::Off,
+                    Dco2XMod::SyncPlusRing => oscillators::CrossModulation::Ring,
+                },
+                sync: match x_mod {
+                    Dco2XMod::Sync | Dco2XMod::SyncPlusRing => oscillators::Sync::Hard,
+                    _ => oscillators::Sync::Off,
+                },
             }) * gain
                 / 100.;
 
