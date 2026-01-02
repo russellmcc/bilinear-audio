@@ -1,4 +1,4 @@
-//! Weird ducking envelope use for MG delay.
+//! Ducking AR envelope used for e.g., LFO delay.
 
 use super::{Coeff, calc_coeff};
 

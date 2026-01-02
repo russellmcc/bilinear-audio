@@ -4,7 +4,7 @@ use dsp::f32::rescale;
 use itertools::izip;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-use oscillators::{OscillatorSettings, Shape};
+use oscillators::OscillatorSettings;
 
 mod env;
 mod oscillators;
@@ -46,6 +46,23 @@ pub struct Voice {
 
 const GATE_ATTACK_TIME_SECONDS: f32 = 0.005;
 const GATE_RELEASE_TIME_SECONDS: f32 = GATE_ATTACK_TIME_SECONDS;
+
+/// Rescales a 0->1 "volume" to a 0->1 gain.
+///
+/// We got this function by measuring the main VCA response at various env levels.
+/// We have not yet measured the mix VCA response but we assume it's the same for now.
+fn volume_to_gain(volume: f32) -> f32 {
+    const BREAK_VOLUME: f32 = 0.1;
+    const BREAK_GAIN_DB: f32 = -25.0;
+    let break_gain = 10.0f32.powf(BREAK_GAIN_DB / 20.0);
+    let break_log_gain = break_gain.ln();
+
+    if volume < BREAK_VOLUME {
+        rescale(volume, 0.0..=BREAK_VOLUME, 0.0..=break_gain)
+    } else {
+        rescale(volume, BREAK_VOLUME..=0.1, break_log_gain..=0.0).exp()
+    }
+}
 
 impl VoiceTrait for Voice {
     type SharedData<'a> = SharedData;
@@ -106,7 +123,7 @@ impl VoiceTrait for Voice {
         for (
             (index, sample),
             (
-                gain,
+                level,
                 dco1_shape_int,
                 dco1_pwm_depth,
                 dco1_pwm_rate,
@@ -115,15 +132,18 @@ impl VoiceTrait for Voice {
                 dco2_pwm_depth,
                 dco2_pwm_rate,
                 dco2_tune,
+                mix_dco1,
+                mix_dco2,
                 global_pitch_bend,
                 vcf_cutoff,
                 resonance,
+                vcf_key,
                 x_mod_int,
             ),
             expression,
         ) in izip!(
             output.iter_mut().enumerate(),
-            pzip!(params[numeric "gain", enum "dco1_shape", numeric "dco1_pwm_depth", numeric "dco1_pwm_rate", numeric "dco1_tune", enum "dco2_shape", numeric "dco2_pwm_depth", numeric "dco2_pwm_rate", numeric "dco2_tune", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", enum "x_mod"]),
+            pzip!(params[numeric "level", enum "dco1_shape", numeric "dco1_pwm_depth", numeric "dco1_pwm_rate", numeric "dco1_tune", enum "dco2_shape", numeric "dco2_pwm_depth", numeric "dco2_pwm_rate", numeric "dco2_tune", numeric "mix_dco1", numeric "mix_dco2", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", numeric "vcf_key", enum "x_mod"]),
             note_expressions.iter_by_sample(),
         ) {
             while let Some(conformal_poly::Event {
@@ -142,45 +162,48 @@ impl VoiceTrait for Voice {
             let osc0_incr = increment(adjusted_pitch + dco1_tune, self.sampling_rate);
             let osc1_incr = increment(adjusted_pitch + dco2_tune, self.sampling_rate);
             let x_mod: Dco2XMod = FromPrimitive::from_u32(x_mod_int).unwrap();
+            let osc0_gain = volume_to_gain(rescale(mix_dco1, 0.0..=100.0, 0.0..=1.0));
+            let osc1_gain = volume_to_gain(rescale(mix_dco2, 0.0..=100.0, 0.0..=1.0));
             *sample = self.oscillators.generate(&oscillators::Settings {
                 oscillators: [
                     OscillatorSettings {
                         increment: osc0_incr,
                         shape: FromPrimitive::from_u32(dco1_shape_int).unwrap(),
-                        gain: 1.0,
+                        gain: osc0_gain,
                         pwm_depth: dco1_pwm_depth,
                         pwm_incr: dco1_pwm_rate / self.sampling_rate,
                     },
                     OscillatorSettings {
                         increment: osc1_incr,
                         shape: FromPrimitive::from_u32(dco2_shape_int).unwrap(),
-                        gain: 0.0,
+                        gain: osc1_gain,
                         pwm_depth: dco2_pwm_depth,
                         pwm_incr: dco2_pwm_rate / self.sampling_rate,
                     },
                 ],
                 x_mod: match x_mod {
-                    Dco2XMod::Off => oscillators::CrossModulation::Off,
-                    Dco2XMod::Ring => oscillators::CrossModulation::Ring,
                     Dco2XMod::Bit => oscillators::CrossModulation::And,
-                    Dco2XMod::Sync => oscillators::CrossModulation::Off,
-                    Dco2XMod::SyncPlusRing => oscillators::CrossModulation::Ring,
+                    Dco2XMod::Off | Dco2XMod::Sync => oscillators::CrossModulation::Off,
+                    Dco2XMod::Ring | Dco2XMod::SyncPlusRing => oscillators::CrossModulation::Ring,
                 },
                 sync: match x_mod {
                     Dco2XMod::Sync | Dco2XMod::SyncPlusRing => oscillators::Sync::Hard,
                     _ => oscillators::Sync::Off,
                 },
-            }) * gain
-                / 100.;
+            });
 
-            let cutoff_incr = increment(vcf_cutoff, self.sampling_rate);
+            // Note that we have not measured the vcf key following, this is a guess
+            let adjusted_vcf_cutoff =
+                vcf_cutoff + rescale(vcf_key, 0.0..=100.0, 0.0..=adjusted_pitch);
+            let cutoff_incr = increment(adjusted_vcf_cutoff, self.sampling_rate).clamp(0.0, 0.45);
             let resonance = rescale(resonance, 0.0..=100.0, 0.0..=1.0);
             let vcf_settings = vcf::Settings {
                 cutoff_incr,
                 resonance,
             };
-            *sample =
-                self.gate.process(&self.gate_coeffs) * self.vcf.process(*sample, &vcf_settings);
+            *sample = volume_to_gain(rescale(level, 0.0..=100.0, 0.0..=1.0))
+                * self.gate.process(&self.gate_coeffs)
+                * self.vcf.process(*sample, &vcf_settings);
         }
     }
 

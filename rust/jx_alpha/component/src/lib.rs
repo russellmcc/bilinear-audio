@@ -1,11 +1,11 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 14] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 16] = [
     InfoRef {
-        title: "Gain",
-        short_title: "Gain",
-        unique_id: "gain",
+        title: "Level",
+        short_title: "Level",
+        unique_id: "level",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 100.,
@@ -100,6 +100,38 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 14] = [
         },
     },
     InfoRef {
+        title: "DCO2 Cross Modulation",
+        short_title: "DCO2 X-Mod",
+        unique_id: "x_mod",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 0,
+            values: &["Off", "Ring", "Bit", "Sync", "Sync+Ring"],
+        },
+    },
+    InfoRef {
+        title: "Mix DCO1",
+        short_title: "Mix DCO1",
+        unique_id: "mix_dco1",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 100.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Mix DCO2",
+        short_title: "Mix DCO2",
+        unique_id: "mix_dco2",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 000.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
         title: "HPF Mode",
         short_title: "HPF Mode",
         unique_id: "hpf_mode",
@@ -132,13 +164,14 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 14] = [
         },
     },
     InfoRef {
-        title: "DCO2 Cross Modulation",
-        short_title: "DCO2 X-Mod",
-        unique_id: "x_mod",
+        title: "VCF Key Follow",
+        short_title: "VCF Key Follow",
+        unique_id: "vcf_key",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 0,
-            values: &["Off", "Ring", "Bit", "Sync", "Sync+Ring"],
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
         },
     },
 ];
