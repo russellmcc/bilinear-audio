@@ -15,7 +15,7 @@ use itertools::izip;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use super::env::adsr;
+use dsp::env::adsr;
 
 #[derive(Debug, Default)]
 struct Note {

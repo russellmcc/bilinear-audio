@@ -13,7 +13,6 @@ use self::voice::SharedData;
 use conformal_poly::Poly;
 use dsp::{f32::rescale, osc_utils::increment};
 
-mod env;
 mod osc_utils;
 mod voice;
 
@@ -21,7 +20,7 @@ mod voice;
 pub struct Synth {
     poly: Poly<voice::Voice>,
     mg: dsp::sine_lfo::SineLfo,
-    mg_env: env::duck::Ar,
+    mg_env: dsp::env::duck::Ar,
     mg_scratch: Vec<f32>,
 
     wheel_mg: dsp::sine_lfo::SineLfo,
@@ -141,8 +140,8 @@ impl SynthT for Synth {
             // Optimization opportunity - rational approximation
             let note = rescale(rate, 0.0..=100.0, -75.0..=15.0);
             let incr = increment(note, self.sampling_rate);
-            let coeffs = env::duck::calc_coeffs(
-                &env::duck::Params {
+            let coeffs = dsp::env::duck::calc_coeffs(
+                &dsp::env::duck::Params {
                     attack_time: delay,
                     release_time: 0.010,
                 },

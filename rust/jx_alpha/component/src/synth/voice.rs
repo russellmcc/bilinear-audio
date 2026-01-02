@@ -43,6 +43,7 @@ impl VoiceTrait for Voice {
         Self {
             pitch: 20.0,
             oscillators: oscillators::Oscillators::default(),
+            lfo: dsp::sine_lfo::SineLfo::default(),
             sampling_rate,
             vcf: vcf::Vcf::default(),
             env1: env::Env::default(),
@@ -175,5 +176,6 @@ impl VoiceTrait for Voice {
         self.env1.reset();
         self.env2.reset();
         self.gate.reset();
+        self.lfo.reset();
     }
 }
