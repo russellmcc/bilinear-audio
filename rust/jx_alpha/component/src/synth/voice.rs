@@ -33,6 +33,7 @@ pub enum Dco2XMod {
 #[derive(Debug)]
 pub struct Voice {
     pitch: f32,
+    velocity: f32,
     sampling_rate: f32,
     oscillators: oscillators::Oscillators,
     vcf: vcf::Vcf,
@@ -78,7 +79,7 @@ fn env_param_to_time(param: f32) -> f32 {
     time_log2.exp2()
 }
 
-fn env_params(
+struct RawEnvParams {
     t1: f32,
     l1: f32,
     t2: f32,
@@ -88,21 +89,23 @@ fn env_params(
     t4: f32,
     pitch: f32,
     key_follow: f32,
-) -> env::Params {
+}
+
+fn env_params(params: &RawEnvParams) -> env::Params {
     const NOMINAL_PITCH: f32 = 60.0;
     // We've measured the param -> time calculation, but we have not measured the key follow scaling,
     // we're inspired from "note 2" in the jx-8p manual and assuming it is correct.
     // basically at 100% key follow, we half the time every octave.
     let key_follow_shift =
-        (pitch - NOMINAL_PITCH) / 12.0 * rescale(key_follow, 0.0..=100.0, 0.0..=1.0);
+        (params.pitch - NOMINAL_PITCH) / 12.0 * rescale(params.key_follow, 0.0..=100.0, 0.0..=1.0);
     env::Params {
-        attack_time: env_param_to_time(t1 + key_follow_shift),
-        attack_target: rescale(l1, 0.0..=100.0, 0.0..=1.0),
-        decay_time: env_param_to_time(t2 + key_follow_shift),
-        decay_target: rescale(l2, 0.0..=100.0, 0.0..=1.0),
-        to_sustain_time: env_param_to_time(t3 + key_follow_shift),
-        sustain: rescale(l3, 0.0..=100.0, 0.0..=1.0),
-        release_time: env_param_to_time(t4 + key_follow_shift),
+        attack_time: env_param_to_time(params.t1 + key_follow_shift),
+        attack_target: rescale(params.l1, 0.0..=100.0, 0.0..=1.0),
+        decay_time: env_param_to_time(params.t2 + key_follow_shift),
+        decay_target: rescale(params.l2, 0.0..=100.0, 0.0..=1.0),
+        to_sustain_time: env_param_to_time(params.t3 + key_follow_shift),
+        sustain: rescale(params.l3, 0.0..=100.0, 0.0..=1.0),
+        release_time: env_param_to_time(params.t4 + key_follow_shift),
     }
 }
 
@@ -112,6 +115,7 @@ impl VoiceTrait for Voice {
     fn new(_max_samples_per_process_call: usize, sampling_rate: f32) -> Self {
         Self {
             pitch: 20.0,
+            velocity: 0.0,
             oscillators: oscillators::Oscillators::default(),
             sampling_rate,
             vcf: vcf::Vcf::default(),
@@ -136,9 +140,12 @@ impl VoiceTrait for Voice {
     fn handle_event(&mut self, event: &conformal_poly::EventData) {
         match event {
             EventData::NoteOn {
-                data: NoteData { pitch, .. },
+                data: NoteData {
+                    pitch, velocity, ..
+                },
             } => {
                 self.pitch = f32::from(*pitch);
+                self.velocity = *velocity;
                 self.env1.on();
                 self.env2.on();
                 self.gate.on();
@@ -151,6 +158,7 @@ impl VoiceTrait for Voice {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn process(
         &mut self,
         events: impl IntoIterator<Item = conformal_poly::Event>,
@@ -253,32 +261,32 @@ impl VoiceTrait for Voice {
             let adjusted_pitch = self.pitch + total_pitch_bend;
 
             let env1_coeffs = env::calc_coeffs(
-                &env_params(
-                    env1_t1,
-                    env1_l1,
-                    env1_t2,
-                    env1_l2,
-                    env1_t3,
-                    env1_l3,
-                    env1_t4,
-                    adjusted_pitch,
-                    env1_key,
-                ),
+                &env_params(&RawEnvParams {
+                    t1: env1_t1,
+                    l1: env1_l1,
+                    t2: env1_t2,
+                    l2: env1_l2,
+                    t3: env1_t3,
+                    l3: env1_l3,
+                    t4: env1_t4,
+                    pitch: adjusted_pitch,
+                    key_follow: env1_key,
+                }),
                 self.sampling_rate,
             );
             let _env1 = self.env1.process(&env1_coeffs);
             let env2_coeffs = env::calc_coeffs(
-                &env_params(
-                    env2_t1,
-                    env2_l1,
-                    env2_t2,
-                    env2_l2,
-                    env2_t3,
-                    env2_l3,
-                    env2_t4,
-                    adjusted_pitch,
-                    env2_key,
-                ),
+                &env_params(&RawEnvParams {
+                    t1: env2_t1,
+                    l1: env2_l1,
+                    t2: env2_t2,
+                    l2: env2_l2,
+                    t3: env2_t3,
+                    l3: env2_l3,
+                    t4: env2_t4,
+                    pitch: adjusted_pitch,
+                    key_follow: env2_key,
+                }),
                 self.sampling_rate,
             );
             let _env2 = self.env2.process(&env2_coeffs);
