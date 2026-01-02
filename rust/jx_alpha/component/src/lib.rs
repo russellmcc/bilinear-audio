@@ -1,7 +1,7 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 14] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 10] = [
     InfoRef {
         title: "Gain",
         short_title: "Gain",
@@ -54,48 +54,6 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 14] = [
             default: 0.0,
             valid_range: -36.0..=24.0,
             units: Some("Semitones"),
-        },
-    },
-    InfoRef {
-        title: "DCO1 LFO Depth",
-        short_title: "DCO1 LFO",
-        unique_id: "dco1_lfo",
-        flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=12.0,
-            units: Some("Semitones"),
-        },
-    },
-    InfoRef {
-        title: "DCO1 Env Depth",
-        short_title: "DCO1 Env",
-        unique_id: "dco1_env",
-        flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=24.0,
-            units: Some("Semitones"),
-        },
-    },
-    InfoRef {
-        title: "DCO Env Source",
-        short_title: "DCO Env Mode",
-        unique_id: "dco1_env_source",
-        flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 0,
-            values: &["Env1", "Env1-Inverted", "Env2", "Env2-Inverted"],
-        },
-    },
-    InfoRef {
-        title: "DCO Env Dynamics",
-        short_title: "DCO Env Dynamics",
-        unique_id: "dco1_env_dynamics",
-        flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 0,
-            values: &["Off", "Shallow", "Normal", "Deep"],
         },
     },
     InfoRef {

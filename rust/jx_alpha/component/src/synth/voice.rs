@@ -43,7 +43,6 @@ impl VoiceTrait for Voice {
         Self {
             pitch: 20.0,
             oscillators: oscillators::Oscillators::default(),
-            lfo: dsp::sine_lfo::SineLfo::default(),
             sampling_rate,
             vcf: vcf::Vcf::default(),
             env1: env::Env::default(),
@@ -101,10 +100,6 @@ impl VoiceTrait for Voice {
                 dco1_pwm_depth,
                 dco1_pwm_rate,
                 dco1_tune,
-                dco1_lfo,
-                dco1_env,
-                dco1_env_source_int,
-                dco1_env_dynamics_int,
                 global_pitch_bend,
                 vcf_cutoff,
                 resonance,
@@ -114,7 +109,7 @@ impl VoiceTrait for Voice {
             expression,
         ) in izip!(
             output.iter_mut().enumerate(),
-            pzip!(params[numeric "gain", enum "dco1_shape", numeric "dco1_pwm_depth", numeric "dco1_pwm_rate", numeric "dco1_tune", numeric "dco1_lfo", numeric "dco1_env", enum "dco1_env_source", enum "dco1_env_dynamics", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", enum "x_mod", enum "sync"]),
+            pzip!(params[numeric "gain", enum "dco1_shape", numeric "dco1_pwm_depth", numeric "dco1_pwm_rate", numeric "dco1_tune", numeric "pitch_bend", numeric "vcf_cutoff", numeric "resonance", enum "x_mod", enum "sync"]),
             note_expressions.iter_by_sample(),
         ) {
             while let Some(conformal_poly::Event {
@@ -176,6 +171,5 @@ impl VoiceTrait for Voice {
         self.env1.reset();
         self.env2.reset();
         self.gate.reset();
-        self.lfo.reset();
     }
 }
