@@ -11,6 +11,7 @@ use hpf::{Hpf, Mode};
 use num_traits::FromPrimitive;
 
 mod hpf;
+mod lfo;
 mod voice;
 
 #[derive(Debug)]
