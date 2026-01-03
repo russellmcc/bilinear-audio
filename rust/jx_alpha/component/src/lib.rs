@@ -40,7 +40,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         unique_id: "dco1_pwm_rate",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
+            default: 1.0,
             valid_range: 0.01..=10.0,
             units: Some("Hz"),
         },
@@ -105,7 +105,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         unique_id: "dco2_pwm_rate",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
+            default: 1.0,
             valid_range: 0.01..=10.0,
             units: Some("Hz"),
         },
@@ -518,7 +518,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         unique_id: "lfo_rate",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
+            default: 1.0,
             valid_range: 0.01..=10.0,
             units: Some("Hz"),
         },
