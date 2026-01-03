@@ -235,11 +235,13 @@ impl VoiceTrait for Voice {
                 dco1_pwm_rate,
                 dco1_tune,
                 dco1_env,
+                dco1_lfo,
                 dco2_shape_int,
                 dco2_pwm_depth,
                 dco2_pwm_rate,
                 dco2_tune,
                 dco2_env,
+                dco2_lfo,
                 x_mod_int,
                 dco_bend_range,
                 dco_env_source_int,
@@ -252,6 +254,7 @@ impl VoiceTrait for Voice {
                 resonance,
                 vcf_key,
                 vcf_env,
+                vcf_lfo,
                 vcf_env_source_int,
                 vca_env_source_int,
                 env1_t1,
@@ -272,7 +275,7 @@ impl VoiceTrait for Voice {
                 env2_key,
             ),
             expression,
-            _lfo,
+            lfo,
         ) in izip!(
             output.iter_mut().enumerate(),
             pzip!(params[
@@ -282,11 +285,13 @@ impl VoiceTrait for Voice {
                 numeric "dco1_pwm_rate",
                 numeric "dco1_tune",
                 numeric "dco1_env",
+                numeric "dco1_lfo",
                 enum "dco2_shape",
                 numeric "dco2_pwm_depth",
                 numeric "dco2_pwm_rate",
                 numeric "dco2_tune",
                 numeric "dco2_env",
+                numeric "dco2_lfo",
                 enum "x_mod",
                 numeric "dco_bend_range",
                 enum "dco_env_source",
@@ -299,6 +304,7 @@ impl VoiceTrait for Voice {
                 numeric "resonance",
                 numeric "vcf_key",
                 numeric "vcf_env",
+                numeric "vcf_lfo",
                 enum "vcf_env_source",
                 enum "vca_env_source",
                 numeric "env1_t1",
@@ -373,13 +379,24 @@ impl VoiceTrait for Voice {
                 env2,
                 self.velocity,
             );
-            // Note the nonlinearity on the control scales - this is measured.
+            // lfo depth is unmeasured currently
+            // env depth _is_ measured, along with nonlinearity on the env control scales
             let osc0_env_scale = rescale(dco1_env, 0.0..=100.0, 0.0..=1.0);
             let osc0_env = dco_env * osc0_env_scale * osc0_env_scale * 32.0;
+            let osc0_lfo_adjust = rescale(dco1_lfo, 0.0..=100.0, 0.0..=12.0) * lfo;
+
             let osc1_env_scale = rescale(dco2_env, 0.0..=100.0, 0.0..=1.0);
             let osc1_env = dco_env * osc1_env_scale * osc1_env_scale * 32.0;
-            let osc0_incr = increment(adjusted_pitch + dco1_tune + osc0_env, self.sampling_rate);
-            let osc1_incr = increment(adjusted_pitch + dco2_tune + osc1_env, self.sampling_rate);
+            let osc1_lfo_adjust = rescale(dco2_lfo, 0.0..=100.0, 0.0..=12.0) * lfo;
+
+            let osc0_incr = increment(
+                adjusted_pitch + dco1_tune + osc0_env + osc0_lfo_adjust,
+                self.sampling_rate,
+            );
+            let osc1_incr = increment(
+                adjusted_pitch + dco2_tune + osc1_env + osc1_lfo_adjust,
+                self.sampling_rate,
+            );
             let x_mod: Dco2XMod = FromPrimitive::from_u32(x_mod_int).unwrap();
             let osc0_gain = volume_to_gain(rescale(mix_dco1, 0.0..=100.0, 0.0..=1.0));
             let osc1_gain = volume_to_gain(
@@ -420,7 +437,9 @@ impl VoiceTrait for Voice {
                 },
             });
 
-            // Note that we have not measured the vcf key following, this is a guess
+            // vcf key following: unmeasured
+            // vcf env depth: measured
+            // vcf lfo depth: unmeasured
             let adjusted_vcf_cutoff = vcf_cutoff
                 + rescale_points(
                     adjusted_pitch - KEY_FOLLOW_NOMINAL_PITCH,
@@ -436,7 +455,8 @@ impl VoiceTrait for Voice {
                         env1,
                         env2,
                         self.velocity,
-                    );
+                    )
+                + rescale(vcf_lfo, 0.0..=100.0, 0.0..=48.0) * lfo;
             let cutoff_incr = increment(adjusted_vcf_cutoff, self.sampling_rate);
             let resonance = rescale(resonance, 0.0..=100.0, 0.0..=1.0);
             let vcf_settings = vcf::Settings {

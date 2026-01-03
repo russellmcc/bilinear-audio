@@ -1,7 +1,7 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 44] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
     InfoRef {
         title: "Level",
         short_title: "Level",
@@ -68,6 +68,17 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 44] = [
         },
     },
     InfoRef {
+        title: "DCO1 LFO",
+        short_title: "DCO1 LFO",
+        unique_id: "dco1_lfo",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
         title: "DCO2 Shape",
         short_title: "DCO2 Shape",
         unique_id: "dco2_shape",
@@ -124,6 +135,17 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 44] = [
         title: "DCO2 Envelope",
         short_title: "DCO2 Env",
         unique_id: "dco2_env",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "DCO2 LFO",
+        short_title: "DCO2 LFO",
+        unique_id: "dco2_lfo",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 0.0,
@@ -260,6 +282,17 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 44] = [
         title: "VCF Envelope",
         short_title: "VCF Env",
         unique_id: "vcf_env",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "VCF LFO",
+        short_title: "VCF LFO",
+        unique_id: "vcf_lfo",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 0.0,
