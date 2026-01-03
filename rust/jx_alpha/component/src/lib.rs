@@ -1,7 +1,7 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 40] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 41] = [
     InfoRef {
         title: "Level",
         short_title: "Level",
@@ -283,6 +283,23 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 40] = [
                 "Env2-Inverse",
                 "Env2-Dynamic",
                 "Env2-Dynamic-Inverse",
+            ],
+        },
+    },
+    InfoRef {
+        title: "VCA Env Source",
+        short_title: "VCA Env Source",
+        unique_id: "vca_env_source",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 0,
+            values: &[
+                "Gate",
+                "Gate-Dynamic",
+                "Env1",
+                "Env1-Dynamic",
+                "Env2",
+                "Env2-Dynamic",
             ],
         },
     },

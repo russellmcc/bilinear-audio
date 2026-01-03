@@ -43,6 +43,17 @@ pub enum EnvSource {
     Env2DynamicInverse,
 }
 
+#[derive(FromPrimitive, Copy, Clone, Debug, PartialEq, Default)]
+pub enum VcaEnvSource {
+    #[default]
+    Gate,
+    GateDynamic,
+    Env1,
+    Env1Dynamic,
+    Env2,
+    Env2Dynamic,
+}
+
 #[derive(Debug)]
 pub struct Voice {
     pitch: f32,
@@ -103,6 +114,23 @@ fn get_env_from_source(source: EnvSource, env1: f32, env2: f32, velocity: f32) -
         EnvSource::Env2Inverse => -env2,
         EnvSource::Env2Dynamic => env2 * velocity,
         EnvSource::Env2DynamicInverse => -env2 * velocity,
+    }
+}
+
+fn get_vca_env_from_source(
+    source: VcaEnvSource,
+    gate: f32,
+    env1: f32,
+    env2: f32,
+    velocity: f32,
+) -> f32 {
+    match source {
+        VcaEnvSource::Env1 => env1,
+        VcaEnvSource::Env1Dynamic => env1 * velocity,
+        VcaEnvSource::Env2 => env2,
+        VcaEnvSource::Env2Dynamic => env2 * velocity,
+        VcaEnvSource::Gate => gate,
+        VcaEnvSource::GateDynamic => gate * velocity,
     }
 }
 
@@ -223,6 +251,7 @@ impl VoiceTrait for Voice {
                 vcf_key,
                 vcf_env,
                 vcf_env_source_int,
+                vca_env_source_int,
                 env1_t1,
                 env1_l1,
                 env1_t2,
@@ -268,6 +297,7 @@ impl VoiceTrait for Voice {
                 numeric "vcf_key",
                 numeric "vcf_env",
                 enum "vcf_env_source",
+                enum "vca_env_source",
                 numeric "env1_t1",
                 numeric "env1_l1",
                 numeric "env1_t2",
@@ -332,6 +362,7 @@ impl VoiceTrait for Voice {
                 self.sampling_rate,
             );
             let env2 = self.env2.process(&env2_coeffs);
+            let gate = self.gate.process(&self.gate_coeffs);
             let dco_env = get_env_from_source(
                 FromPrimitive::from_u32(dco_env_source_int).unwrap(),
                 env1,
@@ -357,7 +388,7 @@ impl VoiceTrait for Voice {
                             self.velocity,
                         ),
             );
-            *sample = self.oscillators.generate(&oscillators::Settings {
+            let oscillators_output = self.oscillators.generate(&oscillators::Settings {
                 oscillators: [
                     OscillatorSettings {
                         increment: osc0_incr,
@@ -408,9 +439,17 @@ impl VoiceTrait for Voice {
                 cutoff_incr,
                 resonance,
             };
-            *sample = volume_to_gain(rescale(level, 0.0..=100.0, 0.0..=1.0))
-                * self.gate.process(&self.gate_coeffs)
-                * self.vcf.process(*sample, &vcf_settings);
+            let vcf_output = self.vcf.process(oscillators_output, &vcf_settings);
+            let vca_volume = rescale(level, 0.0..=100.0, 0.0..=1.0)
+                * get_vca_env_from_source(
+                    FromPrimitive::from_u32(vca_env_source_int).unwrap(),
+                    gate,
+                    env1,
+                    env2,
+                    self.velocity,
+                );
+
+            *sample = volume_to_gain(vca_volume) * vcf_output;
         }
     }
 
