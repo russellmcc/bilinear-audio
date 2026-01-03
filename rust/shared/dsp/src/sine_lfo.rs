@@ -1,9 +1,9 @@
 #[derive(Debug, Default)]
-pub struct Mg {
+pub struct SineLfo {
     phase: f32,
 }
 
-impl Mg {
+impl SineLfo {
     pub fn reset(&mut self) {
         self.phase = 0.0;
     }
@@ -21,20 +21,20 @@ impl Mg {
 
 #[cfg(test)]
 mod tests {
-    use super::Mg;
+    use super::SineLfo;
+    use crate::test_utils::estimate_tuning_gen;
     use assert_approx_eq::assert_approx_eq;
-    use dsp::test_utils::estimate_tuning_gen;
     use snapshots::assert_snapshot;
 
     #[test]
     fn reset() {
-        let mut mg = Mg::default();
+        let mut lfo = SineLfo::default();
         let incr = 482.5 / 44100.0;
-        let initial = std::iter::repeat_with(|| mg.generate(incr))
+        let initial = std::iter::repeat_with(|| lfo.generate(incr))
             .take(100)
             .collect::<Vec<_>>();
-        mg.reset();
-        let reset = std::iter::repeat_with(|| mg.generate(incr))
+        lfo.reset();
+        let reset = std::iter::repeat_with(|| lfo.generate(incr))
             .take(100)
             .collect::<Vec<_>>();
         for (a, b) in initial.iter().zip(reset.iter()) {
@@ -46,24 +46,24 @@ mod tests {
     #[cfg_attr(miri, ignore)]
     fn tuning() {
         let incr = 482.5 / 44100.0;
-        let mut mg = Mg::default();
-        assert_approx_eq!(estimate_tuning_gen(|| mg.generate(incr)), incr, 1e-4);
+        let mut lfo = SineLfo::default();
+        assert_approx_eq!(estimate_tuning_gen(|| lfo.generate(incr)), incr, 1e-4);
     }
 
     #[test]
     #[cfg_attr(miri, ignore)]
     fn sweep_snapshot() {
-        let mut mg = Mg::default();
+        let mut lfo = SineLfo::default();
         let num_samples = 48000;
         let initial_incr = 0.00001;
         let max_incr = 0.1;
         let mut incr = initial_incr;
         let incr_incr = (max_incr - initial_incr) / num_samples as f32;
         assert_snapshot!(
-            "mg/sweep",
+            "sine_lfo/sweep",
             48000,
             std::iter::repeat_with(|| {
-                let out = mg.generate(incr);
+                let out = lfo.generate(incr);
                 incr += incr_incr;
                 out
             })

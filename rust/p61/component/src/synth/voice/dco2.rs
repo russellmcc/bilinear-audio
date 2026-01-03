@@ -116,7 +116,7 @@ mod tests {
     #[test]
     #[cfg_attr(miri, ignore)]
     fn aliasing_suppression() {
-        let increment = 0.246246246;
+        let increment = 0.246_246_246;
         let mut dco2 = Dco2::default();
         assert_lt!(
             estimate_aliasing_gen(
@@ -192,7 +192,7 @@ mod tests {
     #[test]
     #[cfg_attr(miri, ignore)]
     fn aliasing_suppression_saw() {
-        let increment = 0.246246246;
+        let increment = 0.246_246_246;
         let mut dco2 = Dco2::default();
         assert_lt!(
             estimate_aliasing_gen(

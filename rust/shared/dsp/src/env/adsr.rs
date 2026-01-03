@@ -15,6 +15,7 @@ pub struct Coeffs {
     release: Coeff,
 }
 
+#[must_use]
 pub fn calc_coeffs(params: &Params, sampling_rate: f32) -> Coeffs {
     Coeffs {
         attack: calc_coeff(params.attack_time, sampling_rate),
@@ -152,7 +153,7 @@ mod tests {
             std::iter::repeat_with(|| adsr.process(&coeffs))
                 .take(100)
                 .collect::<Vec<_>>(),
-            std::iter::repeat(0f32).take(100).collect::<Vec<_>>()
+            std::iter::repeat_n(0f32, 100).collect::<Vec<_>>()
         );
     }
 
