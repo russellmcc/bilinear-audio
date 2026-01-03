@@ -72,9 +72,9 @@ fn volume_to_gain(volume: f32) -> f32 {
     let break_log_gain = break_gain.ln();
 
     if volume < BREAK_VOLUME {
-        rescale(volume, 0.0..=BREAK_VOLUME, 0.0..=break_gain)
+        rescale_clamped(volume, 0.0..=BREAK_VOLUME, 0.0..=break_gain)
     } else {
-        rescale(volume, BREAK_VOLUME..=0.1, break_log_gain..=0.0).exp()
+        rescale_clamped(volume, BREAK_VOLUME..=0.1, break_log_gain..=0.0).exp()
     }
 }
 
@@ -215,6 +215,8 @@ impl VoiceTrait for Voice {
                 dco_env_source_int,
                 mix_dco1,
                 mix_dco2,
+                mix_env,
+                mix_env_source_int,
                 global_pitch_bend,
                 vcf_cutoff,
                 resonance,
@@ -258,6 +260,8 @@ impl VoiceTrait for Voice {
                 enum "dco_env_source",
                 numeric "mix_dco1",
                 numeric "mix_dco2",
+                numeric "mix_env",
+                enum "mix_env_source",
                 numeric "pitch_bend",
                 numeric "vcf_cutoff",
                 numeric "resonance",
@@ -343,7 +347,16 @@ impl VoiceTrait for Voice {
             let osc1_incr = increment(adjusted_pitch + dco2_tune + osc1_env, self.sampling_rate);
             let x_mod: Dco2XMod = FromPrimitive::from_u32(x_mod_int).unwrap();
             let osc0_gain = volume_to_gain(rescale(mix_dco1, 0.0..=100.0, 0.0..=1.0));
-            let osc1_gain = volume_to_gain(rescale(mix_dco2, 0.0..=100.0, 0.0..=1.0));
+            let osc1_gain = volume_to_gain(
+                rescale(mix_dco2, 0.0..=100.0, 0.0..=1.0)
+                    + rescale(mix_env, 0.0..=100.0, 0.0..=1.0)
+                        * get_env_from_source(
+                            FromPrimitive::from_u32(mix_env_source_int).unwrap(),
+                            env1,
+                            env2,
+                            self.velocity,
+                        ),
+            );
             *sample = self.oscillators.generate(&oscillators::Settings {
                 oscillators: [
                     OscillatorSettings {
