@@ -17,8 +17,10 @@ fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
     (440f32 * 2.0f32.powf((midi_pitch - 69f32) / 12f32) / sampling_rate).clamp(0.0, 0.45)
 }
 
-#[derive(Default, Debug, Clone)]
-pub struct SharedData {}
+#[derive(Debug, Clone)]
+pub struct SharedData<'a> {
+    pub lfo: &'a [f32],
+}
 
 #[derive(FromPrimitive, Copy, Clone, Debug, PartialEq, Default)]
 pub enum Dco2XMod {
@@ -164,7 +166,7 @@ fn env_params(params: &RawEnvParams) -> env::Params {
 }
 
 impl VoiceTrait for Voice {
-    type SharedData<'a> = SharedData;
+    type SharedData<'a> = SharedData<'a>;
 
     fn new(_max_samples_per_process_call: usize, sampling_rate: f32) -> Self {
         Self {
@@ -220,7 +222,7 @@ impl VoiceTrait for Voice {
         note_expressions: conformal_poly::NoteExpressionCurve<
             impl Iterator<Item = conformal_poly::NoteExpressionPoint> + Clone,
         >,
-        _data: Self::SharedData<'_>,
+        shared_data: Self::SharedData<'_>,
         output: &mut [f32],
     ) {
         let mut events = events.into_iter().peekable();
@@ -270,6 +272,7 @@ impl VoiceTrait for Voice {
                 env2_key,
             ),
             expression,
+            _lfo,
         ) in izip!(
             output.iter_mut().enumerate(),
             pzip!(params[
@@ -316,6 +319,7 @@ impl VoiceTrait for Voice {
                 numeric "env2_key"
             ]),
             note_expressions.iter_by_sample(),
+            shared_data.lfo,
         ) {
             while let Some(conformal_poly::Event {
                 sample_offset,

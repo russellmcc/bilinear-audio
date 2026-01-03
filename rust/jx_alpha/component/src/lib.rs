@@ -1,7 +1,7 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 41] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 44] = [
     InfoRef {
         title: "Level",
         short_title: "Level",
@@ -41,7 +41,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 41] = [
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 0.0,
-            valid_range: 0.0..=10.0,
+            valid_range: 0.01..=10.0,
             units: Some("Hz"),
         },
     },
@@ -95,7 +95,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 41] = [
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 0.0,
-            valid_range: 0.0..=10.0,
+            valid_range: 0.01..=10.0,
             units: Some("Hz"),
         },
     },
@@ -477,6 +477,38 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 41] = [
             default: 0.0,
             valid_range: 0.0..=100.0,
             units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "LFO Rate",
+        short_title: "LFO Rate",
+        unique_id: "lfo_rate",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.01..=10.0,
+            units: Some("Hz"),
+        },
+    },
+    InfoRef {
+        title: "LFO Delay",
+        short_title: "LFO Delay",
+        unique_id: "lfo_delay",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "LFO Shape",
+        short_title: "LFO Shape",
+        unique_id: "lfo_shape",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 0,
+            values: &["Sine", "Square", "Rand"],
         },
     },
 ];
