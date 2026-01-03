@@ -1,6 +1,6 @@
 use conformal_component::{events::NoteData, parameters, pzip};
 use conformal_poly::{EventData, Voice as VoiceTrait};
-use dsp::f32::{rescale, rescale_clamped};
+use dsp::f32::{rescale, rescale_clamped, rescale_points};
 use itertools::izip;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -10,11 +10,11 @@ mod env;
 mod oscillators;
 mod vcf;
 
-const PITCH_BEND_WIDTH: f32 = 2.;
+const KEY_FOLLOW_NOMINAL_PITCH: f32 = 60.0;
 
 /// Converts a MIDI pitch to a phase increment
 fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
-    440f32 * 2.0f32.powf((midi_pitch - 69f32) / 12f32) / sampling_rate
+    (440f32 * 2.0f32.powf((midi_pitch - 69f32) / 12f32) / sampling_rate).clamp(0.0, 0.45)
 }
 
 #[derive(Default, Debug, Clone)]
@@ -28,6 +28,19 @@ pub enum Dco2XMod {
     Bit,
     Sync,
     SyncPlusRing,
+}
+
+#[derive(FromPrimitive, Copy, Clone, Debug, PartialEq, Default)]
+pub enum EnvSource {
+    #[default]
+    Env1,
+    Env1Inverse,
+    Env1Dynamic,
+    Env1DynamicInverse,
+    Env2,
+    Env2Inverse,
+    Env2Dynamic,
+    Env2DynamicInverse,
 }
 
 #[derive(Debug)]
@@ -79,6 +92,20 @@ fn env_param_to_time(param: f32) -> f32 {
     time_log2.exp2()
 }
 
+fn get_env_from_source(source: EnvSource, env1: f32, env2: f32, velocity: f32) -> f32 {
+    // Linear scale with velocity for now - this hasn't been measured yet.
+    match source {
+        EnvSource::Env1 => env1,
+        EnvSource::Env1Inverse => -env1,
+        EnvSource::Env1Dynamic => env1 * velocity,
+        EnvSource::Env1DynamicInverse => -env1 * velocity,
+        EnvSource::Env2 => env2,
+        EnvSource::Env2Inverse => -env2,
+        EnvSource::Env2Dynamic => env2 * velocity,
+        EnvSource::Env2DynamicInverse => -env2 * velocity,
+    }
+}
+
 struct RawEnvParams {
     t1: f32,
     l1: f32,
@@ -92,12 +119,11 @@ struct RawEnvParams {
 }
 
 fn env_params(params: &RawEnvParams) -> env::Params {
-    const NOMINAL_PITCH: f32 = 60.0;
     // We've measured the param -> time calculation, but we have not measured the key follow scaling,
     // we're inspired from "note 2" in the jx-8p manual and assuming it is correct.
     // basically at 100% key follow, we half the time every octave.
-    let key_follow_shift =
-        (params.pitch - NOMINAL_PITCH) / 12.0 * rescale(params.key_follow, 0.0..=100.0, 0.0..=1.0);
+    let key_follow_shift = (params.pitch - KEY_FOLLOW_NOMINAL_PITCH) / 12.0
+        * rescale(params.key_follow, 0.0..=100.0, 0.0..=1.0);
     env::Params {
         attack_time: env_param_to_time(params.t1 + key_follow_shift),
         attack_target: rescale(params.l1, 0.0..=100.0, 0.0..=1.0),
@@ -178,10 +204,14 @@ impl VoiceTrait for Voice {
                 dco1_pwm_depth,
                 dco1_pwm_rate,
                 dco1_tune,
+                dco1_env,
                 dco2_shape_int,
                 dco2_pwm_depth,
                 dco2_pwm_rate,
                 dco2_tune,
+                dco2_env,
+                dco_bend_range,
+                dco_env_source_int,
                 mix_dco1,
                 mix_dco2,
                 global_pitch_bend,
@@ -215,10 +245,14 @@ impl VoiceTrait for Voice {
                 numeric "dco1_pwm_depth",
                 numeric "dco1_pwm_rate",
                 numeric "dco1_tune",
+                numeric "dco1_env",
                 enum "dco2_shape",
                 numeric "dco2_pwm_depth",
                 numeric "dco2_pwm_rate",
                 numeric "dco2_tune",
+                numeric "dco2_env",
+                numeric "dco_bend_range",
+                enum "dco_env_source",
                 numeric "mix_dco1",
                 numeric "mix_dco2",
                 numeric "pitch_bend",
@@ -257,7 +291,7 @@ impl VoiceTrait for Voice {
                 events.next();
             }
 
-            let total_pitch_bend = global_pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
+            let total_pitch_bend = global_pitch_bend * dco_bend_range + expression.pitch_bend;
             let adjusted_pitch = self.pitch + total_pitch_bend;
 
             let env1_coeffs = env::calc_coeffs(
@@ -274,7 +308,7 @@ impl VoiceTrait for Voice {
                 }),
                 self.sampling_rate,
             );
-            let _env1 = self.env1.process(&env1_coeffs);
+            let env1 = self.env1.process(&env1_coeffs);
             let env2_coeffs = env::calc_coeffs(
                 &env_params(&RawEnvParams {
                     t1: env2_t1,
@@ -289,9 +323,20 @@ impl VoiceTrait for Voice {
                 }),
                 self.sampling_rate,
             );
-            let _env2 = self.env2.process(&env2_coeffs);
-            let osc0_incr = increment(adjusted_pitch + dco1_tune, self.sampling_rate);
-            let osc1_incr = increment(adjusted_pitch + dco2_tune, self.sampling_rate);
+            let env2 = self.env2.process(&env2_coeffs);
+            let dco_env = get_env_from_source(
+                FromPrimitive::from_u32(dco_env_source_int).unwrap(),
+                env1,
+                env2,
+                self.velocity,
+            );
+            // Note the nonlinearity on the control scales - this is measured.
+            let osc0_env_scale = rescale(dco1_env, 0.0..=100.0, 0.0..=1.0);
+            let osc0_env = dco_env * osc0_env_scale * osc0_env_scale * 32.0;
+            let osc1_env_scale = rescale(dco2_env, 0.0..=100.0, 0.0..=1.0);
+            let osc1_env = dco_env * osc1_env_scale * osc1_env_scale * 32.0;
+            let osc0_incr = increment(adjusted_pitch + dco1_tune + osc0_env, self.sampling_rate);
+            let osc1_incr = increment(adjusted_pitch + dco2_tune + osc1_env, self.sampling_rate);
             let x_mod: Dco2XMod = FromPrimitive::from_u32(x_mod_int).unwrap();
             let osc0_gain = volume_to_gain(rescale(mix_dco1, 0.0..=100.0, 0.0..=1.0));
             let osc1_gain = volume_to_gain(rescale(mix_dco2, 0.0..=100.0, 0.0..=1.0));
@@ -324,9 +369,15 @@ impl VoiceTrait for Voice {
             });
 
             // Note that we have not measured the vcf key following, this is a guess
-            let adjusted_vcf_cutoff =
-                vcf_cutoff + rescale(vcf_key, 0.0..=100.0, 0.0..=adjusted_pitch);
-            let cutoff_incr = increment(adjusted_vcf_cutoff, self.sampling_rate).clamp(0.0, 0.45);
+            let adjusted_vcf_cutoff = vcf_cutoff
+                + rescale_points(
+                    adjusted_pitch - KEY_FOLLOW_NOMINAL_PITCH,
+                    0.0,
+                    12.0,
+                    0.0,
+                    12.0 * rescale(vcf_key, 0.0..=100.0, 0.0..=1.0),
+                );
+            let cutoff_incr = increment(adjusted_vcf_cutoff, self.sampling_rate);
             let resonance = rescale(resonance, 0.0..=100.0, 0.0..=1.0);
             let vcf_settings = vcf::Settings {
                 cutoff_incr,

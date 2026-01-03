@@ -1,7 +1,7 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 36] = [
     InfoRef {
         title: "Level",
         short_title: "Level",
@@ -29,7 +29,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         unique_id: "dco1_pwm_depth",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 50.0,
+            default: 0.0,
             valid_range: 0.0..=100.0,
             units: Some("%"),
         },
@@ -40,7 +40,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         unique_id: "dco1_pwm_rate",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 1.0,
+            default: 0.0,
             valid_range: 0.0..=10.0,
             units: Some("Hz"),
         },
@@ -54,6 +54,17 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
             default: 0.0,
             valid_range: -36.0..=24.0,
             units: Some("Semitones"),
+        },
+    },
+    InfoRef {
+        title: "DCO1 Envelope",
+        short_title: "DCO1 Env",
+        unique_id: "dco1_env",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
         },
     },
     InfoRef {
@@ -72,7 +83,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         unique_id: "dco2_pwm_depth",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 50.0,
+            default: 0.0,
             valid_range: 0.0..=100.0,
             units: Some("%"),
         },
@@ -83,7 +94,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         unique_id: "dco2_pwm_rate",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 1.0,
+            default: 0.0,
             valid_range: 0.0..=10.0,
             units: Some("Hz"),
         },
@@ -110,6 +121,47 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         },
     },
     InfoRef {
+        title: "DCO2 Envelope",
+        short_title: "DCO2 Env",
+        unique_id: "dco2_env",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "DCO Bend Range",
+        short_title: "DCO Bend Range",
+        unique_id: "dco_bend_range",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 2.0,
+            valid_range: 0.0..=12.0,
+            units: Some("Semitones"),
+        },
+    },
+    InfoRef {
+        title: "DCO Env Source",
+        short_title: "DCO2 Env",
+        unique_id: "dco2_env",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 0,
+            values: &[
+                "Env1",
+                "Env1-Inverse",
+                "Env1-Dynamic",
+                "Env1-Dynamic-Inverse",
+                "Env2",
+                "Env2-Inverse",
+                "Env2-Dynamic",
+                "Env2-Dynamic-Inverse",
+            ],
+        },
+    },
+    InfoRef {
         title: "Mix DCO1",
         short_title: "Mix DCO1",
         unique_id: "mix_dco1",
@@ -126,7 +178,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         unique_id: "mix_dco2",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 000.0,
+            default: 0.0,
             valid_range: 0.0..=100.0,
             units: Some("%"),
         },
@@ -191,7 +243,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         unique_id: "env1_l1",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
+            default: 100.0,
             valid_range: 0.0..=100.0,
             units: Some("%"),
         },
@@ -213,7 +265,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         unique_id: "env1_l2",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
+            default: 100.0,
             valid_range: 0.0..=100.0,
             units: Some("%"),
         },
@@ -235,7 +287,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         unique_id: "env1_l3",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
+            default: 100.0,
             valid_range: 0.0..=100.0,
             units: Some("%"),
         },
@@ -279,7 +331,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         unique_id: "env2_l1",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
+            default: 100.0,
             valid_range: 0.0..=100.0,
             units: Some("%"),
         },
@@ -301,7 +353,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         unique_id: "env2_l2",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
+            default: 100.0,
             valid_range: 0.0..=100.0,
             units: Some("%"),
         },
@@ -323,7 +375,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 32] = [
         unique_id: "env2_l3",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
+            default: 100.0,
             valid_range: 0.0..=100.0,
             units: Some("%"),
         },
