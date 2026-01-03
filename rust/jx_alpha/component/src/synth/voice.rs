@@ -10,7 +10,7 @@ mod env;
 mod oscillators;
 mod vcf;
 
-const KEY_FOLLOW_NOMINAL_PITCH: f32 = 60.0;
+const KEY_FOLLOW_NOMINAL_PITCH: f32 = 69.0;
 
 /// Converts a MIDI pitch to a phase increment
 fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
@@ -210,6 +210,7 @@ impl VoiceTrait for Voice {
                 dco2_pwm_rate,
                 dco2_tune,
                 dco2_env,
+                x_mod_int,
                 dco_bend_range,
                 dco_env_source_int,
                 mix_dco1,
@@ -218,7 +219,8 @@ impl VoiceTrait for Voice {
                 vcf_cutoff,
                 resonance,
                 vcf_key,
-                x_mod_int,
+                vcf_env,
+                vcf_env_source_int,
                 env1_t1,
                 env1_l1,
                 env1_t2,
@@ -251,6 +253,7 @@ impl VoiceTrait for Voice {
                 numeric "dco2_pwm_rate",
                 numeric "dco2_tune",
                 numeric "dco2_env",
+                enum "x_mod",
                 numeric "dco_bend_range",
                 enum "dco_env_source",
                 numeric "mix_dco1",
@@ -259,7 +262,8 @@ impl VoiceTrait for Voice {
                 numeric "vcf_cutoff",
                 numeric "resonance",
                 numeric "vcf_key",
-                enum "x_mod",
+                numeric "vcf_env",
+                enum "vcf_env_source",
                 numeric "env1_t1",
                 numeric "env1_l1",
                 numeric "env1_t2",
@@ -376,7 +380,15 @@ impl VoiceTrait for Voice {
                     12.0,
                     0.0,
                     12.0 * rescale(vcf_key, 0.0..=100.0, 0.0..=1.0),
-                );
+                )
+                + 120.0
+                    * rescale(vcf_env, 0.0..=100.0, 0.0..=1.0)
+                    * get_env_from_source(
+                        FromPrimitive::from_u32(vcf_env_source_int).unwrap(),
+                        env1,
+                        env2,
+                        self.velocity,
+                    );
             let cutoff_incr = increment(adjusted_vcf_cutoff, self.sampling_rate);
             let resonance = rescale(resonance, 0.0..=100.0, 0.0..=1.0);
             let vcf_settings = vcf::Settings {
