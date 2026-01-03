@@ -41,6 +41,7 @@ impl Processor for Synth {
     fn set_processing(&mut self, processing: bool) {
         if !processing {
             self.poly.reset();
+            self.lfo.reset();
             self.hpfs.iter_mut().for_each(hpf::Hpf::reset);
         }
     }
