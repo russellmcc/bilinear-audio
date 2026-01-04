@@ -103,11 +103,22 @@ impl SynthTrait for Synth {
                 rescale(rate, 0.0..=100.0, LFO_NOTE_RANGE),
                 self.sampling_rate,
             );
-            // Unmeasured LFO delay
-            let coeffs = dsp::env::duck::calc_coeffs(
-                &dsp::env::duck::Params {
-                    attack_time: delay,
-                    release_time: 0.010,
+            // LFO delay follows the somewhat bizarre trimming measured from hardware.
+            let lfo_delay_time_seconds = if delay > 0.0 {
+                rescale(delay, 0.0..=100.0, -5.5..=4.5).exp2()
+            } else {
+                0.0
+            };
+            let lfo_delay_attack = (lfo_delay_time_seconds / 2.0).min(1.0);
+            let coeffs = dsp::env::duck::calc_hold_coeffs(
+                &dsp::env::duck::HoldParams {
+                    attack_time: lfo_delay_attack,
+                    hold_time: lfo_delay_time_seconds - lfo_delay_attack,
+                    release_time: if lfo_delay_time_seconds > 0.0 {
+                        0.005
+                    } else {
+                        0.0
+                    },
                 },
                 self.sampling_rate,
             );

@@ -3,7 +3,7 @@
 pub mod adsr;
 pub mod duck;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum Coeff {
     Instant,
     Increment(f32),
