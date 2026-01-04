@@ -1,6 +1,10 @@
+use super::increment;
 use conformal_component::{events::NoteData, parameters, pzip};
 use conformal_poly::{EventData, Voice as VoiceTrait};
-use dsp::f32::{rescale, rescale_clamped, rescale_points};
+use dsp::{
+    env::adsr,
+    f32::{rescale, rescale_clamped, rescale_points},
+};
 use itertools::izip;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -10,12 +14,7 @@ mod env;
 mod oscillators;
 mod vcf;
 
-const KEY_FOLLOW_NOMINAL_PITCH: f32 = 69.0;
-
-/// Converts a MIDI pitch to a phase increment
-fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
-    (440f32 * 2.0f32.powf((midi_pitch - 69f32) / 12f32) / sampling_rate).clamp(0.0, 0.45)
-}
+const KEY_FOLLOW_NOMINAL_PITCH: f32 = 60.0;
 
 #[derive(Debug, Clone)]
 pub struct SharedData<'a> {
@@ -38,11 +37,10 @@ pub enum EnvSource {
     Env1,
     Env1Inverse,
     Env1Dynamic,
-    Env1DynamicInverse,
     Env2,
     Env2Inverse,
     Env2Dynamic,
-    Env2DynamicInverse,
+    Dynamic,
 }
 
 #[derive(FromPrimitive, Copy, Clone, Debug, PartialEq, Default)]
@@ -50,8 +48,6 @@ pub enum VcaEnvSource {
     #[default]
     Gate,
     GateDynamic,
-    Env1,
-    Env1Dynamic,
     Env2,
     Env2Dynamic,
 }
@@ -67,8 +63,17 @@ pub struct Voice {
     env2: env::Env,
 
     // Optimization opportunity: we're using a full env here but don't need all the logic.
-    gate_coeffs: env::Coeffs,
-    gate: env::Env,
+    gate_coeffs: adsr::Coeffs,
+    gate: adsr::Adsr,
+}
+
+#[derive(FromPrimitive, Copy, Clone, Debug, PartialEq, Default)]
+pub enum DcoRange {
+    #[default]
+    Sixteen,
+    Eight,
+    Four,
+    Two,
 }
 
 const GATE_ATTACK_TIME_SECONDS: f32 = 0.005;
@@ -87,7 +92,7 @@ fn volume_to_gain(volume: f32) -> f32 {
     if volume < BREAK_VOLUME {
         rescale_clamped(volume, 0.0..=BREAK_VOLUME, 0.0..=break_gain)
     } else {
-        rescale_clamped(volume, BREAK_VOLUME..=0.1, break_log_gain..=0.0).exp()
+        rescale_clamped(volume, BREAK_VOLUME..=1.0, break_log_gain..=0.0).exp()
     }
 }
 
@@ -105,34 +110,47 @@ fn env_param_to_time(param: f32) -> f32 {
     time_log2.exp2()
 }
 
+#[allow(clippy::cast_precision_loss)]
+fn dco_adjust(dco_range: DcoRange, dco_tune: u32, dco_fine_tune: f32) -> f32 {
+    (match dco_range {
+        DcoRange::Sixteen => -12.0f32,
+        DcoRange::Eight => 0.0f32,
+        DcoRange::Four => 12.0f32,
+        DcoRange::Two => 24.0f32,
+    }) + rescale(dco_fine_tune, 0.0..=100.0, 0.0..=1.0)
+        + (dco_tune as f32 - 12.0f32)
+}
+
 fn get_env_from_source(source: EnvSource, env1: f32, env2: f32, velocity: f32) -> f32 {
     // Linear scale with velocity for now - this hasn't been measured yet.
     match source {
         EnvSource::Env1 => env1,
         EnvSource::Env1Inverse => -env1,
         EnvSource::Env1Dynamic => env1 * velocity,
-        EnvSource::Env1DynamicInverse => -env1 * velocity,
         EnvSource::Env2 => env2,
         EnvSource::Env2Inverse => -env2,
         EnvSource::Env2Dynamic => env2 * velocity,
-        EnvSource::Env2DynamicInverse => -env2 * velocity,
+        EnvSource::Dynamic => velocity * 0.5,
     }
 }
 
-fn get_vca_env_from_source(
-    source: VcaEnvSource,
-    gate: f32,
-    env1: f32,
-    env2: f32,
-    velocity: f32,
-) -> f32 {
+fn get_vca_env_from_source(source: VcaEnvSource, env2: f32, gate: f32, velocity: f32) -> f32 {
     match source {
-        VcaEnvSource::Env1 => env1,
-        VcaEnvSource::Env1Dynamic => env1 * velocity,
         VcaEnvSource::Env2 => env2,
         VcaEnvSource::Env2Dynamic => env2 * velocity,
         VcaEnvSource::Gate => gate,
         VcaEnvSource::GateDynamic => gate * velocity,
+    }
+}
+
+fn get_dco_pwm_incr(pwm_rate: f32, sampling_rate: f32) -> f32 {
+    if pwm_rate == 0.0 {
+        0.0
+    } else {
+        increment(
+            rescale(pwm_rate, 0.0..=100.0, super::LFO_NOTE_RANGE),
+            sampling_rate,
+        )
     }
 }
 
@@ -177,19 +195,16 @@ impl VoiceTrait for Voice {
             vcf: vcf::Vcf::default(),
             env1: env::Env::default(),
             env2: env::Env::default(),
-            gate_coeffs: env::calc_coeffs(
-                &env::Params {
+            gate_coeffs: adsr::calc_coeffs(
+                &adsr::Params {
                     attack_time: GATE_ATTACK_TIME_SECONDS,
-                    attack_target: 1.0,
                     decay_time: 0.0,
-                    decay_target: 1.0,
-                    to_sustain_time: 0.0,
                     sustain: 1.0,
                     release_time: GATE_RELEASE_TIME_SECONDS,
                 },
                 sampling_rate,
             ),
-            gate: env::Env::default(),
+            gate: adsr::Adsr::default(),
         }
     }
 
@@ -233,13 +248,16 @@ impl VoiceTrait for Voice {
                 dco1_shape_int,
                 dco1_pwm_depth,
                 dco1_pwm_rate,
+                dco1_range_int,
                 dco1_tune,
                 dco1_env,
                 dco1_lfo,
                 dco2_shape_int,
                 dco2_pwm_depth,
                 dco2_pwm_rate,
+                dco2_range_int,
                 dco2_tune,
+                dco2_fine_tune,
                 dco2_env,
                 dco2_lfo,
                 x_mod_int,
@@ -283,13 +301,16 @@ impl VoiceTrait for Voice {
                 enum "dco1_shape",
                 numeric "dco1_pwm_depth",
                 numeric "dco1_pwm_rate",
-                numeric "dco1_tune",
+                enum "dco1_range",
+                enum "dco1_tune",
                 numeric "dco1_env",
                 numeric "dco1_lfo",
                 enum "dco2_shape",
                 numeric "dco2_pwm_depth",
                 numeric "dco2_pwm_rate",
-                numeric "dco2_tune",
+                enum "dco2_range",
+                enum "dco2_tune",
+                numeric "dco2_fine_tune",
                 numeric "dco2_env",
                 numeric "dco2_lfo",
                 enum "x_mod",
@@ -379,22 +400,34 @@ impl VoiceTrait for Voice {
                 env2,
                 self.velocity,
             );
-            // lfo depth is unmeasured currently
-            // env depth _is_ measured, along with nonlinearity on the env control scales
             let osc0_env_scale = rescale(dco1_env, 0.0..=100.0, 0.0..=1.0);
             let osc0_env = dco_env * osc0_env_scale * osc0_env_scale * 32.0;
-            let osc0_lfo_adjust = rescale(dco1_lfo, 0.0..=100.0, 0.0..=12.0) * lfo;
+            let osc0_lfo_adjust = rescale(dco1_lfo, 0.0..=100.0, 0.0..=5.0) * lfo;
 
             let osc1_env_scale = rescale(dco2_env, 0.0..=100.0, 0.0..=1.0);
             let osc1_env = dco_env * osc1_env_scale * osc1_env_scale * 32.0;
-            let osc1_lfo_adjust = rescale(dco2_lfo, 0.0..=100.0, 0.0..=12.0) * lfo;
+            let osc1_lfo_adjust = rescale(dco2_lfo, 0.0..=100.0, 0.0..=5.0) * lfo;
 
             let osc0_incr = increment(
-                adjusted_pitch + dco1_tune + osc0_env + osc0_lfo_adjust,
+                adjusted_pitch
+                    + dco_adjust(
+                        FromPrimitive::from_u32(dco1_range_int).unwrap(),
+                        dco1_tune,
+                        0.0,
+                    )
+                    + osc0_env
+                    + osc0_lfo_adjust,
                 self.sampling_rate,
             );
             let osc1_incr = increment(
-                adjusted_pitch + dco2_tune + osc1_env + osc1_lfo_adjust,
+                adjusted_pitch
+                    + dco_adjust(
+                        FromPrimitive::from_u32(dco2_range_int).unwrap(),
+                        dco2_tune,
+                        dco2_fine_tune,
+                    )
+                    + osc1_env
+                    + osc1_lfo_adjust,
                 self.sampling_rate,
             );
             let x_mod: Dco2XMod = FromPrimitive::from_u32(x_mod_int).unwrap();
@@ -415,15 +448,15 @@ impl VoiceTrait for Voice {
                         increment: osc0_incr,
                         shape: FromPrimitive::from_u32(dco1_shape_int).unwrap(),
                         gain: osc0_gain,
-                        pwm_depth: dco1_pwm_depth,
-                        pwm_incr: dco1_pwm_rate / self.sampling_rate,
+                        pwm_depth: rescale(dco1_pwm_depth, 0.0..=100.0, 0.0..=1.0),
+                        pwm_incr: get_dco_pwm_incr(dco1_pwm_rate, self.sampling_rate),
                     },
                     OscillatorSettings {
                         increment: osc1_incr,
                         shape: FromPrimitive::from_u32(dco2_shape_int).unwrap(),
                         gain: osc1_gain,
-                        pwm_depth: dco2_pwm_depth,
-                        pwm_incr: dco2_pwm_rate / self.sampling_rate,
+                        pwm_depth: rescale(dco2_pwm_depth, 0.0..=100.0, 0.0..=1.0),
+                        pwm_incr: get_dco_pwm_incr(dco2_pwm_rate, self.sampling_rate),
                     },
                 ],
                 x_mod: match x_mod {
@@ -437,26 +470,22 @@ impl VoiceTrait for Voice {
                 },
             });
 
-            // vcf key following: unmeasured
-            // vcf env depth: measured
-            // vcf lfo depth: unmeasured
-            let adjusted_vcf_cutoff = vcf_cutoff
+            let adjusted_vcf_cutoff = rescale(vcf_cutoff, 0.0..=100.0, 0.0..=144.0)
                 + rescale_points(
                     adjusted_pitch - KEY_FOLLOW_NOMINAL_PITCH,
                     0.0,
-                    12.0,
+                    1.0,
                     0.0,
-                    12.0 * rescale(vcf_key, 0.0..=100.0, 0.0..=1.0),
+                    rescale(vcf_key, 0.0..=100.0, 0.0..=1.0),
                 )
-                + 120.0
-                    * rescale(vcf_env, 0.0..=100.0, 0.0..=1.0)
+                + rescale(vcf_env, 0.0..=100.0, 0.0..=120.0)
                     * get_env_from_source(
                         FromPrimitive::from_u32(vcf_env_source_int).unwrap(),
                         env1,
                         env2,
                         self.velocity,
                     )
-                + rescale(vcf_lfo, 0.0..=100.0, 0.0..=48.0) * lfo;
+                + rescale(vcf_lfo, 0.0..=100.0, 0.0..=84.0) * lfo;
             let cutoff_incr = increment(adjusted_vcf_cutoff, self.sampling_rate);
             let resonance = rescale(resonance, 0.0..=100.0, 0.0..=1.0);
             let vcf_settings = vcf::Settings {
@@ -467,9 +496,8 @@ impl VoiceTrait for Voice {
             let vca_volume = rescale(level, 0.0..=100.0, 0.0..=1.0)
                 * get_vca_env_from_source(
                     FromPrimitive::from_u32(vca_env_source_int).unwrap(),
-                    gate,
-                    env1,
                     env2,
+                    gate,
                     self.velocity,
                 );
 

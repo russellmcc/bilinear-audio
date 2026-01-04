@@ -6,6 +6,8 @@ mod downsampler;
 mod oscillator;
 mod ring;
 
+const MAX_PWM_DEPTH: f32 = 0.95; // Note measured is 0.9999 but this is tough digitally.
+
 #[derive(Default, Debug)]
 pub struct Oscillators {
     #[allow(clippy::struct_field_names)]
@@ -68,9 +70,9 @@ fn to_raw_settings(val: OscillatorSettings, lfo_out: f32) -> oscillator::Setting
         increment: val.increment / 2.0,
         shape: val.shape,
         width: if val.pwm_incr == 0.0 {
-            0.5 - (val.pwm_depth * 0.5)
+            0.5 - (val.pwm_depth * MAX_PWM_DEPTH * 0.5)
         } else {
-            (lfo_out * 0.5) * val.pwm_depth + 0.5
+            (lfo_out * MAX_PWM_DEPTH * 0.5) * val.pwm_depth + 0.5
         },
     }
 }

@@ -1,7 +1,7 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 50] = [
     InfoRef {
         title: "Level",
         short_title: "Level",
@@ -40,9 +40,19 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         unique_id: "dco1_pwm_rate",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 1.0,
-            valid_range: 0.01..=10.0,
-            units: Some("Hz"),
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "DCO1 Range",
+        short_title: "DCO1 Range",
+        unique_id: "dco1_range",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 1,
+            values: &["16'", "8'", "4'", "2'"],
         },
     },
     InfoRef {
@@ -50,10 +60,12 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         short_title: "DCO1 Tune",
         unique_id: "dco1_tune",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: -36.0..=24.0,
-            units: Some("Semitones"),
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 12,
+            values: &[
+                "-12", "-11", "-10", "-9", "-8", "-7", "-6", "-5", "-4", "-3", "-2", "-1", "0",
+                "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+            ],
         },
     },
     InfoRef {
@@ -105,9 +117,19 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         unique_id: "dco2_pwm_rate",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 1.0,
-            valid_range: 0.01..=10.0,
-            units: Some("Hz"),
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "DCO2 Range",
+        short_title: "DCO2 Range",
+        unique_id: "dco2_range",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 1,
+            values: &["16'", "8'", "4'", "2'"],
         },
     },
     InfoRef {
@@ -115,10 +137,23 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         short_title: "DCO2 Tune",
         unique_id: "dco2_tune",
         flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 12,
+            values: &[
+                "-12", "-11", "-10", "-9", "-8", "-7", "-6", "-5", "-4", "-3", "-2", "-1", "0",
+                "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+            ],
+        },
+    },
+    InfoRef {
+        title: "DCO2 Fine Tune",
+        short_title: "DCO2 Fine Tune",
+        unique_id: "dco2_fine_tune",
+        flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: -36.0..=24.0,
-            units: Some("Semitones"),
+            default: 1.0,
+            valid_range: -50.0..=50.0,
+            units: Some("Cents"),
         },
     },
     InfoRef {
@@ -166,8 +201,8 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
     },
     InfoRef {
         title: "DCO Env Source",
-        short_title: "DCO2 Env",
-        unique_id: "dco2_env_source",
+        short_title: "DCO Env",
+        unique_id: "dco_env_source",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
@@ -175,11 +210,10 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
                 "Env1",
                 "Env1-Inverse",
                 "Env1-Dynamic",
-                "Env1-Dynamic-Inverse",
                 "Env2",
                 "Env2-Inverse",
                 "Env2-Dynamic",
-                "Env2-Dynamic-Inverse",
+                "Dynamic",
             ],
         },
     },
@@ -227,11 +261,10 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
                 "Env1",
                 "Env1-Inverse",
                 "Env1-Dynamic",
-                "Env1-Dynamic-Inverse",
                 "Env2",
                 "Env2-Inverse",
                 "Env2-Dynamic",
-                "Env2-Dynamic-Inverse",
+                "Dynamic",
             ],
         },
     },
@@ -262,9 +295,9 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         unique_id: "vcf_cutoff",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 64.0,
-            valid_range: 0.0..=128.0,
-            units: None,
+            default: 100.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
         },
     },
     InfoRef {
@@ -311,11 +344,10 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
                 "Env1",
                 "Env1-Inverse",
                 "Env1-Dynamic",
-                "Env1-Dynamic-Inverse",
                 "Env2",
                 "Env2-Inverse",
                 "Env2-Dynamic",
-                "Env2-Dynamic-Inverse",
+                "Dynamic",
             ],
         },
     },
@@ -326,14 +358,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
-            values: &[
-                "Gate",
-                "Gate-Dynamic",
-                "Env1",
-                "Env1-Dynamic",
-                "Env2",
-                "Env2-Dynamic",
-            ],
+            values: &["Gate", "Gate-Dynamic", "Env2", "Env2-Dynamic"],
         },
     },
     InfoRef {

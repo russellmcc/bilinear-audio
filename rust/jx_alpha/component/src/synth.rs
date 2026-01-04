@@ -1,3 +1,5 @@
+use std::ops::RangeInclusive;
+
 use conformal_component::{
     ProcessingEnvironment, Processor,
     audio::{BufferMut, channels_mut},
@@ -7,12 +9,20 @@ use conformal_component::{
     synth::Synth as SynthTrait,
 };
 use conformal_poly::Poly;
+use dsp::f32::rescale;
 use hpf::{Hpf, Mode};
 use num_traits::FromPrimitive;
 
 mod hpf;
 mod lfo;
 mod voice;
+
+const LFO_NOTE_RANGE: RangeInclusive<f32> = -105.0f32..=15.0f32;
+
+/// Converts a MIDI pitch to a phase increment
+fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
+    (440f32 * 2.0f32.powf((midi_pitch - 69f32) / 12f32) / sampling_rate).clamp(0.0, 0.45)
+}
 
 #[derive(Debug)]
 pub struct Synth {
@@ -62,10 +72,10 @@ impl SynthTrait for Synth {
         parameters: P,
         output: &mut O,
     ) {
+        let lfo_scratch = &mut self.lfo_scratch[..output.num_frames()];
         let mut lfo_events = events.clone().into_iter().peekable();
 
-        for ((index, sample), (rate, delay, shape_int)) in self
-            .lfo_scratch
+        for ((index, sample), (rate, delay, shape_int)) in lfo_scratch
             .iter_mut()
             .enumerate()
             .zip(pzip!(parameters[numeric "lfo_rate", numeric "lfo_delay", enum "lfo_shape"]))
@@ -89,11 +99,26 @@ impl SynthTrait for Synth {
                 }
                 lfo_events.next();
             }
-            let incr = rate / self.sampling_rate;
-            let coeffs = dsp::env::duck::calc_coeffs(
-                &dsp::env::duck::Params {
-                    attack_time: delay,
-                    release_time: 0.010,
+            let incr = increment(
+                rescale(rate, 0.0..=100.0, LFO_NOTE_RANGE),
+                self.sampling_rate,
+            );
+            // LFO delay follows the somewhat bizarre trimming measured from hardware.
+            let lfo_delay_time_seconds = if delay > 0.0 {
+                rescale(delay, 0.0..=100.0, -5.5..=4.5).exp2()
+            } else {
+                0.0
+            };
+            let lfo_delay_attack = (lfo_delay_time_seconds / 2.0).min(1.0);
+            let coeffs = dsp::env::duck::calc_hold_coeffs(
+                &dsp::env::duck::HoldParams {
+                    attack_time: lfo_delay_attack,
+                    hold_time: lfo_delay_time_seconds - lfo_delay_attack,
+                    release_time: if lfo_delay_time_seconds > 0.0 {
+                        0.005
+                    } else {
+                        0.0
+                    },
                 },
                 self.sampling_rate,
             );
@@ -106,9 +131,7 @@ impl SynthTrait for Synth {
         self.poly.process(
             events.into_iter(),
             &parameters,
-            &voice::SharedData {
-                lfo: &self.lfo_scratch[..output.num_frames()],
-            },
+            &voice::SharedData { lfo: lfo_scratch },
             output,
         );
 
