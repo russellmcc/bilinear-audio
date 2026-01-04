@@ -72,6 +72,15 @@ pub struct Voice {
     gate: adsr::Adsr,
 }
 
+#[derive(FromPrimitive, Copy, Clone, Debug, PartialEq, Default)]
+pub enum DcoRange {
+    #[default]
+    Sixteen,
+    Eight,
+    Four,
+    Two,
+}
+
 const GATE_ATTACK_TIME_SECONDS: f32 = 0.005;
 const GATE_RELEASE_TIME_SECONDS: f32 = GATE_ATTACK_TIME_SECONDS;
 
@@ -104,6 +113,17 @@ fn env_param_to_time(param: f32) -> f32 {
 
     let time_log2 = rescale_clamped(param, 0.0..=100.0, min_time_log2..=max_time_log2);
     time_log2.exp2()
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn dco_adjust(dco_range: DcoRange, dco_tune: u32, dco_fine_tune: f32) -> f32 {
+    (match dco_range {
+        DcoRange::Sixteen => -12.0f32,
+        DcoRange::Eight => 0.0f32,
+        DcoRange::Four => 12.0f32,
+        DcoRange::Two => 24.0f32,
+    }) + rescale(dco_fine_tune, 0.0..=100.0, 0.0..=1.0)
+        + (dco_tune as f32 - 12.0f32)
 }
 
 fn get_env_from_source(source: EnvSource, env1: f32, env2: f32, velocity: f32) -> f32 {
@@ -232,13 +252,16 @@ impl VoiceTrait for Voice {
                 dco1_shape_int,
                 dco1_pwm_depth,
                 dco1_pwm_rate,
+                dco1_range_int,
                 dco1_tune,
                 dco1_env,
                 dco1_lfo,
                 dco2_shape_int,
                 dco2_pwm_depth,
                 dco2_pwm_rate,
+                dco2_range_int,
                 dco2_tune,
+                dco2_fine_tune,
                 dco2_env,
                 dco2_lfo,
                 x_mod_int,
@@ -282,13 +305,16 @@ impl VoiceTrait for Voice {
                 enum "dco1_shape",
                 numeric "dco1_pwm_depth",
                 numeric "dco1_pwm_rate",
-                numeric "dco1_tune",
+                enum "dco1_range",
+                enum "dco1_tune",
                 numeric "dco1_env",
                 numeric "dco1_lfo",
                 enum "dco2_shape",
                 numeric "dco2_pwm_depth",
                 numeric "dco2_pwm_rate",
-                numeric "dco2_tune",
+                enum "dco2_range",
+                enum "dco2_tune",
+                numeric "dco2_fine_tune",
                 numeric "dco2_env",
                 numeric "dco2_lfo",
                 enum "x_mod",
@@ -389,11 +415,25 @@ impl VoiceTrait for Voice {
             let osc1_lfo_adjust = rescale(dco2_lfo, 0.0..=100.0, 0.0..=12.0) * lfo;
 
             let osc0_incr = increment(
-                adjusted_pitch + dco1_tune + osc0_env + osc0_lfo_adjust,
+                adjusted_pitch
+                    + dco_adjust(
+                        FromPrimitive::from_u32(dco1_range_int).unwrap(),
+                        dco1_tune,
+                        0.0,
+                    )
+                    + osc0_env
+                    + osc0_lfo_adjust,
                 self.sampling_rate,
             );
             let osc1_incr = increment(
-                adjusted_pitch + dco2_tune + osc1_env + osc1_lfo_adjust,
+                adjusted_pitch
+                    + dco_adjust(
+                        FromPrimitive::from_u32(dco2_range_int).unwrap(),
+                        dco2_tune,
+                        dco2_fine_tune,
+                    )
+                    + osc1_env
+                    + osc1_lfo_adjust,
                 self.sampling_rate,
             );
             let x_mod: Dco2XMod = FromPrimitive::from_u32(x_mod_int).unwrap();
