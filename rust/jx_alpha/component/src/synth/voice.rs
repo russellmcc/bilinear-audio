@@ -37,11 +37,10 @@ pub enum EnvSource {
     Env1,
     Env1Inverse,
     Env1Dynamic,
-    Env1DynamicInverse,
     Env2,
     Env2Inverse,
     Env2Dynamic,
-    Env2DynamicInverse,
+    Dynamic,
 }
 
 #[derive(FromPrimitive, Copy, Clone, Debug, PartialEq, Default)]
@@ -122,22 +121,19 @@ fn dco_adjust(dco_range: DcoRange, dco_tune: u32, dco_fine_tune: f32) -> f32 {
         + (dco_tune as f32 - 12.0f32)
 }
 
-// Dynamics are unmeasured!
 fn get_env_from_source(source: EnvSource, env1: f32, env2: f32, velocity: f32) -> f32 {
     // Linear scale with velocity for now - this hasn't been measured yet.
     match source {
         EnvSource::Env1 => env1,
         EnvSource::Env1Inverse => -env1,
         EnvSource::Env1Dynamic => env1 * velocity,
-        EnvSource::Env1DynamicInverse => -env1 * velocity,
         EnvSource::Env2 => env2,
         EnvSource::Env2Inverse => -env2,
         EnvSource::Env2Dynamic => env2 * velocity,
-        EnvSource::Env2DynamicInverse => -env2 * velocity,
+        EnvSource::Dynamic => velocity * 0.5,
     }
 }
 
-// Dynamics are unmeasured!
 fn get_vca_env_from_source(source: VcaEnvSource, env2: f32, gate: f32, velocity: f32) -> f32 {
     match source {
         VcaEnvSource::Env2 => env2,
