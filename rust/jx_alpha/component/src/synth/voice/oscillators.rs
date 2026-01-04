@@ -68,9 +68,9 @@ fn to_raw_settings(val: OscillatorSettings, lfo_out: f32) -> oscillator::Setting
         increment: val.increment / 2.0,
         shape: val.shape,
         width: if val.pwm_incr == 0.0 {
-            0.5 - (val.pwm_depth * 0.5)
+            0.5 - (val.pwm_depth * 0.475)
         } else {
-            (lfo_out * 0.5) * val.pwm_depth + 0.5
+            (lfo_out * 0.475) * val.pwm_depth + 0.5
         },
     }
 }

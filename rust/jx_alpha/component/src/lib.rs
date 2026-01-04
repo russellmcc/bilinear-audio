@@ -40,9 +40,9 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         unique_id: "dco1_pwm_rate",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 1.0,
-            valid_range: 0.01..=10.0,
-            units: Some("Hz"),
+            default: 0.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
         },
     },
     InfoRef {
@@ -105,8 +105,8 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         unique_id: "dco2_pwm_rate",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 1.0,
-            valid_range: 0.01..=10.0,
+            default: 0.0,
+            valid_range: 0.0..=100.0,
             units: Some("Hz"),
         },
     },
@@ -166,8 +166,8 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
     },
     InfoRef {
         title: "DCO Env Source",
-        short_title: "DCO2 Env",
-        unique_id: "dco2_env_source",
+        short_title: "DCO Env",
+        unique_id: "dco_env_source",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
@@ -262,9 +262,9 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         unique_id: "vcf_cutoff",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
-            default: 64.0,
-            valid_range: 0.0..=128.0,
-            units: None,
+            default: 100.0,
+            valid_range: 0.0..=100.0,
+            units: Some("%"),
         },
     },
     InfoRef {
@@ -326,14 +326,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 47] = [
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
-            values: &[
-                "Gate",
-                "Gate-Dynamic",
-                "Env1",
-                "Env1-Dynamic",
-                "Env2",
-                "Env2-Dynamic",
-            ],
+            values: &["Gate", "Gate-Dynamic", "Env2", "Env2-Dynamic"],
         },
     },
     InfoRef {

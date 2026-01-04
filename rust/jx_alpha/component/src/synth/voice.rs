@@ -1,6 +1,9 @@
 use conformal_component::{events::NoteData, parameters, pzip};
 use conformal_poly::{EventData, Voice as VoiceTrait};
-use dsp::f32::{rescale, rescale_clamped, rescale_points};
+use dsp::{
+    env::adsr,
+    f32::{rescale, rescale_clamped, rescale_points},
+};
 use itertools::izip;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -50,8 +53,6 @@ pub enum VcaEnvSource {
     #[default]
     Gate,
     GateDynamic,
-    Env1,
-    Env1Dynamic,
     Env2,
     Env2Dynamic,
 }
@@ -67,8 +68,8 @@ pub struct Voice {
     env2: env::Env,
 
     // Optimization opportunity: we're using a full env here but don't need all the logic.
-    gate_coeffs: env::Coeffs,
-    gate: env::Env,
+    gate_coeffs: adsr::Coeffs,
+    gate: adsr::Adsr,
 }
 
 const GATE_ATTACK_TIME_SECONDS: f32 = 0.005;
@@ -87,7 +88,7 @@ fn volume_to_gain(volume: f32) -> f32 {
     if volume < BREAK_VOLUME {
         rescale_clamped(volume, 0.0..=BREAK_VOLUME, 0.0..=break_gain)
     } else {
-        rescale_clamped(volume, BREAK_VOLUME..=0.1, break_log_gain..=0.0).exp()
+        rescale_clamped(volume, BREAK_VOLUME..=1.0, break_log_gain..=0.0).exp()
     }
 }
 
@@ -119,20 +120,21 @@ fn get_env_from_source(source: EnvSource, env1: f32, env2: f32, velocity: f32) -
     }
 }
 
-fn get_vca_env_from_source(
-    source: VcaEnvSource,
-    gate: f32,
-    env1: f32,
-    env2: f32,
-    velocity: f32,
-) -> f32 {
+fn get_vca_env_from_source(source: VcaEnvSource, env2: f32, gate: f32, velocity: f32) -> f32 {
     match source {
-        VcaEnvSource::Env1 => env1,
-        VcaEnvSource::Env1Dynamic => env1 * velocity,
         VcaEnvSource::Env2 => env2,
         VcaEnvSource::Env2Dynamic => env2 * velocity,
         VcaEnvSource::Gate => gate,
         VcaEnvSource::GateDynamic => gate * velocity,
+    }
+}
+
+fn get_dco_pwm_incr(pwm_rate: f32, sampling_rate: f32) -> f32 {
+    if pwm_rate == 0.0 {
+        0.0
+    } else {
+        // Note that the range is unmeasured
+        increment(rescale(pwm_rate, 0.0..=100.0, -76.0..=15.0), sampling_rate)
     }
 }
 
@@ -177,19 +179,16 @@ impl VoiceTrait for Voice {
             vcf: vcf::Vcf::default(),
             env1: env::Env::default(),
             env2: env::Env::default(),
-            gate_coeffs: env::calc_coeffs(
-                &env::Params {
+            gate_coeffs: adsr::calc_coeffs(
+                &adsr::Params {
                     attack_time: GATE_ATTACK_TIME_SECONDS,
-                    attack_target: 1.0,
                     decay_time: 0.0,
-                    decay_target: 1.0,
-                    to_sustain_time: 0.0,
                     sustain: 1.0,
                     release_time: GATE_RELEASE_TIME_SECONDS,
                 },
                 sampling_rate,
             ),
-            gate: env::Env::default(),
+            gate: adsr::Adsr::default(),
         }
     }
 
@@ -415,15 +414,15 @@ impl VoiceTrait for Voice {
                         increment: osc0_incr,
                         shape: FromPrimitive::from_u32(dco1_shape_int).unwrap(),
                         gain: osc0_gain,
-                        pwm_depth: dco1_pwm_depth,
-                        pwm_incr: dco1_pwm_rate / self.sampling_rate,
+                        pwm_depth: rescale(dco1_pwm_depth, 0.0..=100.0, 0.0..=1.0),
+                        pwm_incr: get_dco_pwm_incr(dco1_pwm_rate, self.sampling_rate),
                     },
                     OscillatorSettings {
                         increment: osc1_incr,
                         shape: FromPrimitive::from_u32(dco2_shape_int).unwrap(),
                         gain: osc1_gain,
-                        pwm_depth: dco2_pwm_depth,
-                        pwm_incr: dco2_pwm_rate / self.sampling_rate,
+                        pwm_depth: rescale(dco2_pwm_depth, 0.0..=100.0, 0.0..=1.0),
+                        pwm_incr: get_dco_pwm_incr(dco2_pwm_rate, self.sampling_rate),
                     },
                 ],
                 x_mod: match x_mod {
@@ -437,10 +436,11 @@ impl VoiceTrait for Voice {
                 },
             });
 
+            // total vcf range of knob: unmeasured
             // vcf key following: unmeasured
             // vcf env depth: measured
             // vcf lfo depth: unmeasured
-            let adjusted_vcf_cutoff = vcf_cutoff
+            let adjusted_vcf_cutoff = rescale(vcf_cutoff, 0.0..=100.0, 0.0..=128.0)
                 + rescale_points(
                     adjusted_pitch - KEY_FOLLOW_NOMINAL_PITCH,
                     0.0,
@@ -467,9 +467,8 @@ impl VoiceTrait for Voice {
             let vca_volume = rescale(level, 0.0..=100.0, 0.0..=1.0)
                 * get_vca_env_from_source(
                     FromPrimitive::from_u32(vca_env_source_int).unwrap(),
-                    gate,
-                    env1,
                     env2,
+                    gate,
                     self.velocity,
                 );
 

@@ -62,10 +62,10 @@ impl SynthTrait for Synth {
         parameters: P,
         output: &mut O,
     ) {
+        let lfo_scratch = &mut self.lfo_scratch[..output.num_frames()];
         let mut lfo_events = events.clone().into_iter().peekable();
 
-        for ((index, sample), (rate, delay, shape_int)) in self
-            .lfo_scratch
+        for ((index, sample), (rate, delay, shape_int)) in lfo_scratch
             .iter_mut()
             .enumerate()
             .zip(pzip!(parameters[numeric "lfo_rate", numeric "lfo_delay", enum "lfo_shape"]))
@@ -106,9 +106,7 @@ impl SynthTrait for Synth {
         self.poly.process(
             events.into_iter(),
             &parameters,
-            &voice::SharedData {
-                lfo: &self.lfo_scratch[..output.num_frames()],
-            },
+            &voice::SharedData { lfo: lfo_scratch },
             output,
         );
 
