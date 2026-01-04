@@ -1,3 +1,4 @@
+use super::increment;
 use conformal_component::{events::NoteData, parameters, pzip};
 use conformal_poly::{EventData, Voice as VoiceTrait};
 use dsp::{
@@ -13,12 +14,7 @@ mod env;
 mod oscillators;
 mod vcf;
 
-const KEY_FOLLOW_NOMINAL_PITCH: f32 = 69.0;
-
-/// Converts a MIDI pitch to a phase increment
-fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
-    (440f32 * 2.0f32.powf((midi_pitch - 69f32) / 12f32) / sampling_rate).clamp(0.0, 0.45)
-}
+const KEY_FOLLOW_NOMINAL_PITCH: f32 = 60.0;
 
 #[derive(Debug, Clone)]
 pub struct SharedData<'a> {
@@ -126,6 +122,7 @@ fn dco_adjust(dco_range: DcoRange, dco_tune: u32, dco_fine_tune: f32) -> f32 {
         + (dco_tune as f32 - 12.0f32)
 }
 
+// Dynamics are unmeasured!
 fn get_env_from_source(source: EnvSource, env1: f32, env2: f32, velocity: f32) -> f32 {
     // Linear scale with velocity for now - this hasn't been measured yet.
     match source {
@@ -140,6 +137,7 @@ fn get_env_from_source(source: EnvSource, env1: f32, env2: f32, velocity: f32) -
     }
 }
 
+// Dynamics are unmeasured!
 fn get_vca_env_from_source(source: VcaEnvSource, env2: f32, gate: f32, velocity: f32) -> f32 {
     match source {
         VcaEnvSource::Env2 => env2,
@@ -153,8 +151,10 @@ fn get_dco_pwm_incr(pwm_rate: f32, sampling_rate: f32) -> f32 {
     if pwm_rate == 0.0 {
         0.0
     } else {
-        // Note that the range is unmeasured
-        increment(rescale(pwm_rate, 0.0..=100.0, -76.0..=15.0), sampling_rate)
+        increment(
+            rescale(pwm_rate, 0.0..=100.0, super::LFO_NOTE_RANGE),
+            sampling_rate,
+        )
     }
 }
 
@@ -404,15 +404,13 @@ impl VoiceTrait for Voice {
                 env2,
                 self.velocity,
             );
-            // lfo depth is unmeasured currently
-            // env depth _is_ measured, along with nonlinearity on the env control scales
             let osc0_env_scale = rescale(dco1_env, 0.0..=100.0, 0.0..=1.0);
             let osc0_env = dco_env * osc0_env_scale * osc0_env_scale * 32.0;
-            let osc0_lfo_adjust = rescale(dco1_lfo, 0.0..=100.0, 0.0..=12.0) * lfo;
+            let osc0_lfo_adjust = rescale(dco1_lfo, 0.0..=100.0, 0.0..=5.0) * lfo;
 
             let osc1_env_scale = rescale(dco2_env, 0.0..=100.0, 0.0..=1.0);
             let osc1_env = dco_env * osc1_env_scale * osc1_env_scale * 32.0;
-            let osc1_lfo_adjust = rescale(dco2_lfo, 0.0..=100.0, 0.0..=12.0) * lfo;
+            let osc1_lfo_adjust = rescale(dco2_lfo, 0.0..=100.0, 0.0..=5.0) * lfo;
 
             let osc0_incr = increment(
                 adjusted_pitch
@@ -476,27 +474,22 @@ impl VoiceTrait for Voice {
                 },
             });
 
-            // total vcf range of knob: unmeasured
-            // vcf key following: unmeasured
-            // vcf env depth: measured
-            // vcf lfo depth: unmeasured
-            let adjusted_vcf_cutoff = rescale(vcf_cutoff, 0.0..=100.0, 0.0..=128.0)
+            let adjusted_vcf_cutoff = rescale(vcf_cutoff, 0.0..=100.0, 0.0..=144.0)
                 + rescale_points(
                     adjusted_pitch - KEY_FOLLOW_NOMINAL_PITCH,
                     0.0,
-                    12.0,
+                    1.0,
                     0.0,
-                    12.0 * rescale(vcf_key, 0.0..=100.0, 0.0..=1.0),
+                    rescale(vcf_key, 0.0..=100.0, 0.0..=1.0),
                 )
-                + 120.0
-                    * rescale(vcf_env, 0.0..=100.0, 0.0..=1.0)
+                + rescale(vcf_env, 0.0..=100.0, 0.0..=120.0)
                     * get_env_from_source(
                         FromPrimitive::from_u32(vcf_env_source_int).unwrap(),
                         env1,
                         env2,
                         self.velocity,
                     )
-                + rescale(vcf_lfo, 0.0..=100.0, 0.0..=48.0) * lfo;
+                + rescale(vcf_lfo, 0.0..=100.0, 0.0..=84.0) * lfo;
             let cutoff_incr = increment(adjusted_vcf_cutoff, self.sampling_rate);
             let resonance = rescale(resonance, 0.0..=100.0, 0.0..=1.0);
             let vcf_settings = vcf::Settings {

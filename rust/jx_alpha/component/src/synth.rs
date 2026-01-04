@@ -1,3 +1,5 @@
+use std::ops::RangeInclusive;
+
 use conformal_component::{
     ProcessingEnvironment, Processor,
     audio::{BufferMut, channels_mut},
@@ -7,12 +9,20 @@ use conformal_component::{
     synth::Synth as SynthTrait,
 };
 use conformal_poly::Poly;
+use dsp::f32::rescale;
 use hpf::{Hpf, Mode};
 use num_traits::FromPrimitive;
 
 mod hpf;
 mod lfo;
 mod voice;
+
+const LFO_NOTE_RANGE: RangeInclusive<f32> = -105.0f32..=15.0f32;
+
+/// Converts a MIDI pitch to a phase increment
+fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
+    (440f32 * 2.0f32.powf((midi_pitch - 69f32) / 12f32) / sampling_rate).clamp(0.0, 0.45)
+}
 
 #[derive(Debug)]
 pub struct Synth {
@@ -89,7 +99,11 @@ impl SynthTrait for Synth {
                 }
                 lfo_events.next();
             }
-            let incr = rate / self.sampling_rate;
+            let incr = increment(
+                rescale(rate, 0.0..=100.0, LFO_NOTE_RANGE),
+                self.sampling_rate,
+            );
+            // Unmeasured LFO delay
             let coeffs = dsp::env::duck::calc_coeffs(
                 &dsp::env::duck::Params {
                     attack_time: delay,
