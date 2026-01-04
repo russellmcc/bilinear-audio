@@ -314,7 +314,7 @@ impl VoiceTrait for Voice {
                 numeric "dco2_env",
                 numeric "dco2_lfo",
                 enum "x_mod",
-                numeric "dco_bend_range",
+                enum "dco_bend_range",
                 enum "dco_env_source",
                 numeric "mix_dco1",
                 numeric "mix_dco2",
@@ -360,7 +360,9 @@ impl VoiceTrait for Voice {
                 events.next();
             }
 
-            let total_pitch_bend = global_pitch_bend * dco_bend_range + expression.pitch_bend;
+            let total_pitch_bend = global_pitch_bend
+                * (num_traits::cast::<u32, f32>(dco_bend_range + 1).unwrap())
+                + expression.pitch_bend;
             let adjusted_pitch = self.pitch + total_pitch_bend;
 
             let env1_coeffs = env::calc_coeffs(

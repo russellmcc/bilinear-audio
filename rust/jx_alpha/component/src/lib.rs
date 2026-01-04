@@ -1,149 +1,136 @@
 use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment};
 
+const fn percentage(default: f32) -> TypeSpecificInfoRef<'static, &'static str> {
+    TypeSpecificInfoRef::Numeric {
+        default,
+        valid_range: 0.0..=100.0,
+        units: Some("%"),
+    }
+}
+
+const DCO_SHAPE: TypeSpecificInfoRef<'static, &'static str> = TypeSpecificInfoRef::Enum {
+    default: 0,
+    values: &["Saw", "Pulse", "PwmSaw", "CombSaw", "Noise"],
+};
+
+const DCO_RANGE: TypeSpecificInfoRef<'static, &'static str> = TypeSpecificInfoRef::Enum {
+    default: 1,
+    values: &["16'", "8'", "4'", "2'"],
+};
+
+const DCO_TUNE: TypeSpecificInfoRef<'static, &'static str> = TypeSpecificInfoRef::Enum {
+    default: 12,
+    values: &[
+        "-12", "-11", "-10", "-9", "-8", "-7", "-6", "-5", "-4", "-3", "-2", "-1", "0", "1", "2",
+        "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+    ],
+};
+
+const ENV_SOURCE: TypeSpecificInfoRef<'static, &'static str> = TypeSpecificInfoRef::Enum {
+    default: 0,
+    values: &[
+        "Env1",
+        "Env1-Inverse",
+        "Env1-Dynamic",
+        "Env2",
+        "Env2-Inverse",
+        "Env2-Dynamic",
+        "Dynamic",
+    ],
+};
+
 const PARAMETERS: [InfoRef<'static, &'static str>; 50] = [
     InfoRef {
         title: "Level",
         short_title: "Level",
         unique_id: "level",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 100.,
-            valid_range: 0f32..=100.,
-            units: Some("%"),
-        },
+        type_specific: percentage(100.0),
     },
     InfoRef {
         title: "DCO1 Shape",
         short_title: "DCO1 Shape",
         unique_id: "dco1_shape",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 0,
-            values: &["Saw", "Pulse", "PwmSaw", "CombSaw", "Noise"],
-        },
+        type_specific: DCO_SHAPE,
     },
     InfoRef {
         title: "DCO1 PWM Depth",
         short_title: "DCO1 PWM Depth",
         unique_id: "dco1_pwm_depth",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "DCO1 PWM Rate",
         short_title: "DCO1 PWM Rate",
         unique_id: "dco1_pwm_rate",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "DCO1 Range",
         short_title: "DCO1 Range",
         unique_id: "dco1_range",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 1,
-            values: &["16'", "8'", "4'", "2'"],
-        },
+        type_specific: DCO_RANGE,
     },
     InfoRef {
         title: "DCO1 Tune",
         short_title: "DCO1 Tune",
         unique_id: "dco1_tune",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 12,
-            values: &[
-                "-12", "-11", "-10", "-9", "-8", "-7", "-6", "-5", "-4", "-3", "-2", "-1", "0",
-                "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
-            ],
-        },
+        type_specific: DCO_TUNE,
     },
     InfoRef {
         title: "DCO1 Envelope",
         short_title: "DCO1 Env",
         unique_id: "dco1_env",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "DCO1 LFO",
         short_title: "DCO1 LFO",
         unique_id: "dco1_lfo",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "DCO2 Shape",
         short_title: "DCO2 Shape",
         unique_id: "dco2_shape",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 0,
-            values: &["Saw", "Pulse", "PwmSaw", "CombSaw", "Noise"],
-        },
+        type_specific: DCO_SHAPE,
     },
     InfoRef {
         title: "DCO2 PWM Depth",
         short_title: "DCO2 PWM Depth",
         unique_id: "dco2_pwm_depth",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "DCO2 PWM Rate",
         short_title: "DCO2 PWM Rate",
         unique_id: "dco2_pwm_rate",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "DCO2 Range",
         short_title: "DCO2 Range",
         unique_id: "dco2_range",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 1,
-            values: &["16'", "8'", "4'", "2'"],
-        },
+        type_specific: DCO_RANGE,
     },
     InfoRef {
         title: "DCO2 Tune",
         short_title: "DCO2 Tune",
         unique_id: "dco2_tune",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 12,
-            values: &[
-                "-12", "-11", "-10", "-9", "-8", "-7", "-6", "-5", "-4", "-3", "-2", "-1", "0",
-                "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
-            ],
-        },
+        type_specific: DCO_TUNE,
     },
     InfoRef {
         title: "DCO2 Fine Tune",
@@ -171,32 +158,25 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 50] = [
         short_title: "DCO2 Env",
         unique_id: "dco2_env",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "DCO2 LFO",
         short_title: "DCO2 LFO",
         unique_id: "dco2_lfo",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "DCO Bend Range",
         short_title: "DCO Bend Range",
         unique_id: "dco_bend_range",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 2.0,
-            valid_range: 0.0..=12.0,
-            units: Some("Semitones"),
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 1,
+            values: &[
+                "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+            ],
         },
     },
     InfoRef {
@@ -204,69 +184,35 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 50] = [
         short_title: "DCO Env",
         unique_id: "dco_env_source",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 0,
-            values: &[
-                "Env1",
-                "Env1-Inverse",
-                "Env1-Dynamic",
-                "Env2",
-                "Env2-Inverse",
-                "Env2-Dynamic",
-                "Dynamic",
-            ],
-        },
+        type_specific: ENV_SOURCE,
     },
     InfoRef {
         title: "Mix DCO1",
         short_title: "Mix DCO1",
         unique_id: "mix_dco1",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 100.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(100.0),
     },
     InfoRef {
         title: "Mix DCO2",
         short_title: "Mix DCO2",
         unique_id: "mix_dco2",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "Mix Envelope",
         short_title: "Mix Env",
         unique_id: "mix_env",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "Mix Env Source",
         short_title: "Mix Env Source",
         unique_id: "mix_env_source",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 0,
-            values: &[
-                "Env1",
-                "Env1-Inverse",
-                "Env1-Dynamic",
-                "Env2",
-                "Env2-Inverse",
-                "Env2-Dynamic",
-                "Dynamic",
-            ],
-        },
+        type_specific: ENV_SOURCE,
     },
     InfoRef {
         title: "HPF Mode",
@@ -283,73 +229,42 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 50] = [
         short_title: "Resonance",
         unique_id: "resonance",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "VCF Cutoff",
         short_title: "VCF Cutoff",
         unique_id: "vcf_cutoff",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 100.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(100.0),
     },
     InfoRef {
         title: "VCF Key Follow",
         short_title: "VCF Key Follow",
         unique_id: "vcf_key",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "VCF Envelope",
         short_title: "VCF Env",
         unique_id: "vcf_env",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "VCF LFO",
         short_title: "VCF LFO",
         unique_id: "vcf_lfo",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "VCF Env Source",
         short_title: "VCF Env Source",
         unique_id: "vcf_env_source",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Enum {
-            default: 0,
-            values: &[
-                "Env1",
-                "Env1-Inverse",
-                "Env1-Dynamic",
-                "Env2",
-                "Env2-Inverse",
-                "Env2-Dynamic",
-                "Dynamic",
-            ],
-        },
+        type_specific: ENV_SOURCE,
     },
     InfoRef {
         title: "VCA Env Source",
@@ -366,198 +281,126 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 50] = [
         short_title: "Env1 T1",
         unique_id: "env1_t1",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "Env1 L1",
         short_title: "Env1 L1",
         unique_id: "env1_l1",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 100.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(100.0),
     },
     InfoRef {
         title: "Env1 T2",
         short_title: "Env1 T2",
         unique_id: "env1_t2",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "Env1 L2",
         short_title: "Env1 L2",
         unique_id: "env1_l2",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 100.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(100.0),
     },
     InfoRef {
         title: "Env1 T3",
         short_title: "Env1 T3",
         unique_id: "env1_t3",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "Env1 L3",
         short_title: "Env1 L3",
         unique_id: "env1_l3",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 100.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(100.0),
     },
     InfoRef {
         title: "Env1 T4",
         short_title: "Env1 T4",
         unique_id: "env1_t4",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "Env1 Key Follow",
         short_title: "Env1 Key",
         unique_id: "env1_key",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "Env2 T1",
         short_title: "Env2 T1",
         unique_id: "env2_t1",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "Env2 L1",
         short_title: "Env2 L1",
         unique_id: "env2_l1",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 100.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(100.0),
     },
     InfoRef {
         title: "Env2 T2",
         short_title: "Env2 T2",
         unique_id: "env2_t2",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "Env2 L2",
         short_title: "Env2 L2",
         unique_id: "env2_l2",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 100.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(100.0),
     },
     InfoRef {
         title: "Env2 T3",
         short_title: "Env2 T3",
         unique_id: "env2_t3",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "Env2 L3",
         short_title: "Env2 L3",
         unique_id: "env2_l3",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 100.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(100.0),
     },
     InfoRef {
         title: "Env2 T4",
         short_title: "Env2 T4",
         unique_id: "env2_t4",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "Env2 Key Follow",
         short_title: "Env2 Key",
         unique_id: "env2_key",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "LFO Rate",
         short_title: "LFO Rate",
         unique_id: "lfo_rate",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 1.0,
-            valid_range: 0.01..=10.0,
-            units: Some("Hz"),
-        },
+        type_specific: percentage(50.0),
     },
     InfoRef {
         title: "LFO Delay",
         short_title: "LFO Delay",
         unique_id: "lfo_delay",
         flags: Flags { automatable: true },
-        type_specific: TypeSpecificInfoRef::Numeric {
-            default: 0.0,
-            valid_range: 0.0..=100.0,
-            units: Some("%"),
-        },
+        type_specific: percentage(0.0),
     },
     InfoRef {
         title: "LFO Shape",

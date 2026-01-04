@@ -1,7 +1,7 @@
 import { useNumericParam } from "@conformal/plugin";
 
 const Layout = () => {
-  const { value: gain, set: setGain } = useNumericParam("gain");
+  const { value: gain, set: setGain } = useNumericParam("level");
 
   return (
     <div>
