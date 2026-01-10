@@ -1,5 +1,6 @@
 import useGesture from "./useGesture.ts";
 import { useMemo } from "react";
+import { PropsWithLabel as NumericProps } from "../numeric.ts";
 
 export type DisplayProps = {
   /** Currrent value of the knob */
@@ -32,53 +33,6 @@ export type LabelComponent = React.ComponentType<LabelProps>;
 
 export type Props = {
   /**
-   * The current value of the knob (scaled to 0-100)
-   */
-  value: number;
-
-  /**
-   * True if the knob is grabbed
-   */
-  grabbed?: boolean;
-
-  /**
-   * Callback for when the knob is grabbed or release through a pointer event.
-   * Note that this may be called spruriously even if the grabbed state didn't change.
-   */
-  onGrabOrRelease?: (grabbed: boolean) => void;
-
-  /**
-   * Callback for when the value of the knob changes.
-   * Note that this may be called spuriously even if the value didn't change.
-   */
-  onValue?: (value: number) => void;
-
-  /**
-   * The label of the knob. Note this is required for accessibility. To hide the label, set `showLabel` to false.
-   */
-  label: string;
-
-  /**
-   * Whether we should show the label
-   */
-  showLabel?: boolean;
-
-  /**
-   * Value formatter to convert values into strings
-   */
-  valueFormatter?: (value: number) => string;
-
-  /**
-   * Label for accessibility (can contain more information than `label`)
-   */
-  accessibilityLabel?: string;
-
-  /**
-   * Value to reset the knob to on reset-to-default gesture (double click)
-   */
-  defaultValue?: number;
-
-  /**
    * A component for the knob display
    */
   Display?: DisplayComponent;
@@ -87,7 +41,7 @@ export type Props = {
    * A component for the knob label
    */
   Label?: LabelComponent;
-};
+} & NumericProps;
 
 export const Knob = ({
   value,

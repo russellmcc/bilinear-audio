@@ -12,6 +12,9 @@ const preview: Preview = {
       values: [{ name: "black", value: "#000000" }],
     },
     actions: { argTypesRegex: "^on[A-Z].*" },
+    options: {
+      urlArgs: false,
+    },
   },
 };
 
