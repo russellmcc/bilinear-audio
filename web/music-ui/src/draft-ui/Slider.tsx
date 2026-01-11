@@ -1,3 +1,4 @@
+import { useSlider } from "../kit";
 import {
   Slider as InternalSlider,
   SliderProps,
@@ -56,39 +57,54 @@ const HEIGHT = 150;
 const BALL_MARGIN = 2;
 const BORDER_WIDTH = 1;
 
-const slider = ({ value, grabbed }: SliderProps) => (
-  <div
-    className="slider-track"
-    style={{
-      height: `${HEIGHT}px`,
-      width: `${BALL_SIZE + BALL_MARGIN * 2}px`,
-      borderWidth: `${BORDER_WIDTH}px`,
-      position: "relative",
-      borderStyle: "solid",
-      borderRadius: `${BALL_SIZE / 2}px`,
-      marginRight: "6px",
-      marginTop: `2px`,
-      cursor: "pointer",
-    }}
-  >
-    <div>
-      <div
-        className={`slider-ball ${grabbed ? "slider-ball-grabbed" : ""}`}
-        data-testid="slider-ball"
-        style={{
-          width: `${BALL_SIZE - BORDER_WIDTH * 2}px`,
-          height: `${BALL_SIZE - BORDER_WIDTH * 2}px`,
-          bottom: `${(value / 100) * (HEIGHT - BALL_SIZE - BALL_MARGIN * 2) + BALL_MARGIN}px`,
-          left: `${BALL_MARGIN}px`,
-          position: "absolute",
-          borderRadius: `1000px`,
-          borderWidth: `${BORDER_WIDTH}px`,
-          borderStyle: "solid",
-        }}
-      ></div>
+const DisplaySlider = ({
+  value,
+  grabbed,
+  onGrabOrRelease,
+  onValue,
+}: SliderProps) => {
+  const { containerProps, ballBottom } = useSlider({
+    ballMargin: BALL_MARGIN,
+    ballSize: BALL_SIZE,
+    onGrabOrRelease,
+    value,
+    onValue,
+  });
+  return (
+    <div
+      className="slider-track"
+      style={{
+        height: `${HEIGHT}px`,
+        width: `${BALL_SIZE + BALL_MARGIN * 2}px`,
+        borderWidth: `${BORDER_WIDTH}px`,
+        position: "relative",
+        borderStyle: "solid",
+        borderRadius: `${BALL_SIZE / 2}px`,
+        marginRight: "6px",
+        marginTop: `2px`,
+        cursor: "pointer",
+      }}
+      {...containerProps}
+    >
+      <div>
+        <div
+          className={`slider-ball ${grabbed ? "slider-ball-grabbed" : ""}`}
+          data-testid="slider-ball"
+          style={{
+            width: `${BALL_SIZE - BORDER_WIDTH * 2}px`,
+            height: `${BALL_SIZE - BORDER_WIDTH * 2}px`,
+            bottom: `${ballBottom}px`,
+            left: `${BALL_MARGIN}px`,
+            position: "absolute",
+            borderRadius: `1000px`,
+            borderWidth: `${BORDER_WIDTH}px`,
+            borderStyle: "solid",
+          }}
+        ></div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const label = ({ label, grabbed, hover, valueLabel }: LabelProps) => (
   <div className="knob-label">{grabbed || hover ? valueLabel : label}</div>
@@ -97,7 +113,7 @@ const label = ({ label, grabbed, hover, valueLabel }: LabelProps) => (
 export const Slider = ({ ...props }: Props) => (
   <InternalSlider
     {...props}
-    Slider={slider}
+    Slider={DisplaySlider}
     Label={label}
     valueFormatter={(v) => v.toFixed(0)}
   />

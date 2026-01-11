@@ -9,15 +9,18 @@ export type SliderProps = {
   value: number;
 
   /** True if the slider is grabbed */
-  grabbed: boolean;
+  grabbed?: boolean;
 
   /** True if the slider is hovered */
-  hover: boolean;
+  hover?: boolean;
+
+  /** Callback for when the value of the slider changes. */
+  onValue?: (value: number) => void;
 
   /**
    * Callback for when the slider is grabbed or release through a pointer event.
    */
-  onGrabOrRelease?: (grabbed: boolean) => void;
+  onGrabOrRelease: (grabbed: boolean) => void;
 };
 
 export type SliderComponent = React.ComponentType<SliderProps>;
@@ -42,9 +45,9 @@ export type Props = {
   /**
    * A component for the slider.
    *
-   * Note, you can use the `useSlider` hook to implement this.
+   * Note, you can use the `useSlider` hook to implement a nice animated slider.
    */
-  Slider?: SliderComponent;
+  Slider: SliderComponent;
 
   /**
    * A component for the slider label
@@ -97,6 +100,12 @@ export const Slider = ({
 
   const hover = interacted || mouseHover;
 
+  const wrappedOnGrabOrRelease = useCallback(
+    (grabbed: boolean) => {
+      onGrabOrRelease?.(grabbed);
+    },
+    [onGrabOrRelease],
+  );
   return (
     <div
       {...accessibleProps}
@@ -111,14 +120,15 @@ export const Slider = ({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      {Slider && (
+      {
         <Slider
           value={value}
           grabbed={grabbed ?? false}
           hover={hover}
-          onGrabOrRelease={onGrabOrRelease}
+          onGrabOrRelease={wrappedOnGrabOrRelease}
+          onValue={onValue}
         />
-      )}
+      }
       {showLabel && Label && (
         <Label
           label={label}
