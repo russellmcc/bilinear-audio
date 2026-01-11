@@ -32,6 +32,21 @@ export default {
         disable: true,
       },
     },
+    onValue: {
+      table: {
+        disable: true,
+      },
+    },
+    onGrabOrRelease: {
+      table: {
+        disable: true,
+      },
+    },
+    displayFormatter: {
+      table: {
+        disable: true,
+      },
+    },
     value: {
       type: "radio",
       options: demoValues,
