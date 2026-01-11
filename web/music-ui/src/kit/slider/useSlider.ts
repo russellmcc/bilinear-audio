@@ -36,19 +36,11 @@ const useWatchElementHeight = <Container extends HTMLElement>() => {
 
 const shiftSensitivityScale = 0.1;
 
-const eventToValue = ({
-  event,
-  ballSize,
-  ballMargin,
-  containerElem,
-}: {
-  event: React.PointerEvent;
-  ballSize: number;
-  ballMargin: number;
-  containerElem: RefObject<HTMLElement | null>;
-}) => {
+const calcContainerContentYBounds = (
+  containerElem: RefObject<HTMLElement | null>,
+) => {
   if (containerElem.current == undefined) {
-    return 0;
+    return { top: 0, bottom: 0 };
   }
   const boundingClientRect = containerElem.current.getBoundingClientRect();
   const style = window.getComputedStyle(containerElem.current);
@@ -56,19 +48,38 @@ const eventToValue = ({
     parseFloat(style.borderTopWidth) + parseFloat(style.paddingTop);
   const bottomOffset =
     parseFloat(style.borderBottomWidth) + parseFloat(style.paddingBottom);
-  const contentTop = boundingClientRect.top + topOffset;
-  const contentBottom = boundingClientRect.bottom - bottomOffset;
-  const contentHeight = contentBottom - contentTop;
-  const trackHeight = contentHeight - ballSize - ballMargin * 2;
+  return {
+    top: boundingClientRect.top + topOffset,
+    bottom: boundingClientRect.bottom - bottomOffset,
+  };
+};
 
-  const fromBottom = contentBottom - event.clientY - ballSize / 2;
+const eventToValue = ({
+  event,
+  ballSize,
+  ballMargin,
+  containerContentYBounds,
+}: {
+  event: React.PointerEvent;
+  ballSize: number;
+  ballMargin: number;
+  containerContentYBounds: { top: number; bottom: number };
+}) => {
+  const trackHeight =
+    containerContentYBounds.bottom -
+    containerContentYBounds.top -
+    ballSize -
+    ballMargin * 2;
+
+  const fromBottom =
+    containerContentYBounds.bottom - event.clientY - ballSize / 2;
   const desired = ((fromBottom - ballMargin) / trackHeight) * 100;
   return desired;
 };
 
 type TouchState = {
   lastDesiredValue: number;
-  lastClampedValue: number;
+  lastValue: number;
 };
 
 // This is a false positive: we really need the parameter to control the return type.
@@ -97,23 +108,40 @@ export const useSlider = <Container extends HTMLElement = HTMLDivElement>({
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       containerElem.current?.setPointerCapture?.(event.pointerId);
 
-      // TODO: special case click on ball
-
+      const containerContentYBounds =
+        calcContainerContentYBounds(containerElem);
       const desired = eventToValue({
         event,
-        containerElem,
+        containerContentYBounds,
         ballSize,
         ballMargin,
       });
+
+      const ballMarginInValues =
+        (ballSize /
+          (containerContentYBounds.bottom -
+            containerContentYBounds.top -
+            ballSize -
+            ballMargin * 2) /
+          2) *
+        100;
       const clamped = clamp(desired, 0, 100);
-      touches.current.set(event.pointerId, {
-        lastDesiredValue: desired,
-        lastClampedValue: clamped,
-      });
+      if (Math.abs(desired - lastValue.current) < ballMarginInValues) {
+        // Special case: if the click was _on_ the ball, we don't want to jump to the desired value.
+        touches.current.set(event.pointerId, {
+          lastDesiredValue: desired,
+          lastValue: lastValue.current,
+        });
+      } else {
+        touches.current.set(event.pointerId, {
+          lastDesiredValue: desired,
+          lastValue: clamped,
+        });
+        onValue?.(clamped);
+      }
       if (touches.current.size === 1) {
         onGrabOrRelease(true);
       }
-      onValue?.(clamped);
     },
     [onGrabOrRelease, onValue, ballMargin, ballSize, containerElem],
   );
@@ -123,24 +151,22 @@ export const useSlider = <Container extends HTMLElement = HTMLDivElement>({
       if (!touchState) {
         return;
       }
+      const containerContentYBounds =
+        calcContainerContentYBounds(containerElem);
       const desired = eventToValue({
         event,
-        containerElem,
+        containerContentYBounds,
         ballSize,
         ballMargin,
       });
       const delta = desired - touchState.lastDesiredValue;
       const effectiveDelta =
         delta * (event.shiftKey ? shiftSensitivityScale : 1);
-      const clamped = clamp(
-        effectiveDelta + touchState.lastClampedValue,
-        0,
-        100,
-      );
+      const clamped = clamp(effectiveDelta + touchState.lastValue, 0, 100);
       onValue?.(clamped);
       touches.current.set(event.pointerId, {
         lastDesiredValue: desired,
-        lastClampedValue: clamped,
+        lastValue: clamped,
       });
     },
     [onValue, ballMargin, ballSize, containerElem],
