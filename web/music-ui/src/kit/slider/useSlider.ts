@@ -97,6 +97,8 @@ export const useSlider = <Container extends HTMLElement = HTMLDivElement>({
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       containerElem.current?.setPointerCapture?.(event.pointerId);
 
+      // TODO: special case click on ball
+
       const desired = eventToValue({
         event,
         containerElem,
