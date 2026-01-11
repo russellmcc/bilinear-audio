@@ -1,7 +1,6 @@
 import useGesture from "./useGesture.ts";
 import { useMemo } from "react";
 import {
-  ariaPropsForNumericControl,
   PropsWithLabel as NumericProps,
   useAccessibleNumeric,
 } from "../numeric.ts";

@@ -1,11 +1,4 @@
-import {
-  Knob as InternalKnob,
-  Props as InternalKnobProps,
-  DisplayProps,
-  LabelProps,
-} from "../kit/knob";
-
-type RelevantProps = Omit<InternalKnobProps, "Display" | "Label">;
+import { Knob as InternalKnob, DisplayProps, LabelProps } from "../kit/knob";
 
 export type Props = {
   /**

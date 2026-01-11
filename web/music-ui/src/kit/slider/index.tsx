@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
 import {
-  ariaPropsForNumericControl,
   PropsWithLabel as NumericProps,
   useAccessibleNumeric,
 } from "../numeric.ts";
@@ -14,6 +13,11 @@ export type SliderProps = {
 
   /** True if the slider is hovered */
   hover: boolean;
+
+  /**
+   * Callback for when the slider is grabbed or release through a pointer event.
+   */
+  onGrabOrRelease?: (grabbed: boolean) => void;
 };
 
 export type SliderComponent = React.ComponentType<SliderProps>;
@@ -108,7 +112,12 @@ export const Slider = ({
       onMouseLeave={onMouseLeave}
     >
       {Slider && (
-        <Slider value={value} grabbed={grabbed ?? false} hover={hover} />
+        <Slider
+          value={value}
+          grabbed={grabbed ?? false}
+          hover={hover}
+          onGrabOrRelease={onGrabOrRelease}
+        />
       )}
       {showLabel && Label && (
         <Label
