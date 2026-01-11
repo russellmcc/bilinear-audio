@@ -1,23 +1,22 @@
-import useGesture from "./useGesture.ts";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ariaPropsForNumericControl,
   PropsWithLabel as NumericProps,
   useAccessibleNumeric,
 } from "../numeric.ts";
 
-export type DisplayProps = {
-  /** Currrent value of the knob */
+export type SliderProps = {
+  /** Currrent value of the slider */
   value: number;
 
-  /** True if the knob is grabbed */
+  /** True if the slider is grabbed */
   grabbed: boolean;
 
-  /** True if the knob is hovered */
+  /** True if the slider is hovered */
   hover: boolean;
 };
 
-export type DisplayComponent = React.ComponentType<DisplayProps>;
+export type SliderComponent = React.ComponentType<SliderProps>;
 
 export type LabelProps = {
   /** The label of the knob */
@@ -37,17 +36,19 @@ export type LabelComponent = React.ComponentType<LabelProps>;
 
 export type Props = {
   /**
-   * A component for the knob display
+   * A component for the slider.
+   *
+   * Note, you can use the `useSlider` hook to implement this.
    */
-  Display?: DisplayComponent;
+  Slider?: SliderComponent;
 
   /**
-   * A component for the knob label
+   * A component for the slider label
    */
   Label?: LabelComponent;
 } & NumericProps;
 
-export const Knob = ({
+export const Slider = ({
   value,
   grabbed,
   onGrabOrRelease,
@@ -57,15 +58,9 @@ export const Knob = ({
   showLabel = true,
   accessibilityLabel,
   defaultValue,
-  Display,
+  Slider,
   Label,
 }: Props) => {
-  const { hover: mouseHover, props } = useGesture({
-    value,
-    onGrabOrRelease,
-    onValue,
-    defaultValue,
-  });
   const valueLabel = useMemo(
     () => (valueFormatter ? valueFormatter(value) : label),
     [valueFormatter, value, label],
@@ -77,7 +72,27 @@ export const Knob = ({
     accessibilityLabel,
     valueFormatter,
   });
+  const [mouseHover, setMouseHover] = useState(false);
+  const onMouseEnter = useCallback(() => {
+    setMouseHover(true);
+  }, []);
+  const onMouseLeave = useCallback(() => {
+    setMouseHover(false);
+  }, []);
+
+  const onDoubleClick: React.MouseEventHandler = useCallback(
+    (event) => {
+      if (defaultValue !== undefined) {
+        event.preventDefault();
+        event.stopPropagation();
+        onValue?.(defaultValue);
+      }
+    },
+    [defaultValue, onValue],
+  );
+
   const hover = interacted || mouseHover;
+
   return (
     <div
       {...accessibleProps}
@@ -88,10 +103,12 @@ export const Knob = ({
         userSelect: "none",
         WebkitUserSelect: "none",
       }}
-      {...props}
+      onDoubleClick={onDoubleClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
-      {Display && (
-        <Display value={value} grabbed={grabbed ?? false} hover={hover} />
+      {Slider && (
+        <Slider value={value} grabbed={grabbed ?? false} hover={hover} />
       )}
       {showLabel && Label && (
         <Label
@@ -105,4 +122,4 @@ export const Knob = ({
   );
 };
 
-export default Knob;
+export default Slider;

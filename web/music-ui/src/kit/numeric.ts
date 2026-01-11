@@ -1,3 +1,9 @@
+import { useCallback, useState } from "react";
+import { clamp } from "music-ui/util";
+
+const KEYBOARD_STEP = 10;
+const BIG_KEYBOARD_STEP = 25;
+
 /**
  * Props shared for all numeric controls
  */
@@ -58,4 +64,76 @@ export type PropsWithLabel = Omit<Props, "accessibilityLabel"> & {
    * Label for accessibility (can contain more information than `label`)
    */
   accessibilityLabel?: string;
+};
+
+export type RequiredPropsForAria = Pick<
+  PropsWithLabel,
+  "label" | "accessibilityLabel" | "value" | "valueFormatter" | "onValue"
+>;
+
+/**
+ * Sets up aria props, and keyboard handling for numerical controls (knobs, sliders, etc.)
+ */
+export const useAccessibleNumeric = ({
+  value,
+  onValue,
+  label,
+  accessibilityLabel,
+  valueFormatter,
+}: RequiredPropsForAria) => {
+  const [interacted, setInteracted] = useState(false);
+
+  const onBlur = useCallback(() => {
+    setInteracted(false);
+  }, []);
+
+  const onKeyDown: React.KeyboardEventHandler = useCallback(
+    (event) => {
+      const setValue = (v: number) => {
+        onValue?.(v);
+        setInteracted(true);
+        event.preventDefault();
+        event.stopPropagation();
+      };
+      switch (event.code) {
+        case "ArrowUp":
+        case "ArrowRight":
+          setValue(clamp(value + KEYBOARD_STEP, 0, 100));
+          break;
+        case "ArrowDown":
+        case "ArrowLeft":
+          setValue(clamp(value - KEYBOARD_STEP, 0, 100));
+          break;
+        case "PageUp":
+          setValue(clamp(value + BIG_KEYBOARD_STEP, 0, 100));
+          break;
+        case "PageDown":
+          setValue(clamp(value - BIG_KEYBOARD_STEP, 0, 100));
+          break;
+        case "End":
+          setValue(100);
+          break;
+        case "Home":
+          setValue(0);
+          break;
+      }
+    },
+    [onValue, value],
+  );
+
+  return {
+    props: {
+      role: "slider",
+      onKeyDown,
+      onBlur,
+      "aria-label": accessibilityLabel ?? label,
+      "aria-valuemin": 0,
+      "aria-valuemax": 100,
+      "aria-valuenow": value,
+      "aria-orientation": "vertical",
+      "aria-valuetext": valueFormatter ? valueFormatter(value) : String(value),
+      tabIndex: 0,
+    },
+    interacted,
+  } as const;
 };
