@@ -16,7 +16,8 @@
     "@conformal/plugin": "catalog:",
     "react-dom": "catalog:",
     "react": "catalog:",
-    "jotai": "catalog:"
+    "jotai": "catalog:",
+    "music-ui": "workspace:*"
   },
   "devDependencies": {
     "@types/react-dom": "catalog:",

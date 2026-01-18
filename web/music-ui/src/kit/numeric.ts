@@ -51,9 +51,14 @@ export type Props = {
  */
 export type PropsWithLabel = Omit<Props, "accessibilityLabel"> & {
   /**
-   * Whether we should show the label
+   * Whether and where we should show the label
+   *  - "before": label comes before the control
+   *  - "after": label comes after the control
+   *  - "hidden": label is not shown
+   *
+   * Default is "after"
    */
-  showLabel?: boolean;
+  showLabel?: "before" | "after" | "hidden";
 
   /**
    * The label of the control

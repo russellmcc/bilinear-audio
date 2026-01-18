@@ -29,7 +29,7 @@ export type Props = {
   /**
    * Whether we should show the label
    */
-  showLabel?: boolean;
+  showLabel?: "before" | "after" | "hidden";
 
   /**
    * Value formatter to convert values into strings

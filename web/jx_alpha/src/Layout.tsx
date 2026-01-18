@@ -1,29 +1,10 @@
-import { useNumericParam } from "@conformal/plugin";
+import { ParamSlider } from "./components/ParamSlider";
 
-const Layout = () => {
-  const { value: gain, set: setGain } = useNumericParam("level");
-
-  return (
-    <div>
-      <p>Current gain: {gain}%</p>
-      <p>
-        <span
-          onClick={() => {
-            setGain(Math.max(0, gain - 10));
-          }}
-        >
-          -
-        </span>
-        <span
-          onClick={() => {
-            setGain(Math.min(100, gain + 10));
-          }}
-        >
-          +
-        </span>
-      </p>
-    </div>
-  );
-};
+const Layout = () => (
+  <>
+    <ParamSlider param="level" label="LEVEL" scale="labeled" />
+    <ParamSlider param="dco1_pwm_depth" label="DEPTH" scale="continuation" />
+  </>
+);
 
 export default Layout;

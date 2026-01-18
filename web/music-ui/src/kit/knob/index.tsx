@@ -53,7 +53,7 @@ export const Knob = ({
   onValue,
   label,
   valueFormatter,
-  showLabel = true,
+  showLabel = "after",
   accessibilityLabel,
   defaultValue,
   Display,
@@ -77,6 +77,15 @@ export const Knob = ({
     valueFormatter,
   });
   const hover = interacted || mouseHover;
+  const labelElem =
+    showLabel !== "hidden" && Label ? (
+      <Label
+        label={label}
+        hover={hover}
+        grabbed={grabbed ?? false}
+        valueLabel={valueLabel}
+      />
+    ) : undefined;
   return (
     <div
       {...accessibleProps}
@@ -89,17 +98,11 @@ export const Knob = ({
       }}
       {...props}
     >
+      {showLabel === "before" && labelElem}
       {Display && (
         <Display value={value} grabbed={grabbed ?? false} hover={hover} />
       )}
-      {showLabel && Label && (
-        <Label
-          label={label}
-          hover={hover}
-          grabbed={grabbed ?? false}
-          valueLabel={valueLabel}
-        />
-      )}
+      {showLabel === "after" && labelElem}
     </div>
   );
 };
