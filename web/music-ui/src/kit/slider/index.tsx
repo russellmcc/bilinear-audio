@@ -36,7 +36,7 @@ export type LabelProps = {
   grabbed: boolean;
 
   /** The to display for the current value of the knob */
-  valueLabel: string;
+  valueLabel?: string;
 };
 
 export type LabelComponent = React.ComponentType<LabelProps>;
@@ -62,15 +62,15 @@ export const Slider = ({
   onValue,
   label,
   valueFormatter,
-  showLabel = true,
+  showLabel = "after",
   accessibilityLabel,
   defaultValue,
   Slider,
   Label,
 }: Props) => {
   const valueLabel = useMemo(
-    () => (valueFormatter ? valueFormatter(value) : label),
-    [valueFormatter, value, label],
+    () => (valueFormatter ? valueFormatter(value) : undefined),
+    [valueFormatter, value],
   );
   const { interacted, props: accessibleProps } = useAccessibleNumeric({
     value,
@@ -106,6 +106,15 @@ export const Slider = ({
     },
     [onGrabOrRelease],
   );
+  const labelElem =
+    showLabel !== "hidden" && Label ? (
+      <Label
+        label={label}
+        hover={hover}
+        grabbed={grabbed ?? false}
+        valueLabel={valueLabel}
+      />
+    ) : undefined;
   return (
     <div
       {...accessibleProps}
@@ -120,6 +129,7 @@ export const Slider = ({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
+      {showLabel === "before" && labelElem}
       {
         <Slider
           value={value}
@@ -129,14 +139,7 @@ export const Slider = ({
           onValue={onValue}
         />
       }
-      {showLabel && Label && (
-        <Label
-          label={label}
-          hover={hover}
-          grabbed={grabbed ?? false}
-          valueLabel={valueLabel}
-        />
-      )}
+      {showLabel === "after" && labelElem}
     </div>
   );
 };

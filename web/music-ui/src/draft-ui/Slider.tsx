@@ -27,14 +27,14 @@ export type Props = {
   onValue?: (value: number) => void;
 
   /**
-   * The label of the knob. Note this is required for accessibility. To hide the label, set `showLabel` to false.
+   * The label of the knob. Note this is required for accessibility. To hide the label, set `showLabel` to "hidden".
    */
   label: string;
 
   /**
    * Whether we should show the label
    */
-  showLabel?: boolean;
+  showLabel?: "before" | "after" | "hidden";
 
   /**
    * Value formatter to convert values into strings

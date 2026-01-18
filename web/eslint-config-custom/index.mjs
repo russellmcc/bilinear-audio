@@ -34,6 +34,7 @@ export default defineConfig([
         { allowConstantLoopConditions: true },
       ],
       "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+      "@typescript-eslint/switch-exhaustiveness-check": "error",
     },
   },
   react.configs.flat.recommended ?? [],

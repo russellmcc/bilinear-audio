@@ -40,7 +40,7 @@ export const Default = {
     value: 50,
     grabbed: false,
     label: "knob",
-    showLabel: false,
+    showLabel: "hidden",
   },
 };
 

@@ -1,28 +1,27 @@
 import { useNumericParam } from "@conformal/plugin";
+import { Slider } from "./components/Slider";
 
 const Layout = () => {
-  const { value: gain, set: setGain } = useNumericParam("level");
-
+  const { value, set, grab, release } = useNumericParam("level");
   return (
-    <div>
-      <p>Current gain: {gain}%</p>
-      <p>
-        <span
-          onClick={() => {
-            setGain(Math.max(0, gain - 10));
-          }}
-        >
-          -
-        </span>
-        <span
-          onClick={() => {
-            setGain(Math.min(100, gain + 10));
-          }}
-        >
-          +
-        </span>
-      </p>
-    </div>
+    <>
+      <Slider
+        value={value}
+        label="FOLLOW"
+        onValue={set}
+        grab={grab}
+        release={release}
+        scale="labeled"
+      />
+      <Slider
+        value={value}
+        label="FOLLOW"
+        onValue={set}
+        grab={grab}
+        release={release}
+        scale="continuation"
+      />
+    </>
   );
 };
 
