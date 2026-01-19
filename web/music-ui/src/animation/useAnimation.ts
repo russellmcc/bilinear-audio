@@ -32,7 +32,7 @@ const onFrame = <D, S>(
     }
   }
 
-  state.state = state.state = customAnimation.current.update(
+  state.state = customAnimation.current.update(
     elapsed,
     state.state,
     state.data,

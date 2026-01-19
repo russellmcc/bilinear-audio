@@ -4,6 +4,7 @@ import {
   PropsWithLabel as NumericProps,
   useAccessibleNumeric,
 } from "../numeric.ts";
+import { useSmoothedValue } from "../../animation/useSmoothedValue.ts";
 
 export type DisplayProps = {
   /** Currrent value of the knob */
@@ -86,6 +87,7 @@ export const Knob = ({
         valueLabel={valueLabel}
       />
     ) : undefined;
+  const displayedValue = useSmoothedValue(value);
   return (
     <div
       {...accessibleProps}
@@ -100,7 +102,11 @@ export const Knob = ({
     >
       {showLabel === "before" && labelElem}
       {Display && (
-        <Display value={value} grabbed={grabbed ?? false} hover={hover} />
+        <Display
+          value={displayedValue}
+          grabbed={grabbed ?? false}
+          hover={hover}
+        />
       )}
       {showLabel === "after" && labelElem}
     </div>
