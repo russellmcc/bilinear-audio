@@ -1,35 +1,32 @@
 import { Slider as MusicUISlider, useSlider } from "music-ui/kit";
 import { useCallback } from "react";
-import {
-  ballSize,
-  boldTickHeight,
-  boldTicks,
-  labeledScaleMargin,
-  labeledScaleWidth,
-  labelMargin,
-  scaleMarginLeft,
-  scaleMarginRight,
-  scaleWidth,
-  tickHeight,
-  trackLength,
-} from "./sliderConstants";
+import { BALL_SIZE, LABEL_MARGIN, TRACK_LENGTH } from "./constants";
 import SliderBall from "./SliderBall";
 import SliderTrack from "./SliderTrack";
 
 export type ScaleType = "none" | "continuation" | "labeled";
 
+const TICK_HEIGHT = 1;
+const BOLD_TICK_HEIGHT = 2;
+const BOLD_TICKS: readonly number[] = [10, 5, 0];
+const SCALE_WIDTH = 30;
+const LABELED_SCALE_WIDTH = 10;
+const LABELED_SCALE_MARGIN = 2;
+const SCALE_MARGIN_LEFT = 0;
+const SCALE_MARGIN_RIGHT = -3;
+
 const tickToMiddle = (tick: number) => {
   const inverted = 10 - tick;
-  return inverted * ((trackLength - ballSize - 1) / 10) + ballSize / 2;
+  return inverted * ((TRACK_LENGTH - BALL_SIZE - 1) / 10) + BALL_SIZE / 2;
 };
 
 const TickLabel = ({ tick }: { tick: number }) => (
   <div
     style={{
-      width: `${scaleWidth - labeledScaleWidth - labeledScaleMargin}px`,
+      width: `${SCALE_WIDTH - LABELED_SCALE_WIDTH - LABELED_SCALE_MARGIN}px`,
       left: "0px",
       top: `calc(${tickToMiddle(tick) + 1}px - 0.5rem)`,
-      marginRight: `${labeledScaleMargin}px`,
+      marginRight: `${LABELED_SCALE_MARGIN}px`,
       position: "absolute",
       textAlign: "right",
     }}
@@ -46,26 +43,26 @@ const Scale = ({ type }: { type: ScaleType }): React.ReactNode => {
       return (
         <div
           style={{
-            height: `${trackLength}px`,
-            width: `${scaleWidth}px`,
+            height: `${TRACK_LENGTH}px`,
+            width: `${SCALE_WIDTH}px`,
             position: "relative",
-            marginLeft: `${scaleMarginLeft}px`,
-            marginRight: `${scaleMarginRight}px`,
+            marginLeft: `${SCALE_MARGIN_LEFT}px`,
+            marginRight: `${SCALE_MARGIN_RIGHT}px`,
             zIndex: -1,
           }}
         >
           {Array.from(Array(11).keys())
 
             .map((_, i) => {
-              const height = boldTicks.includes(i)
-                ? boldTickHeight
-                : tickHeight;
+              const height = BOLD_TICKS.includes(i)
+                ? BOLD_TICK_HEIGHT
+                : TICK_HEIGHT;
               return (
                 <div
                   key={i}
                   style={{
                     height: `${height}px`,
-                    width: `${scaleWidth}px`,
+                    width: `${SCALE_WIDTH}px`,
                     position: "absolute",
                     backgroundColor: "var(--fg-color)",
                     top: `${tickToMiddle(i) - height / 2}px`,
@@ -79,11 +76,11 @@ const Scale = ({ type }: { type: ScaleType }): React.ReactNode => {
       return (
         <div
           style={{
-            height: `${trackLength}px`,
-            width: `${scaleWidth}px`,
+            height: `${TRACK_LENGTH}px`,
+            width: `${SCALE_WIDTH}px`,
             position: "relative",
-            marginLeft: `${scaleMarginLeft}px`,
-            marginRight: `${scaleMarginRight}px`,
+            marginLeft: `${SCALE_MARGIN_LEFT}px`,
+            marginRight: `${SCALE_MARGIN_RIGHT}px`,
             zIndex: -1,
           }}
         >
@@ -91,14 +88,16 @@ const Scale = ({ type }: { type: ScaleType }): React.ReactNode => {
           <TickLabel tick={5} />
           <TickLabel tick={0} />
           {Array.from(Array(11).keys()).map((_, i) => {
-            const height = boldTicks.includes(i) ? boldTickHeight : tickHeight;
+            const height = BOLD_TICKS.includes(i)
+              ? BOLD_TICK_HEIGHT
+              : TICK_HEIGHT;
             return (
               <div
                 key={i}
                 style={{
                   height: `${height}px`,
-                  width: `${labeledScaleWidth}px`,
-                  left: `${scaleWidth - labeledScaleWidth}px`,
+                  width: `${LABELED_SCALE_WIDTH}px`,
+                  left: `${SCALE_WIDTH - LABELED_SCALE_WIDTH}px`,
                   position: "absolute",
                   backgroundColor: "var(--fg-color)",
                   top: `${tickToMiddle(i) - height / 2}px`,
@@ -121,7 +120,7 @@ const InternalSlider = ({
   const { containerProps, ballBottom } = useSlider({
     value,
     ballMargin: 0,
-    ballSize,
+    ballSize: BALL_SIZE,
     onGrabOrRelease,
     onValue,
   });
@@ -130,12 +129,12 @@ const InternalSlider = ({
       <Scale type={scale} />
       <div
         style={{
-          height: `${trackLength}px`,
-          width: `${ballSize}px`,
+          height: `${TRACK_LENGTH}px`,
+          width: `${BALL_SIZE}px`,
           position: "relative",
           marginLeft:
             scale === "none"
-              ? `${scaleWidth + scaleMarginLeft + scaleMarginRight}px`
+              ? `${SCALE_WIDTH + SCALE_MARGIN_LEFT + SCALE_MARGIN_RIGHT}px`
               : "0px",
         }}
         {...containerProps}
@@ -149,9 +148,9 @@ const InternalSlider = ({
 const Label = ({ label }: MusicUISlider.LabelProps) => (
   <div
     style={{
-      width: `${scaleWidth + scaleMarginLeft + scaleMarginRight + ballSize}px`,
+      width: `${SCALE_WIDTH + SCALE_MARGIN_LEFT + SCALE_MARGIN_RIGHT + BALL_SIZE}px`,
       textAlign: "right",
-      marginBottom: `${labelMargin}px`,
+      marginBottom: `${LABEL_MARGIN}px`,
     }}
   >
     {label}

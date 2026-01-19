@@ -36,3 +36,5 @@ export const ParamEnumSlider = ({
     />
   );
 };
+
+export default ParamEnumSlider;

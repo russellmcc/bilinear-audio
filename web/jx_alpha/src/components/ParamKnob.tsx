@@ -1,7 +1,7 @@
-import { useNumericParam } from "@conformal/plugin";
-import Slider, { ScaleType } from "./Slider";
-import { useCallback } from "react";
 import { rescale } from "music-ui/util";
+import Knob from "./Knob";
+import { useNumericParam } from "@conformal/plugin";
+import { useCallback } from "react";
 
 export type Props = {
   /**
@@ -15,9 +15,14 @@ export type Props = {
   param: string;
 
   /**
-   * The visual scale to display to the left of the slider.
+   * Label for beginning of range
    */
-  scale?: ScaleType;
+  minLabel?: string;
+
+  /**
+   * Label for end of range
+   */
+  maxLabel?: string;
 
   /**
    * Label for accessibility (can contain more information than `label`)
@@ -25,12 +30,8 @@ export type Props = {
   accessibilityLabel?: string;
 };
 
-export const ParamSlider = ({
-  label,
-  param,
-  scale,
-  accessibilityLabel,
-}: Props) => {
+export const ParamKnob = (props: Props) => {
+  const { param } = props;
   const { value, set, grab, release, info } = useNumericParam(param);
   const [min, max] = info.valid_range;
   const rescaleToPercentage = useCallback(
@@ -47,19 +48,16 @@ export const ParamSlider = ({
     },
     [rescaleFromPercentage, set],
   );
-
   return (
-    <Slider
-      label={label}
+    <Knob
+      {...props}
       value={rescaleToPercentage(value)}
       onValue={onValue}
       grab={grab}
       release={release}
-      scale={scale}
       defaultValue={rescaleToPercentage(info.default)}
-      accessibilityLabel={accessibilityLabel}
     />
   );
 };
 
-export default ParamSlider;
+export default ParamKnob;

@@ -1,9 +1,12 @@
-import { ballSize } from "./sliderConstants";
+import {
+  BALL_SIZE,
+  BORDER_WIDTH,
+  DOT_OFFSET,
+  DOT_SIZE,
+  DROP_SHADOW_FILTER,
+} from "./constants";
 
-const borderWidth = 2;
 const borderRadius = 5;
-export const dotSize = 4;
-export const dotOffset = 2;
 
 export type Props = {
   bottom: number;
@@ -12,17 +15,17 @@ export type Props = {
 export const SliderBall = ({ bottom, ref }: Props) => (
   <div
     style={{
-      height: `${ballSize - 2 * borderWidth}px`,
-      width: `${ballSize - 2 * borderWidth}px`,
+      height: `${BALL_SIZE - 2 * BORDER_WIDTH}px`,
+      width: `${BALL_SIZE - 2 * BORDER_WIDTH}px`,
       left: "0px",
       position: "absolute",
       bottom: `${bottom}px`,
       backgroundColor: "var(--darker-color)",
       borderColor: "var(--darkest-color)",
-      borderWidth: `${borderWidth}px`,
+      borderWidth: `${BORDER_WIDTH}px`,
       borderStyle: "solid",
       borderRadius: `${borderRadius}px`,
-      filter: "drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.25))",
+      filter: DROP_SHADOW_FILTER,
       // Hack for safari to prevent stale rendering
       transform: "translateZ(0)",
     }}
@@ -30,13 +33,13 @@ export const SliderBall = ({ bottom, ref }: Props) => (
   >
     <div
       style={{
-        height: `${dotSize}px`,
-        width: `${dotSize}px`,
-        left: `${dotOffset}px`,
-        top: `${(ballSize - dotSize) / 2 - borderWidth}px`,
+        height: `${DOT_SIZE}px`,
+        width: `${DOT_SIZE}px`,
+        left: `${DOT_OFFSET}px`,
+        top: `${(BALL_SIZE - DOT_SIZE) / 2 - BORDER_WIDTH}px`,
         position: "absolute",
         backgroundColor: "var(--highlight-red)",
-        borderRadius: `${dotSize}px`,
+        borderRadius: `${DOT_SIZE}px`,
       }}
     ></div>
   </div>

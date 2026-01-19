@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { clamp, indexOf } from ".";
+import { clamp, indexOf, rescale } from ".";
 
 describe("indexOf", () => {
   test("indexOf(1, [1, 2, 3])", () => {
@@ -22,5 +22,17 @@ describe("clamp", () => {
   });
   test("clamp(11, 0, 10)", () => {
     expect(clamp(11, 0, 10)).toBe(10);
+  });
+});
+
+describe("rescale", () => {
+  test("rescale(0, 0, 10, 0, 100)", () => {
+    expect(rescale(0, 0, 10, 0, 100)).toBe(0);
+  });
+  test("rescale(5, 0, 10, 0, 100)", () => {
+    expect(rescale(5, 0, 10, 0, 100)).toBe(50);
+  });
+  test("rescale(10, 0, 10, 0, 100)", () => {
+    expect(rescale(10, 0, 10, 0, 100)).toBe(100);
   });
 });

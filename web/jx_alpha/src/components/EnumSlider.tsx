@@ -1,10 +1,10 @@
 import { EnumSlider as EnumSliderModule, useEnumSlider } from "music-ui/kit";
-import { ballSize } from "./sliderConstants";
-import SliderBall, { dotOffset, dotSize } from "./SliderBall";
+import { BALL_SIZE, DOT_OFFSET, DOT_SIZE, LABEL_MARGIN } from "./constants";
+import SliderBall from "./SliderBall";
 import SliderTrack from "./SliderTrack";
 import { useCallback } from "react";
 
-const lineSpacing = 18;
+const LINE_SPACING = 18;
 
 export type Props = {
   /**
@@ -61,15 +61,15 @@ const Slider = ({
     ball,
   } = useEnumSlider<HTMLDivElement, HTMLDivElement>({
     ballMargin: 0,
-    lineSpacing,
-    ballSize,
+    lineSpacing: LINE_SPACING,
+    ballSize: BALL_SIZE,
     index,
     count,
     selectIndex,
     onGrabOrRelease,
   });
 
-  const trackHeight = lineSpacing * count;
+  const trackHeight = LINE_SPACING * count;
   return (
     <div
       onPointerDown={onPointerDown}
@@ -79,13 +79,13 @@ const Slider = ({
       ref={containerRef}
       style={{
         height: `${trackHeight}px`,
-        width: `${ballSize}px`,
+        width: `${BALL_SIZE}px`,
         position: "relative",
         cursor: "pointer",
         flexGrow: 0,
       }}
     >
-      <SliderTrack height={trackHeight - ballSize / 2} />
+      <SliderTrack height={trackHeight - BALL_SIZE / 2} />
       {ball && <SliderBall bottom={ball.bottom} ref={ballRef} />}
     </div>
   );
@@ -99,7 +99,7 @@ const ValueLabel = ({
   <div
     {...props}
     style={{
-      height: `${lineSpacing}px`,
+      height: `${LINE_SPACING}px`,
       fontWeight: checked ? "400" : "200",
       textAlign: "right",
       cursor: "pointer",
@@ -111,12 +111,12 @@ const ValueLabel = ({
         verticalAlign: "middle",
         display: "inline-block",
         marginTop: "-0.5px",
-        height: `${dotSize}px`,
-        width: `${dotSize}px`,
-        marginLeft: `${dotOffset}px`,
-        marginRight: `${dotOffset}px`,
+        height: `${DOT_SIZE}px`,
+        width: `${DOT_SIZE}px`,
+        marginLeft: `${DOT_OFFSET}px`,
+        marginRight: `${DOT_OFFSET}px`,
         backgroundColor: "var(--fg-color)",
-        borderRadius: `${dotSize}px`,
+        borderRadius: `${DOT_SIZE}px`,
       }}
     ></div>
   </div>
@@ -126,6 +126,7 @@ const Label = ({ label }: { label: string }) => (
   <div
     style={{
       textAlign: "right",
+      marginBottom: `${LABEL_MARGIN}px`,
     }}
   >
     {label}
