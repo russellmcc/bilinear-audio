@@ -17,9 +17,19 @@ export type Props = {
    * The visual scale to display to the left of the slider.
    */
   scale?: ScaleType;
+
+  /**
+   * Label for accessibility (can contain more information than `label`)
+   */
+  accessibilityLabel?: string;
 };
 
-export const ParamSlider = ({ label, param, scale }: Props) => {
+export const ParamSlider = ({
+  label,
+  param,
+  scale,
+  accessibilityLabel,
+}: Props) => {
   const { value, set, grab, release, info } = useNumericParam(param);
   const [min, max] = info.valid_range;
   const rescaleToPercentage = useCallback(
@@ -46,6 +56,7 @@ export const ParamSlider = ({ label, param, scale }: Props) => {
       release={release}
       scale={scale}
       defaultValue={rescaleToPercentage(info.default)}
+      accessibilityLabel={accessibilityLabel}
     />
   );
 };

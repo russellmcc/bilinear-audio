@@ -1,22 +1,20 @@
 import { Slider as MusicUISlider, useSlider } from "music-ui/kit";
 import { useCallback } from "react";
-
-const ballSize = 20;
-const borderWidth = 2;
-const trackLength = 100;
-const borderRadius = 5;
-const dotSize = 4;
-const dotOffset = 2;
-const trackWidth = 8;
-const labelMargin = 5;
-const scaleWidth = 30;
-const labeledScaleWidth = 10;
-const labeledScaleMargin = 2;
-const scaleMarginLeft = 0;
-const scaleMarginRight = -3;
-const tickHeight = 1;
-const boldTickHeight = 2;
-const boldTicks = [10, 5, 0];
+import {
+  ballSize,
+  boldTickHeight,
+  boldTicks,
+  labeledScaleMargin,
+  labeledScaleWidth,
+  labelMargin,
+  scaleMarginLeft,
+  scaleMarginRight,
+  scaleWidth,
+  tickHeight,
+  trackLength,
+} from "./sliderConstants";
+import SliderBall from "./SliderBall";
+import SliderTrack from "./SliderTrack";
 
 export type ScaleType = "none" | "continuation" | "labeled";
 
@@ -51,7 +49,6 @@ const Scale = ({ type }: { type: ScaleType }): React.ReactNode => {
             height: `${trackLength}px`,
             width: `${scaleWidth}px`,
             position: "relative",
-            display: "inline-block",
             marginLeft: `${scaleMarginLeft}px`,
             marginRight: `${scaleMarginRight}px`,
             zIndex: -1,
@@ -85,7 +82,6 @@ const Scale = ({ type }: { type: ScaleType }): React.ReactNode => {
             height: `${trackLength}px`,
             width: `${scaleWidth}px`,
             position: "relative",
-            display: "inline-block",
             marginLeft: `${scaleMarginLeft}px`,
             marginRight: `${scaleMarginRight}px`,
             zIndex: -1,
@@ -130,7 +126,7 @@ const InternalSlider = ({
     onValue,
   });
   return (
-    <div>
+    <div style={{ display: "flex" }}>
       <Scale type={scale} />
       <div
         style={{
@@ -141,50 +137,11 @@ const InternalSlider = ({
             scale === "none"
               ? `${scaleWidth + scaleMarginLeft + scaleMarginRight}px`
               : "0px",
-          display: "inline-block",
         }}
         {...containerProps}
       >
-        <div
-          style={{
-            height: `${trackLength - ballSize / 2}px`,
-            width: `${trackWidth}px`,
-            position: "absolute",
-            top: `${ballSize / 4}px`,
-            left: `${(ballSize + borderWidth - trackWidth) / 2}px`,
-            backgroundColor: "var(--darkest-color)",
-            borderRadius: `${trackWidth}px`,
-          }}
-        ></div>
-        <div
-          style={{
-            height: `${ballSize - borderWidth}px`,
-            width: `${ballSize - borderWidth}px`,
-            left: "0px",
-            position: "absolute",
-            bottom: `${ballBottom}px`,
-            backgroundColor: "var(--darker-color)",
-            borderColor: "var(--darkest-color)",
-            borderWidth: `${borderWidth}px`,
-            borderStyle: "solid",
-            borderRadius: `${borderRadius}px`,
-            filter: "drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.25))",
-            // Hack for safari to prevent stale rendering
-            transform: "translateZ(0)",
-          }}
-        >
-          <div
-            style={{
-              height: `${dotSize}px`,
-              width: `${dotSize}px`,
-              left: `${dotOffset}px`,
-              top: `${(ballSize - borderWidth - dotSize) / 2}px`,
-              position: "absolute",
-              backgroundColor: "var(--highlight-red)",
-              borderRadius: `${dotSize}px`,
-            }}
-          ></div>
-        </div>
+        <SliderTrack />
+        <SliderBall bottom={ballBottom} />
       </div>
     </div>
   );
@@ -236,6 +193,11 @@ export type Props = {
    * The visual scale to display to the left of the slider.
    */
   scale?: ScaleType;
+
+  /**
+   * Label for accessibility (can contain more information than `label`)
+   */
+  accessibilityLabel?: string;
 };
 
 export const Slider = (props: Props) => {

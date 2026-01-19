@@ -12,6 +12,8 @@ export type SliderProps = {
 
 export type Slider = React.FC<SliderProps>;
 
+export type Layout = "slider-first" | "labels-first";
+
 export type Props = {
   /**
    * The possible values of the enum
@@ -62,6 +64,11 @@ export type Props = {
    * You can use the `useEnumSlider` hook to implement an animated slider.
    */
   Slider: Slider;
+
+  /**
+   * Layout of the enum slider.
+   */
+  layout?: Layout;
 };
 
 export const EnumSlider = ({
@@ -74,6 +81,7 @@ export const EnumSlider = ({
   ValueLabel,
   Slider,
   grabbed = false,
+  layout = "slider-first",
 }: Props) => {
   const index = indexOf(value, values);
   const selectIndex = useCallback(
@@ -94,26 +102,35 @@ export const EnumSlider = ({
       radios.current.get(index ?? 0)?.focus();
     }
   }, [index]);
+  const slider = (
+    <Slider
+      key="slider"
+      index={index}
+      count={values.length}
+      selectIndex={selectIndex}
+      onGrabOrRelease={onGrabOrRelease}
+      grabbed={grabbed}
+    />
+  );
+
+  const labels = (
+    <LabelGroup
+      key="labels"
+      accessibilityLabel={accessibilityLabel}
+      value={value}
+      values={values}
+      displayFormatter={displayFormatter}
+      valueLabel={ValueLabel}
+      radios={radios}
+      selectIndex={selectIndex}
+    ></LabelGroup>
+  );
+
   return (
     <div
       style={{ display: "flex", flexDirection: "row", alignItems: "stretch" }}
     >
-      <Slider
-        index={index}
-        count={values.length}
-        selectIndex={selectIndex}
-        onGrabOrRelease={onGrabOrRelease}
-        grabbed={grabbed}
-      />
-      <LabelGroup
-        accessibilityLabel={accessibilityLabel}
-        value={value}
-        values={values}
-        displayFormatter={displayFormatter}
-        valueLabel={ValueLabel}
-        radios={radios}
-        selectIndex={selectIndex}
-      ></LabelGroup>
+      {layout === "slider-first" ? [slider, labels] : [labels, slider]}
     </div>
   );
 };

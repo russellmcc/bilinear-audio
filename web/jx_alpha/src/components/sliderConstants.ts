@@ -1,0 +1,11 @@
+export const ballSize = 22;
+export const trackLength = 100;
+export const labelMargin = 5;
+export const scaleWidth = 30;
+export const labeledScaleWidth = 10;
+export const labeledScaleMargin = 2;
+export const scaleMarginLeft = 0;
+export const scaleMarginRight = -3;
+export const tickHeight = 1;
+export const boldTickHeight = 2;
+export const boldTicks = [10, 5, 0];
