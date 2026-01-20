@@ -2,7 +2,7 @@ import { EnumSlider as EnumSliderModule, useEnumSlider } from "music-ui/kit";
 import { BALL_SIZE, DOT_OFFSET, DOT_SIZE, LABEL_MARGIN } from "./constants";
 import SliderBall from "./SliderBall";
 import SliderTrack from "./SliderTrack";
-import { useCallback } from "react";
+import useOnGrabOrRelease from "./useGrabOrRelease";
 
 const LINE_SPACING = 18;
 
@@ -135,16 +135,7 @@ const Label = ({ label }: { label: string }) => (
 
 export const EnumSlider = (props: Props) => {
   const { grab, release } = props;
-  const onGrabOrRelease = useCallback(
-    (grabbed: boolean) => {
-      if (grabbed) {
-        grab();
-      } else {
-        release();
-      }
-    },
-    [grab, release],
-  );
+  const onGrabOrRelease = useOnGrabOrRelease({ grab, release });
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <Label label={props.label} />

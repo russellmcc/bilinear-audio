@@ -1,14 +1,19 @@
-import { Knob as KnobModule } from "music-ui/kit";
+import { EnumKnob as EnumKnobModule } from "music-ui/kit";
 import KnobDisplay from "./KnobDisplay";
-import { useCallback } from "react";
 import { LABEL_MARGIN } from "./constants";
+import { useCallback } from "react";
 import useOnGrabOrRelease from "./useGrabOrRelease";
 
 export type Props = {
   /**
-   * The current value of the knob (scaled to 0-100)
+   * The current value of the knob
    */
-  value: number;
+  value?: string;
+
+  /**
+   * The possible values of the knob
+   */
+  values: string[];
 
   /**
    * The label of the knob.
@@ -33,12 +38,12 @@ export type Props = {
   /**
    * Callback for when the value of the knob changes.
    */
-  onValue?: (value: number) => void;
+  onValue?: (value: string) => void;
 
   /**
    * The default value of the knob.
    */
-  defaultValue?: number;
+  defaultValue?: string;
 
   /**
    * Callback for when the knob is grabbed.
@@ -51,30 +56,41 @@ export type Props = {
   release?: () => void;
 };
 
-const Label = ({ label }: KnobModule.LabelProps) => (
+const Label = ({ label }: EnumKnobModule.LabelProps) => (
   <div style={{ textAlign: "center", marginBottom: `${LABEL_MARGIN}px` }}>
     {label}
   </div>
 );
 
-export const Knob = (props: Props) => {
+export const EnumKnob = (props: Props) => {
   const { grab, release, minLabel, maxLabel } = props;
   const onGrabOrRelease = useOnGrabOrRelease({ grab, release });
   const display = useCallback(
-    (props: KnobModule.DisplayProps) => (
-      <KnobDisplay {...props} minLabel={minLabel} maxLabel={maxLabel} />
-    ),
+    (props: EnumKnobModule.DisplayProps) => {
+      const valuePercent = props.value
+        ? (props.value / (props.valueCount - 1)) * 100
+        : 0;
+      return (
+        <KnobDisplay
+          value={valuePercent}
+          grabbed={props.grabbed}
+          hover={props.hover}
+          minLabel={minLabel}
+          maxLabel={maxLabel}
+        />
+      );
+    },
     [minLabel, maxLabel],
   );
   return (
-    <KnobModule.Knob
+    <EnumKnobModule.EnumKnob
       {...props}
       onGrabOrRelease={onGrabOrRelease}
-      showLabel="before"
-      Display={display}
       Label={Label}
+      Display={display}
+      showLabel="before"
     />
   );
 };
 
-export default Knob;
+export default EnumKnob;

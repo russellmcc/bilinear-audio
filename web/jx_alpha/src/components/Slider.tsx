@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { BALL_SIZE, LABEL_MARGIN, TRACK_LENGTH } from "./constants";
 import SliderBall from "./SliderBall";
 import SliderTrack from "./SliderTrack";
+import useOnGrabOrRelease from "./useGrabOrRelease";
 
 export type ScaleType = "none" | "continuation" | "labeled";
 
@@ -201,16 +202,7 @@ export type Props = {
 
 export const Slider = (props: Props) => {
   const { grab, release, scale } = props;
-  const onGrabOrRelease = useCallback(
-    (grabbed: boolean) => {
-      if (grabbed) {
-        grab();
-      } else {
-        release();
-      }
-    },
-    [grab, release],
-  );
+  const onGrabOrRelease = useOnGrabOrRelease({ grab, release });
   const sliderWithScale = useCallback(
     (args: MusicUISlider.SliderProps) => (
       <InternalSlider {...args} scale={scale} />
