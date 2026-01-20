@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import {
-  PropsWithLabel as NumericProps,
+  LabeledNumericProps as NumericProps,
   useAccessibleNumeric,
 } from "../numeric.ts";
 

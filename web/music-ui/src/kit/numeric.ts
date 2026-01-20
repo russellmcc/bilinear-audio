@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { clamp } from "music-ui/util";
+import { PropsWithLabel } from "./with-label";
 
 const KEYBOARD_STEP = 10;
 const BIG_KEYBOARD_STEP = 25;
@@ -46,33 +47,10 @@ export type Props = {
   valueFormatter?: (value: number) => string;
 };
 
-/**
- * Props for numeric controls with an optional visible label
- */
-export type PropsWithLabel = Omit<Props, "accessibilityLabel"> & {
-  /**
-   * Whether and where we should show the label
-   *  - "before": label comes before the control
-   *  - "after": label comes after the control
-   *  - "hidden": label is not shown
-   *
-   * Default is "after"
-   */
-  showLabel?: "before" | "after" | "hidden";
-
-  /**
-   * The label of the control
-   */
-  label: string;
-
-  /**
-   * Label for accessibility (can contain more information than `label`)
-   */
-  accessibilityLabel?: string;
-};
+export type LabeledNumericProps = PropsWithLabel<Props>;
 
 export type RequiredPropsForAria = Pick<
-  PropsWithLabel,
+  PropsWithLabel<Props>,
   "label" | "accessibilityLabel" | "value" | "valueFormatter" | "onValue"
 >;
 

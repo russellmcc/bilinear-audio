@@ -1,5 +1,5 @@
-import type { Preview } from "@storybook/react";
-import { themes } from "@storybook/theming";
+import type { Preview } from "@storybook/react-vite";
+import { themes } from "storybook/theming";
 import "../src/index.css";
 
 const preview: Preview = {
@@ -8,11 +8,10 @@ const preview: Preview = {
       theme: themes.dark,
     },
     backgrounds: {
-      default: "zone",
-      values: [
-        { name: "background", value: "#0F1A20" },
-        { name: "zone", value: "#25283D" },
-      ],
+      options: {
+        background: { name: "background", value: "#0F1A20" },
+        zone: { name: "zone", value: "#25283D" }
+      }
     },
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
@@ -22,6 +21,12 @@ const preview: Preview = {
       },
     },
   },
+
+  initialGlobals: {
+    backgrounds: {
+      value: "zone"
+    }
+  }
 };
 
 export default preview;

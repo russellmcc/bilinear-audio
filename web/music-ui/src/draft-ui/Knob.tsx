@@ -1,4 +1,5 @@
-import { Knob as InternalKnob, DisplayProps, LabelProps } from "../kit/knob";
+import { Knob as InternalKnob, LabelProps } from "../kit/knob";
+import KnobDisplay from "./KnobDisplay";
 
 export type Props = {
   /**
@@ -47,44 +48,6 @@ export type Props = {
   defaultValue?: number;
 };
 
-const display = ({ value }: DisplayProps) => {
-  const radius = 40;
-  const center = 50;
-  const startAngle = 135;
-  const angle = startAngle + (value / 100) * 270;
-  const rad = (angle * Math.PI) / 180;
-  const startRad = (startAngle * Math.PI) / 180;
-
-  const x = center + radius * Math.cos(rad);
-  const y = center + radius * Math.sin(rad);
-
-  const startX = center + radius * Math.cos(startRad);
-  const startY = center + radius * Math.sin(startRad);
-
-  const largeArc = angle - startAngle > 180 ? 1 : 0;
-
-  return (
-    <svg className="knob-display" viewBox="0 0 100 100">
-      <path
-        d={`M ${startX} ${startY} A ${radius} ${radius} 0 ${largeArc} 1 ${x} ${y}`}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      {
-        <line
-          x1={center}
-          y1={center}
-          x2={x}
-          y2={y}
-          stroke="currentColor"
-          strokeWidth="2"
-        />
-      }
-    </svg>
-  );
-};
-
 const label = ({ label, grabbed, hover, valueLabel }: LabelProps) => (
   <div className="knob-label">{grabbed || hover ? valueLabel : label}</div>
 );
@@ -92,7 +55,7 @@ const label = ({ label, grabbed, hover, valueLabel }: LabelProps) => (
 export const Knob = ({ ...props }: Props) => (
   <InternalKnob
     {...props}
-    Display={display}
+    Display={KnobDisplay}
     Label={label}
     valueFormatter={(v) => v.toFixed(0)}
   />

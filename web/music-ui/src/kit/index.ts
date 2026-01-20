@@ -5,3 +5,5 @@ export * as Knob from "./knob";
 
 export * as Slider from "./slider";
 export { useSlider } from "./slider/useSlider.ts";
+
+export * as EnumKnob from "./enum-knob";

@@ -1,7 +1,7 @@
 import useGesture from "./useGesture.ts";
 import { useMemo } from "react";
 import {
-  PropsWithLabel as NumericProps,
+  LabeledNumericProps as NumericProps,
   useAccessibleNumeric,
 } from "../numeric.ts";
 import { useSmoothedValue } from "../../animation/useSmoothedValue.ts";

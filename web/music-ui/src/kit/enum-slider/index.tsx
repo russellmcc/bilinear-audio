@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { indexOf } from "../../util";
 import { LabelGroup, ValueLabel } from "./value-label";
+import { Props as EnumProps } from "../enum";
 export type { ValueLabel, ValueLabelProps } from "./value-label";
 export type SliderProps = {
   index: number | undefined;
@@ -14,43 +15,7 @@ export type Slider = React.FC<SliderProps>;
 
 export type Layout = "slider-first" | "labels-first";
 
-export type Props = {
-  /**
-   * The possible values of the enum
-   */
-  values: string[];
-
-  /**
-   * True if the slider is grabbed
-   */
-  grabbed?: boolean;
-
-  /**
-   * The current value of the enum - must be one of `values`
-   */
-  value?: string;
-
-  /**
-   * Accessibility label for the enum
-   */
-  accessibilityLabel: string;
-
-  /**
-   * Callback for when the value of the enum changes.
-   */
-  onValue?: (value: string) => void;
-
-  /**
-   * Callback for when the slider is grabbed or release through a pointer event.
-   * Note that this may be called spruriously even if the grabbed state didn't change.
-   */
-  onGrabOrRelease?: (grabbed: boolean) => void;
-
-  /**
-   * Display formatter, if applicable. By default just shows the value.
-   */
-  displayFormatter?: (value: string) => string;
-
+export type Props = EnumProps & {
   /**
    * Component type to use for the value label.
    *

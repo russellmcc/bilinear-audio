@@ -1,6 +1,6 @@
 import Knob, { Props } from ".";
-import { Decorator } from "@storybook/react";
-import { useArgs } from "@storybook/preview-api";
+import { Decorator } from "@storybook/react-vite";
+import { useArgs } from "storybook/preview-api";
 
 const GrabDecorator: Decorator<Props> = (Story, context) => {
   const updateArgs = useArgs()[1];

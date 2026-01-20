@@ -1,5 +1,5 @@
-import type { Preview } from "@storybook/react";
-import { themes } from "@storybook/theming";
+import type { Preview } from "@storybook/react-vite";
+import { themes } from "storybook/theming";
 import "./example.css";
 
 const preview: Preview = {
@@ -8,14 +8,21 @@ const preview: Preview = {
       theme: themes.dark,
     },
     backgrounds: {
-      default: "black",
-      values: [{ name: "black", value: "#000000" }],
+      options: {
+        black: { name: "black", value: "#000000" }
+      }
     },
     actions: { argTypesRegex: "^on[A-Z].*" },
     options: {
       urlArgs: false,
     },
   },
+
+  initialGlobals: {
+    backgrounds: {
+      value: "black"
+    }
+  }
 };
 
 export default preview;

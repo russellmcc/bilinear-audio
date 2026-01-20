@@ -1,8 +1,8 @@
-import { EnumSlider, EnumSliderProps } from "music-ui/draft-ui";
+import { EnumKnob, EnumKnobProps } from "music-ui/draft-ui";
 import { Decorator } from "@storybook/react-vite";
 import { useArgs } from "storybook/preview-api";
 
-const GrabDecorator: Decorator<EnumSliderProps> = (Story, context) => {
+const GrabDecorator: Decorator<EnumKnobProps> = (Story, context) => {
   const updateArgs = useArgs()[1];
   const onGrabOrRelease = (grabbed: boolean) => {
     updateArgs({ grabbed });
@@ -10,7 +10,7 @@ const GrabDecorator: Decorator<EnumSliderProps> = (Story, context) => {
   return <Story {...context} args={{ ...context.args, onGrabOrRelease }} />;
 };
 
-const ValueDecorator: Decorator<EnumSliderProps> = (Story, context) => {
+const ValueDecorator: Decorator<EnumKnobProps> = (Story, context) => {
   const updateArgs = useArgs()[1];
   const onValue = (value: string) => {
     if (context.args.value === value) return;
@@ -22,9 +22,9 @@ const ValueDecorator: Decorator<EnumSliderProps> = (Story, context) => {
 const demoValues = ["saw", "pulse", "pwm"];
 
 export default {
-  component: EnumSlider,
+  component: EnumKnob,
   decorators: [GrabDecorator, ValueDecorator],
-  title: "EnumSlider",
+  title: "EnumKnob",
   tags: ["autodocs"],
   argTypes: {
     values: {

@@ -100,15 +100,22 @@ const Slider = ({
       style={{
         height: `${LINE_SPACING * count + BALL_MARGIN * 2 - BALL_SIZE}px`,
         width: `${BALL_SIZE + BALL_MARGIN * 2}px`,
-        borderWidth: `${BORDER_WIDTH}px`,
         position: "relative",
-        borderStyle: "solid",
-        borderRadius: `${BALL_SIZE / 2}px`,
         marginRight: "6px",
         marginTop: `2px`,
         cursor: "pointer",
       }}
     >
+      <div
+        className="slider-track-inner"
+        style={{
+          height: `${LINE_SPACING * (count - 1)}px`,
+          width: "1px",
+          position: "absolute",
+          top: `${BALL_MARGIN + BALL_SIZE / 2}px`,
+          left: `${BALL_MARGIN + BALL_SIZE / 2 - 0.75}px`,
+        }}
+      ></div>
       <div>
         {ball && (
           <div
@@ -121,9 +128,6 @@ const Slider = ({
               bottom: `${ball.bottom}px`,
               left: `${BALL_MARGIN}px`,
               position: "absolute",
-              borderRadius: `1000px`,
-              borderWidth: `${BORDER_WIDTH}px`,
-              borderStyle: "solid",
             }}
           ></div>
         )}

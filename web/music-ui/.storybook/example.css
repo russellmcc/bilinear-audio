@@ -1,9 +1,12 @@
-.slider-track {
-  border-color: white !important;
+.slider-track-inner {
+  background-color: white !important;
 }
 
 .slider-ball {
   border-color: white !important;
+  border-radius: 3px !important;
+  border-width: 1px !important;
+  border-style: solid !important;
 }
 
 .slider-ball-grabbed {
