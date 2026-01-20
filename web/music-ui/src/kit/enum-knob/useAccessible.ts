@@ -36,23 +36,26 @@ export const useAccessible = ({
   }, []);
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
-      setInteracted(true);
-      event.preventDefault();
-      event.stopPropagation();
+      const setValue = (v: number) => {
+        onValue?.(values[v]!);
+        setInteracted(true);
+        event.preventDefault();
+        event.stopPropagation();
+      };
       switch (event.code) {
         case "ArrowRight":
         case "ArrowUp":
-          onValue?.(values[(valueNumber + 1) % valueCount]!);
+          setValue((valueNumber + 1) % valueCount);
           break;
         case "ArrowLeft":
         case "ArrowDown":
-          onValue?.(values[(valueNumber - 1 + valueCount) % valueCount]!);
+          setValue((valueNumber - 1 + valueCount) % valueCount);
           break;
         case "End":
-          onValue?.(values[valueCount - 1]!);
+          setValue(valueCount - 1);
           break;
         case "Home":
-          onValue?.(values[0]!);
+          setValue(0);
           break;
       }
     },
