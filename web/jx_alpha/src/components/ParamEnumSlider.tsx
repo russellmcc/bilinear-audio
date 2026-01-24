@@ -1,5 +1,6 @@
 import { useEnumParam } from "@conformal/plugin";
-import { EnumSlider } from "./EnumSlider";
+import EnumSlider, { Props as EnumSliderProps } from "./EnumSlider";
+import { useMemo } from "react";
 
 export type Props = {
   /**
@@ -13,6 +14,16 @@ export type Props = {
   accessibilityLabel?: string;
 
   /**
+   * The order of the values.
+   */
+  order?: "normal" | "reversed";
+
+  /**
+   * Overrides the label for certain values with a custom element.
+   */
+  CustomGlyph?: EnumSliderProps["CustomGlyph"];
+
+  /**
    * The unique id of the parameter to control
    */
   param: string;
@@ -21,9 +32,15 @@ export type Props = {
 export const ParamEnumSlider = ({
   label,
   accessibilityLabel,
+  order,
+  CustomGlyph,
   param,
 }: Props) => {
   const { value, set, grab, release, info } = useEnumParam(param);
+  const orderedValues = useMemo(
+    () => (order === "reversed" ? info.values.slice().reverse() : info.values),
+    [info.values, order],
+  );
   return (
     <EnumSlider
       label={label}
@@ -31,9 +48,10 @@ export const ParamEnumSlider = ({
       value={value}
       grab={grab}
       release={release}
-      values={info.values}
+      values={orderedValues}
       onValue={set}
       defaultValue={info.default}
+      CustomGlyph={CustomGlyph}
     />
   );
 };

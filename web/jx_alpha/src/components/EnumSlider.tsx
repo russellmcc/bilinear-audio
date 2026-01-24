@@ -3,6 +3,7 @@ import { BALL_SIZE, DOT_OFFSET, DOT_SIZE, LABEL_MARGIN } from "./constants";
 import SliderBall from "./SliderBall";
 import SliderTrack from "./SliderTrack";
 import useOnGrabOrRelease from "./useGrabOrRelease";
+import { useCallback } from "react";
 
 const LINE_SPACING = 18;
 
@@ -33,6 +34,11 @@ export type Props = {
    * The default value of the enum.
    */
   defaultValue?: string;
+
+  /**
+   * Overrides the label for certain values with a custom element.
+   */
+  CustomGlyph?: React.FC<{ value: string }>;
 
   /**
    * Callback for when the slider is grabbed.
@@ -103,8 +109,11 @@ const Slider = ({
 const ValueLabel = ({
   label,
   checked,
+  CustomGlyph,
   ...props
-}: EnumSliderModule.ValueLabelProps) => (
+}: EnumSliderModule.ValueLabelProps & {
+  CustomGlyph?: Props["CustomGlyph"];
+}) => (
   <div
     {...props}
     style={{
@@ -114,7 +123,7 @@ const ValueLabel = ({
       cursor: "pointer",
     }}
   >
-    <span>{label}</span>
+    {CustomGlyph ? <CustomGlyph value={label} /> : <span>{label}</span>}
     <div
       style={{
         verticalAlign: "middle",
@@ -143,8 +152,18 @@ const Label = ({ label }: { label: string }) => (
 );
 
 export const EnumSlider = (props: Props) => {
-  const { grab, release } = props;
+  const { grab, release, CustomGlyph } = props;
   const onGrabOrRelease = useOnGrabOrRelease({ grab, release });
+  const valueLabel = useCallback(
+    (props: EnumSliderModule.ValueLabelProps) => (
+      <ValueLabel {...props} CustomGlyph={CustomGlyph} />
+    ),
+    [CustomGlyph],
+  );
+  const valueFormatter = useCallback(
+    (value: string) => value.toUpperCase(),
+    [],
+  );
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <Label label={props.label} />
@@ -153,10 +172,13 @@ export const EnumSlider = (props: Props) => {
         {...props}
         accessibilityLabel={props.accessibilityLabel ?? props.label}
         Slider={Slider}
-        ValueLabel={ValueLabel}
+        ValueLabel={valueLabel}
         layout="labels-first"
         onGrabOrRelease={onGrabOrRelease}
+        displayFormatter={valueFormatter}
       />
     </div>
   );
 };
+
+export default EnumSlider;
