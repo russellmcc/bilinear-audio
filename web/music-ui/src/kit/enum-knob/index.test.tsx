@@ -1,5 +1,10 @@
-import { fireEvent, getByTestId, render } from "@testing-library/react";
-import { describe, expect, mock, test } from "bun:test";
+import {
+  cleanup,
+  fireEvent,
+  getByTestId,
+  render,
+} from "@testing-library/react";
+import { afterEach, describe, expect, mock, test } from "bun:test";
 import EnumKnob, { DisplayProps, Props } from ".";
 
 const TestDisplay = ({ hover }: DisplayProps) => (
@@ -10,6 +15,9 @@ const TestEnumKnob = (props: Omit<Props, "Display">) => (
 );
 
 describe("EnumKnob", () => {
+  afterEach(() => {
+    cleanup();
+  });
   test("has correct value", () => {
     const { getByRole } = render(
       <TestEnumKnob label="test" value="a" values={["a", "b", "c"]} />,
