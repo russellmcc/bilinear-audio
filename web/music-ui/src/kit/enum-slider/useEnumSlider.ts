@@ -26,6 +26,7 @@ export type Props = {
   ballSize: number;
   index: number | undefined;
   count: number;
+  defaultValue?: number;
   selectIndex: (index: number) => void;
   onGrabOrRelease?: (grabbed: boolean) => void;
 };
@@ -33,6 +34,7 @@ export type Props = {
 export type Output<Container extends Element, Ball extends Element> = {
   containerRef: RefObject<Container | null>;
   ballRef: RefObject<Ball | null>;
+  onDoubleClick: (event: React.MouseEvent) => void;
   onPointerDown: (event: React.PointerEvent) => void;
   onPointerMove: (event: React.PointerEvent) => void;
   onPointerUp: (event: React.PointerEvent) => void;
@@ -47,6 +49,7 @@ export const useEnumSlider = <Container extends Element, Ball extends Element>({
   lineSpacing,
   ballSize,
   index,
+  defaultValue,
   count,
   selectIndex,
   onGrabOrRelease,
@@ -195,6 +198,16 @@ export const useEnumSlider = <Container extends Element, Ball extends Element>({
     [ballMargin, ballSize, bottomToIndex, count, indexToBottom, lineSpacing],
   );
 
+  const onDoubleClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (defaultValue !== undefined) {
+        selectIndex(defaultValue);
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
+    [defaultValue, selectIndex],
+  );
   const onPointerDown = useCallback(
     (event: React.PointerEvent) => {
       // happy-dom which we use for testing doesn't support setPointerCapture
@@ -239,6 +252,7 @@ export const useEnumSlider = <Container extends Element, Ball extends Element>({
   return {
     containerRef,
     ballRef,
+    onDoubleClick,
     onPointerDown,
     onPointerMove,
     onPointerUp,

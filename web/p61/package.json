@@ -36,7 +36,6 @@
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
     "storybook": "catalog:",
-    "@storybook/preview-api": "catalog:",
     "@storybook/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@types/react": "catalog:",
@@ -47,10 +46,9 @@
     "eslint-plugin-tailwindcss": "catalog:",
     "eslint-config-custom": "workspace:*",
     "@storybook/react-vite": "catalog:",
-    "@storybook/theming": "catalog:",
     "@storybook/addon-links": "catalog:",
-    "@storybook/addon-essentials": "catalog:",
-    "@storybook/addon-interactions": "catalog:"
+    "eslint-plugin-storybook": "catalog:",
+    "@storybook/addon-docs": "catalog:"
   },
   "type": "module"
 }

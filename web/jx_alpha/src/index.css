@@ -1,4 +1,35 @@
+@font-face {
+  font-family: "Inter Display";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(./fonts/InterDisplay-Regular.woff2) format("woff2");
+}
+
 body {
   user-select: none;
   -webkit-user-select: none;
+  font-family: "Inter Display", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--fg-color);
+  font-size: 10px;
+}
+
+:root {
+  --darkest-color: #0e0d11;
+  --darker-color: #2b2a2e;
+  --bg-color: #3a3842;
+  --fg-color: #dae5f1;
+  --highlight-red: #b80c09;
+}
+
+* {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+h1 {
+  font-size: 14px;
+}
+
+:focus {
+  outline: 0;
 }

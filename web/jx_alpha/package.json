@@ -14,17 +14,20 @@
   "type": "module",
   "dependencies": {
     "@conformal/plugin": "catalog:",
-    "react-dom": "catalog:",
+    "d3-random": "catalog:",
+    "jotai": "catalog:",
+    "music-ui": "workspace:*",
     "react": "catalog:",
-    "jotai": "catalog:"
+    "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@types/react-dom": "catalog:",
+    "@types/d3-random": "catalog:",
     "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "vite": "catalog:",
-    "rollup-plugin-license": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
     "eslint-config-custom": "workspace:*",
-    "babel-plugin-react-compiler": "catalog:"
+    "rollup-plugin-license": "catalog:",
+    "vite": "catalog:"
   }
 }

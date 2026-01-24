@@ -136,7 +136,7 @@ const infos = new Map<string, Info>(
         units: "Cents",
       },
     },
-    dco2_cross_modulation: {
+    x_mod: {
       title: "DCO2 Cross Modulation",
       type_specific: {
         t: "enum",

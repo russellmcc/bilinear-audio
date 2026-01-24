@@ -1,29 +1,9 @@
-import { useNumericParam } from "@conformal/plugin";
+import DCO1 from "./layout/DCO1";
 
-const Layout = () => {
-  const { value: gain, set: setGain } = useNumericParam("level");
-
-  return (
-    <div>
-      <p>Current gain: {gain}%</p>
-      <p>
-        <span
-          onClick={() => {
-            setGain(Math.max(0, gain - 10));
-          }}
-        >
-          -
-        </span>
-        <span
-          onClick={() => {
-            setGain(Math.min(100, gain + 10));
-          }}
-        >
-          +
-        </span>
-      </p>
-    </div>
-  );
-};
+const Layout = () => (
+  <div>
+    <DCO1 />
+  </div>
+);
 
 export default Layout;

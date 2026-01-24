@@ -1,9 +1,10 @@
 import useGesture from "./useGesture.ts";
 import { useMemo } from "react";
 import {
-  PropsWithLabel as NumericProps,
+  LabeledNumericProps as NumericProps,
   useAccessibleNumeric,
 } from "../numeric.ts";
+import { useSmoothedValue } from "../../animation/useSmoothedValue.ts";
 
 export type DisplayProps = {
   /** Currrent value of the knob */
@@ -53,7 +54,7 @@ export const Knob = ({
   onValue,
   label,
   valueFormatter,
-  showLabel = true,
+  showLabel = "after",
   accessibilityLabel,
   defaultValue,
   Display,
@@ -77,6 +78,16 @@ export const Knob = ({
     valueFormatter,
   });
   const hover = interacted || mouseHover;
+  const labelElem =
+    showLabel !== "hidden" && Label ? (
+      <Label
+        label={label}
+        hover={hover}
+        grabbed={grabbed ?? false}
+        valueLabel={valueLabel}
+      />
+    ) : undefined;
+  const displayedValue = useSmoothedValue(value);
   return (
     <div
       {...accessibleProps}
@@ -89,17 +100,15 @@ export const Knob = ({
       }}
       {...props}
     >
+      {showLabel === "before" && labelElem}
       {Display && (
-        <Display value={value} grabbed={grabbed ?? false} hover={hover} />
-      )}
-      {showLabel && Label && (
-        <Label
-          label={label}
-          hover={hover}
+        <Display
+          value={displayedValue}
           grabbed={grabbed ?? false}
-          valueLabel={valueLabel}
+          hover={hover}
         />
       )}
+      {showLabel === "after" && labelElem}
     </div>
   );
 };

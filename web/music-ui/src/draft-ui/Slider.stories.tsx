@@ -1,5 +1,5 @@
 import { Slider, SliderProps } from "music-ui/draft-ui";
-import { Decorator } from "@storybook/react";
+import { Decorator } from "@storybook/react-vite";
 import { useState } from "react";
 
 const GrabDecorator: Decorator<SliderProps> = (Story, context) => {

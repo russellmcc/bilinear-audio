@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import {
   EnumSlider as InternalEnumSlider,
   SliderProps,
@@ -69,12 +68,14 @@ const Slider = ({
   selectIndex: selectIndex,
   grabbed,
   onGrabOrRelease,
+  defaultValue,
 }: SliderProps) => {
   const {
     onPointerDown,
     onPointerMove,
     onPointerUp,
     onPointerCancel,
+    onDoubleClick,
     containerRef,
     ballRef,
     ball,
@@ -86,6 +87,7 @@ const Slider = ({
     count,
     selectIndex,
     onGrabOrRelease,
+    defaultValue,
   });
 
   return (
@@ -94,21 +96,29 @@ const Slider = ({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerCancel}
+      onDoubleClick={onDoubleClick}
       ref={containerRef}
       data-testid="slider-track"
       className="slider-track"
       style={{
         height: `${LINE_SPACING * count + BALL_MARGIN * 2 - BALL_SIZE}px`,
         width: `${BALL_SIZE + BALL_MARGIN * 2}px`,
-        borderWidth: `${BORDER_WIDTH}px`,
         position: "relative",
-        borderStyle: "solid",
-        borderRadius: `${BALL_SIZE / 2}px`,
         marginRight: "6px",
         marginTop: `2px`,
         cursor: "pointer",
       }}
     >
+      <div
+        className="slider-track-inner"
+        style={{
+          height: `${LINE_SPACING * (count - 1)}px`,
+          width: "1px",
+          position: "absolute",
+          top: `${BALL_MARGIN + BALL_SIZE / 2}px`,
+          left: `${BALL_MARGIN + BALL_SIZE / 2 - 0.75}px`,
+        }}
+      ></div>
       <div>
         {ball && (
           <div
@@ -121,9 +131,6 @@ const Slider = ({
               bottom: `${ball.bottom}px`,
               left: `${BALL_MARGIN}px`,
               position: "absolute",
-              borderRadius: `1000px`,
-              borderWidth: `${BORDER_WIDTH}px`,
-              borderStyle: "solid",
             }}
           ></div>
         )}
@@ -157,44 +164,31 @@ export const EnumSlider = ({
   onGrabOrRelease,
   defaultValue,
   displayFormatter,
-}: Props) => {
-  const onDoubleClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (defaultValue) {
-        onValue(defaultValue);
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    },
-    [defaultValue, onValue],
-  );
-
-  return (
-    <div>
-      <InternalEnumSlider
-        accessibilityLabel={accessibilityLabel ?? label}
-        values={values}
-        value={value}
-        onValue={onValue}
-        grabbed={grabbed}
-        onGrabOrRelease={onGrabOrRelease}
-        ValueLabel={ValueLabel}
-        Slider={Slider}
-        displayFormatter={displayFormatter}
-      />
-      <div
-        className="slider-label"
-        style={{
-          fontFamily: "sans-serif",
-          height: `${LINE_SPACING}px`,
-          cursor: "pointer",
-        }}
-        onDoubleClick={onDoubleClick}
-      >
-        {label}
-      </div>
+}: Props) => (
+  <div>
+    <InternalEnumSlider
+      accessibilityLabel={accessibilityLabel ?? label}
+      values={values}
+      value={value}
+      onValue={onValue}
+      grabbed={grabbed}
+      onGrabOrRelease={onGrabOrRelease}
+      ValueLabel={ValueLabel}
+      Slider={Slider}
+      displayFormatter={displayFormatter}
+      defaultValue={defaultValue}
+    />
+    <div
+      className="slider-label"
+      style={{
+        fontFamily: "sans-serif",
+        height: `${LINE_SPACING}px`,
+        cursor: "pointer",
+      }}
+    >
+      {label}
     </div>
-  );
-};
+  </div>
+);
 
 export default EnumSlider;

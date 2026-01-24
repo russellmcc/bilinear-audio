@@ -1,6 +1,6 @@
 import { EnumSlider, EnumSliderProps } from "music-ui/draft-ui";
-import { Decorator } from "@storybook/react";
-import { useArgs } from "@storybook/preview-api";
+import { Decorator } from "@storybook/react-vite";
+import { useArgs } from "storybook/preview-api";
 
 const GrabDecorator: Decorator<EnumSliderProps> = (Story, context) => {
   const updateArgs = useArgs()[1];

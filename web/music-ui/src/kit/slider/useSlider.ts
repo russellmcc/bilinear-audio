@@ -1,5 +1,6 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { clamp } from "../../util";
+import { useSmoothedValue } from "../../animation";
 
 export type Props = {
   value: number;
@@ -101,6 +102,8 @@ export const useSlider = <Container extends HTMLElement = HTMLDivElement>({
     lastValue.current = value;
   }, [value]);
 
+  const displayedValue = useSmoothedValue(value);
+
   const touches = useRef<Map<number, TouchState>>(new Map());
   const onPointerDown = useCallback(
     (event: React.PointerEvent) => {
@@ -187,7 +190,7 @@ export const useSlider = <Container extends HTMLElement = HTMLDivElement>({
       ? containerHeight - ballSize - ballMargin * 2
       : 0;
   return {
-    ballBottom: (value / 100) * trackHeight + ballMargin,
+    ballBottom: (displayedValue / 100) * trackHeight + ballMargin,
     containerProps: {
       onPointerDown,
       onPointerMove,
