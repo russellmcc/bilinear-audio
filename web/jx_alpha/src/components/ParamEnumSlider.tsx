@@ -19,6 +19,11 @@ export type Props = {
   order?: "normal" | "reversed";
 
   /**
+   * The values to display.
+   */
+  displayFormatter?: (value: string) => string;
+
+  /**
    * Overrides the label for certain values with a custom element.
    */
   CustomGlyph?: EnumSliderProps["CustomGlyph"];
@@ -33,6 +38,7 @@ export const ParamEnumSlider = ({
   label,
   accessibilityLabel,
   order,
+  displayFormatter,
   CustomGlyph,
   param,
 }: Props) => {
@@ -52,6 +58,7 @@ export const ParamEnumSlider = ({
       onValue={set}
       defaultValue={info.default}
       CustomGlyph={CustomGlyph}
+      displayFormatter={displayFormatter}
     />
   );
 };

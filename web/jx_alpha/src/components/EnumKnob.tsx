@@ -54,6 +54,11 @@ export type Props = {
    * Callback for when the knob is released.
    */
   release?: () => void;
+
+  /**
+   * Whether to show a center tick.
+   */
+  showCenterTick?: boolean;
 };
 
 const Label = ({ label }: EnumKnobModule.LabelProps) => (
@@ -63,7 +68,7 @@ const Label = ({ label }: EnumKnobModule.LabelProps) => (
 );
 
 export const EnumKnob = (props: Props) => {
-  const { grab, release, minLabel, maxLabel } = props;
+  const { grab, release, minLabel, maxLabel, showCenterTick } = props;
   const onGrabOrRelease = useOnGrabOrRelease({ grab, release });
   const display = useCallback(
     (props: EnumKnobModule.DisplayProps) => {
@@ -77,10 +82,11 @@ export const EnumKnob = (props: Props) => {
           hover={props.hover}
           minLabel={minLabel}
           maxLabel={maxLabel}
+          showCenterTick={showCenterTick}
         />
       );
     },
-    [minLabel, maxLabel],
+    [minLabel, maxLabel, showCenterTick],
   );
   return (
     <EnumKnobModule.EnumKnob

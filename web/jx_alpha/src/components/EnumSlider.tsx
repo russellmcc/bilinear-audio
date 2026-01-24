@@ -41,6 +41,11 @@ export type Props = {
   CustomGlyph?: React.FC<{ value: string }>;
 
   /**
+   * Formatter for the values.
+   */
+  displayFormatter?: (value: string) => string;
+
+  /**
    * Callback for when the slider is grabbed.
    */
   grab: () => void;
@@ -152,7 +157,7 @@ const Label = ({ label }: { label: string }) => (
 );
 
 export const EnumSlider = (props: Props) => {
-  const { grab, release, CustomGlyph } = props;
+  const { grab, release, CustomGlyph, displayFormatter } = props;
   const onGrabOrRelease = useOnGrabOrRelease({ grab, release });
   const valueLabel = useCallback(
     (props: EnumSliderModule.ValueLabelProps) => (
@@ -161,8 +166,8 @@ export const EnumSlider = (props: Props) => {
     [CustomGlyph],
   );
   const valueFormatter = useCallback(
-    (value: string) => value.toUpperCase(),
-    [],
+    (value: string) => displayFormatter?.(value) ?? value.toUpperCase(),
+    [displayFormatter],
   );
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>

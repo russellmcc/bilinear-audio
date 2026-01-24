@@ -94,7 +94,7 @@ const Noise = () => {
   const centerY = (maxY + minY) / 2;
   const range = maxY - minY;
 
-  const rng = randomLcg(0.1337);
+  const rng = randomLcg(5);
   let d = `M${startX} ${centerY}`;
   for (let i = 1; i <= steps; i++) {
     const t = i / steps;

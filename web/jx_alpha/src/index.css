@@ -28,6 +28,7 @@ body {
 }
 h1 {
   font-size: 14px;
+  text-align: center;
 }
 
 :focus {

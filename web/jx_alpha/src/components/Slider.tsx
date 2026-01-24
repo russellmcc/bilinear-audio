@@ -149,7 +149,6 @@ const InternalSlider = ({
 const Label = ({ label }: MusicUISlider.LabelProps) => (
   <div
     style={{
-      width: `${SCALE_WIDTH + SCALE_MARGIN_LEFT + SCALE_MARGIN_RIGHT + BALL_SIZE}px`,
       textAlign: "right",
       marginBottom: `${LABEL_MARGIN}px`,
     }}
