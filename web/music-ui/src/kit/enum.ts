@@ -15,6 +15,11 @@ export type Props = {
   value?: string;
 
   /**
+   * The default value of the enum, if present, must be one of `values`
+   */
+  defaultValue?: string;
+
+  /**
    * Accessibility label for the enum
    */
   accessibilityLabel: string;

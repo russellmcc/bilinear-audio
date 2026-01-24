@@ -33,6 +33,7 @@ export const ParamEnumSlider = ({
       release={release}
       values={info.values}
       onValue={set}
+      defaultValue={info.default}
     />
   );
 };

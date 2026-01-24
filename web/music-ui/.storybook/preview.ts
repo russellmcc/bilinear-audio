@@ -9,8 +9,8 @@ const preview: Preview = {
     },
     backgrounds: {
       options: {
-        black: { name: "black", value: "#000000" }
-      }
+        black: { name: "black", value: "#000000" },
+      },
     },
     actions: { argTypesRegex: "^on[A-Z].*" },
     options: {
@@ -20,9 +20,9 @@ const preview: Preview = {
 
   initialGlobals: {
     backgrounds: {
-      value: "black"
-    }
-  }
+      value: "black",
+    },
+  },
 };
 
 export default preview;

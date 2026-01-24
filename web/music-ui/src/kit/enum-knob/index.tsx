@@ -41,13 +41,6 @@ export type DisplayComponent = React.ComponentType<DisplayProps>;
 
 export type Props = PropsWithLabel<EnumProps> & {
   /**
-   * Default value.
-   *
-   * if present, must be one of `values`
-   */
-  defaultValue?: string;
-
-  /**
    * Component type to use for the value label.
    *
    * Note that this must forward props to an HTML div element.

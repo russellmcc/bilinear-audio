@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import useAnimation from "./useAnimation";
 
-const DEFAULT_TIME = 0.5;
+const DEFAULT_TIME = 0.35;
 
 export type Options = {
   /**

@@ -17,7 +17,7 @@ const config: StorybookConfig = {
 
   addons: [
     getAbsolutePath("@storybook/addon-links"),
-    getAbsolutePath("@storybook/addon-docs")
+    getAbsolutePath("@storybook/addon-docs"),
   ],
 
   framework: {
@@ -27,6 +27,6 @@ const config: StorybookConfig = {
         viteConfigPath: "./vite.config.ts",
       },
     },
-  }
+  },
 };
 export default config;

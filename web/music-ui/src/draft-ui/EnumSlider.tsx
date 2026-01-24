@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import {
   EnumSlider as InternalEnumSlider,
   SliderProps,
@@ -69,12 +68,14 @@ const Slider = ({
   selectIndex: selectIndex,
   grabbed,
   onGrabOrRelease,
+  defaultValue,
 }: SliderProps) => {
   const {
     onPointerDown,
     onPointerMove,
     onPointerUp,
     onPointerCancel,
+    onDoubleClick,
     containerRef,
     ballRef,
     ball,
@@ -86,6 +87,7 @@ const Slider = ({
     count,
     selectIndex,
     onGrabOrRelease,
+    defaultValue,
   });
 
   return (
@@ -94,6 +96,7 @@ const Slider = ({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerCancel}
+      onDoubleClick={onDoubleClick}
       ref={containerRef}
       data-testid="slider-track"
       className="slider-track"
@@ -161,44 +164,31 @@ export const EnumSlider = ({
   onGrabOrRelease,
   defaultValue,
   displayFormatter,
-}: Props) => {
-  const onDoubleClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (defaultValue) {
-        onValue(defaultValue);
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    },
-    [defaultValue, onValue],
-  );
-
-  return (
-    <div>
-      <InternalEnumSlider
-        accessibilityLabel={accessibilityLabel ?? label}
-        values={values}
-        value={value}
-        onValue={onValue}
-        grabbed={grabbed}
-        onGrabOrRelease={onGrabOrRelease}
-        ValueLabel={ValueLabel}
-        Slider={Slider}
-        displayFormatter={displayFormatter}
-      />
-      <div
-        className="slider-label"
-        style={{
-          fontFamily: "sans-serif",
-          height: `${LINE_SPACING}px`,
-          cursor: "pointer",
-        }}
-        onDoubleClick={onDoubleClick}
-      >
-        {label}
-      </div>
+}: Props) => (
+  <div>
+    <InternalEnumSlider
+      accessibilityLabel={accessibilityLabel ?? label}
+      values={values}
+      value={value}
+      onValue={onValue}
+      grabbed={grabbed}
+      onGrabOrRelease={onGrabOrRelease}
+      ValueLabel={ValueLabel}
+      Slider={Slider}
+      displayFormatter={displayFormatter}
+      defaultValue={defaultValue}
+    />
+    <div
+      className="slider-label"
+      style={{
+        fontFamily: "sans-serif",
+        height: `${LINE_SPACING}px`,
+        cursor: "pointer",
+      }}
+    >
+      {label}
     </div>
-  );
-};
+  </div>
+);
 
 export default EnumSlider;

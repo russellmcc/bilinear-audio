@@ -6,8 +6,8 @@ import ParamEnumKnob from "./components/ParamEnumKnob";
 const Layout = () => (
   <div style={{ display: "flex" }}>
     <ParamSlider param="level" label="LEVEL" scale="labeled" />
-    <ParamSlider param="dco1_pwm_depth" label="DEPTH" scale="continuation" />
-    <ParamEnumSlider label="MOD" param="x_mod" />
+    <ParamSlider param="dco1_pwm_depth" label="LEVEL" scale="continuation" />
+    <ParamEnumSlider label="MODULA" param="x_mod" />
     <ParamKnob label="FINE" param="dco2_fine_tune" minLabel="-" maxLabel="+" />
     <ParamEnumKnob
       label="TUNE"

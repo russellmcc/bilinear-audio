@@ -8,7 +8,7 @@ import {
 import { rescale } from "music-ui/util";
 import { Knob as KnobModule } from "music-ui/kit";
 
-const KNOB_SIZE = 42;
+const KNOB_SIZE = 40;
 const TAU = Math.PI * 2;
 const MIN_ANGLE = -TAU * (3 / 8);
 const MAX_ANGLE = TAU * (3 / 8);

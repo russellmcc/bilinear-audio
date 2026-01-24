@@ -10,8 +10,8 @@ const preview: Preview = {
     backgrounds: {
       options: {
         background: { name: "background", value: "#0F1A20" },
-        zone: { name: "zone", value: "#25283D" }
-      }
+        zone: { name: "zone", value: "#25283D" },
+      },
     },
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
@@ -24,9 +24,9 @@ const preview: Preview = {
 
   initialGlobals: {
     backgrounds: {
-      value: "zone"
-    }
-  }
+      value: "zone",
+    },
+  },
 };
 
 export default preview;

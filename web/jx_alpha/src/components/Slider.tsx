@@ -10,10 +10,11 @@ export type ScaleType = "none" | "continuation" | "labeled";
 const TICK_HEIGHT = 1;
 const BOLD_TICK_HEIGHT = 2;
 const BOLD_TICKS: readonly number[] = [10, 5, 0];
-const SCALE_WIDTH = 30;
+const SCALE_WIDTH = 17;
+const LABEL_WIDTH = 10;
 const LABELED_SCALE_WIDTH = 10;
-const LABELED_SCALE_MARGIN = 2;
-const SCALE_MARGIN_LEFT = 0;
+const LABELED_SCALE_MARGIN = 4;
+const SCALE_MARGIN_LEFT = -3;
 const SCALE_MARGIN_RIGHT = -3;
 
 const tickToMiddle = (tick: number) => {
@@ -24,10 +25,9 @@ const tickToMiddle = (tick: number) => {
 const TickLabel = ({ tick }: { tick: number }) => (
   <div
     style={{
-      width: `${SCALE_WIDTH - LABELED_SCALE_WIDTH - LABELED_SCALE_MARGIN}px`,
+      width: `${LABEL_WIDTH}px`,
       left: "0px",
       top: `calc(${tickToMiddle(tick) + 1}px - 0.5rem)`,
-      marginRight: `${LABELED_SCALE_MARGIN}px`,
       position: "absolute",
       textAlign: "right",
     }}
@@ -78,7 +78,7 @@ const Scale = ({ type }: { type: ScaleType }): React.ReactNode => {
         <div
           style={{
             height: `${TRACK_LENGTH}px`,
-            width: `${SCALE_WIDTH}px`,
+            width: `${LABEL_WIDTH + LABELED_SCALE_MARGIN + LABELED_SCALE_WIDTH}px`,
             position: "relative",
             marginLeft: `${SCALE_MARGIN_LEFT}px`,
             marginRight: `${SCALE_MARGIN_RIGHT}px`,
@@ -98,7 +98,7 @@ const Scale = ({ type }: { type: ScaleType }): React.ReactNode => {
                 style={{
                   height: `${height}px`,
                   width: `${LABELED_SCALE_WIDTH}px`,
-                  left: `${SCALE_WIDTH - LABELED_SCALE_WIDTH}px`,
+                  left: `${LABEL_WIDTH + LABELED_SCALE_MARGIN}px`,
                   position: "absolute",
                   backgroundColor: "var(--fg-color)",
                   top: `${tickToMiddle(i) - height / 2}px`,

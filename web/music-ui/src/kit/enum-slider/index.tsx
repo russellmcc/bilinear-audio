@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { indexOf } from "../../util";
 import { LabelGroup, ValueLabel } from "./value-label";
 import { Props as EnumProps } from "../enum";
@@ -6,6 +6,7 @@ export type { ValueLabel, ValueLabelProps } from "./value-label";
 export type SliderProps = {
   index: number | undefined;
   count: number;
+  defaultValue?: number;
   selectIndex: (index: number) => void;
   onGrabOrRelease?: (grabbed: boolean) => void;
   grabbed: boolean;
@@ -43,6 +44,7 @@ export const EnumSlider = ({
   onGrabOrRelease,
   accessibilityLabel,
   displayFormatter,
+  defaultValue,
   ValueLabel,
   Slider,
   grabbed = false,
@@ -57,6 +59,10 @@ export const EnumSlider = ({
       setTimeout(() => radios.current.get(index)?.focus(), 0);
     },
     [onValue, values],
+  );
+  const defaultValueIndex = useMemo(
+    () => (defaultValue ? values.indexOf(defaultValue) : undefined),
+    [defaultValue, values],
   );
   const radios = useRef<Map<number, HTMLDivElement>>(new Map());
   useEffect(() => {
@@ -74,6 +80,7 @@ export const EnumSlider = ({
       count={values.length}
       selectIndex={selectIndex}
       onGrabOrRelease={onGrabOrRelease}
+      defaultValue={defaultValueIndex}
       grabbed={grabbed}
     />
   );

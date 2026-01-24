@@ -30,6 +30,11 @@ export type Props = {
   value?: string;
 
   /**
+   * The default value of the enum.
+   */
+  defaultValue?: string;
+
+  /**
    * Callback for when the slider is grabbed.
    */
   grab: () => void;
@@ -49,6 +54,7 @@ const Slider = ({
   index,
   count,
   selectIndex: selectIndex,
+  defaultValue,
   onGrabOrRelease,
 }: EnumSliderModule.SliderProps) => {
   const {
@@ -56,6 +62,7 @@ const Slider = ({
     onPointerMove,
     onPointerUp,
     onPointerCancel,
+    onDoubleClick,
     containerRef,
     ballRef,
     ball,
@@ -67,6 +74,7 @@ const Slider = ({
     count,
     selectIndex,
     onGrabOrRelease,
+    defaultValue,
   });
 
   const trackHeight = LINE_SPACING * count;
@@ -76,6 +84,7 @@ const Slider = ({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerCancel}
+      onDoubleClick={onDoubleClick}
       ref={containerRef}
       style={{
         height: `${trackHeight}px`,
