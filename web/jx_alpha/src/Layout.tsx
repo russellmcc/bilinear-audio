@@ -2,6 +2,7 @@ import DCO1 from "./layout/DCO1";
 import DCO2 from "./layout/DCO2";
 import DCOMod from "./layout/DCOMod";
 import Mixer from "./layout/Mixer";
+import VCA from "./layout/VCA";
 import VCF from "./layout/VCF";
 
 const Layout = () => (
@@ -45,6 +46,16 @@ const Layout = () => (
       }}
     >
       <VCF />
+    </div>
+    <div
+      style={{
+        paddingLeft: "11px",
+        paddingRight: "11px",
+        borderRight: "2px solid var(--darkest-color)",
+        borderBottom: "2px solid var(--darkest-color)",
+      }}
+    >
+      <VCA />
     </div>
   </div>
 );

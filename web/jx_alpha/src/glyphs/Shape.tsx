@@ -1,4 +1,5 @@
 import { randomLcg } from "d3-random";
+import { GLYPH_HEIGHT, GLYPH_Y_MARGIN } from "./constants";
 
 export type Props = {
   /**
@@ -6,9 +7,6 @@ export type Props = {
    */
   value: string;
 };
-
-const GLYPH_HEIGHT = 10;
-const GLYPH_Y_MARGIN = 1;
 
 const Saw = () => (
   <svg width="22" height={GLYPH_HEIGHT} viewBox={`0 0 22 ${GLYPH_HEIGHT}`}>
