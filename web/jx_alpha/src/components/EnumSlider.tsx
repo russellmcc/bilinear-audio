@@ -8,6 +8,7 @@ import { useCallback } from "react";
 export const LINE_SPACING = 20;
 
 export const VALUE_LABEL_TOP_PADDING = 2;
+const DOT_LEFT_MARGIN = 3;
 
 export type Props = {
   /**
@@ -129,7 +130,7 @@ const ValueLabel = ({
       textAlign: "right",
       cursor: "pointer",
       position: "relative",
-      paddingRight: `${DOT_SIZE + 2 * DOT_OFFSET}px`,
+      paddingRight: `${DOT_SIZE + DOT_OFFSET + DOT_LEFT_MARGIN}px`,
       paddingTop: `${VALUE_LABEL_TOP_PADDING}px`,
     }}
   >

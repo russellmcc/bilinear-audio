@@ -2,6 +2,7 @@ import DCO1 from "./layout/DCO1";
 import DCO2 from "./layout/DCO2";
 import DCOMod from "./layout/DCOMod";
 import Mixer from "./layout/Mixer";
+import VCF from "./layout/VCF";
 
 const Layout = () => (
   <div style={{ display: "flex", flexDirection: "row" }}>
@@ -27,9 +28,6 @@ const Layout = () => (
     </div>
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "11px",
         paddingLeft: "11px",
         paddingRight: "11px",
         borderRight: "2px solid var(--darkest-color)",
@@ -37,6 +35,16 @@ const Layout = () => (
       }}
     >
       <Mixer />
+    </div>
+    <div
+      style={{
+        paddingLeft: "11px",
+        paddingRight: "11px",
+        borderRight: "2px solid var(--darkest-color)",
+        borderBottom: "2px solid var(--darkest-color)",
+      }}
+    >
+      <VCF />
     </div>
   </div>
 );
