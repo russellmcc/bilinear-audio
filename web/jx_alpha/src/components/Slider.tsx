@@ -8,7 +8,7 @@ import useOnGrabOrRelease from "./useGrabOrRelease";
 export type ScaleType = "none" | "continuation" | "labeled";
 
 const TICK_HEIGHT = 1;
-const BOLD_TICK_HEIGHT = 2;
+const BOLD_TICK_HEIGHT = 1.5;
 const BOLD_TICKS: readonly number[] = [10, 5, 0];
 const SCALE_WIDTH = 17;
 const LABEL_WIDTH = 10;
@@ -23,6 +23,7 @@ const tickToMiddle = (tick: number) => {
 };
 
 const TickLabel = ({ tick }: { tick: number }) => (
+  // TODO: align with enum slider labels
   <div
     style={{
       width: `${LABEL_WIDTH}px`,

@@ -1,16 +1,10 @@
 import ParamEnumSlider from "../components/ParamEnumSlider";
 import ParamSlider from "../components/ParamSlider";
-import VCAEnvSource from "../glyphs/VCAEnvSource";
+import LFOShape from "../glyphs/LFOShape";
 
-export const VCA = () => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      height: "100%",
-    }}
-  >
-    <h1>VCA</h1>
+export const LFO = () => (
+  <div>
+    <h1>LFO</h1>
     <div
       style={{
         display: "flex",
@@ -27,16 +21,17 @@ export const VCA = () => (
           gap: "5px",
         }}
       >
-        <ParamSlider param="level" label="LEVEL" scale="labeled" />
-        {/* TODO: add right label for env 2 */}
         <ParamEnumSlider
-          param="vca_env_source"
-          label="ENV MODE"
-          CustomGlyph={VCAEnvSource}
+          param="lfo_shape"
+          label="SHAPE"
+          CustomGlyph={LFOShape}
         />
+
+        <ParamSlider param="lfo_rate" label="RATE" scale="labeled" />
+        <ParamSlider param="lfo_delay" label="DELAY" scale="continuation" />
       </div>
     </div>
   </div>
 );
 
-export default VCA;
+export default LFO;

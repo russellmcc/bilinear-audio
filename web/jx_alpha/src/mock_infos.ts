@@ -62,7 +62,7 @@ const envParams = (envName: string, prefix: string): Record<string, Info> =>
             ] as const,
         ),
         [`${prefix}_t4`, `${envName} T4`, percentage(0)],
-        [`${prefix}_key_follow`, `${envName} Key Follow`, percentage(0)],
+        [`${prefix}_key`, `${envName} Key Follow`, percentage(0)],
       ] as const
     ).map(([key, title, type_specific]): [string, Info] => [
       key,

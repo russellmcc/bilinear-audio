@@ -55,6 +55,14 @@ export const VCF = () => (
         >
           <ParamSlider param="vcf_cutoff" label="FREQ" scale="labeled" />
           <ParamSlider param="resonance" label="RES" scale="continuation" />
+          <ParamSlider param="vcf_env" label="ENV" scale="continuation" />
+          <ParamSlider param="vcf_lfo" label="LFO" scale="continuation" />
+          <ParamSlider
+            param="vcf_key_follow"
+            label="KEY"
+            scale="continuation"
+          />
+          <EnvModeSlider param="vcf_env_source"></EnvModeSlider>
         </div>
       </div>
       <div style={{ flexGrow: 1 }}></div>
@@ -64,20 +72,14 @@ export const VCF = () => (
           flexDirection: "row",
           justifyContent: "space-around",
         }}
-      >
-        <ParamSlider param="vcf_env" label="ENV" scale="labeled" />
-        <ParamSlider param="vcf_lfo" label="LFO" scale="continuation" />
-        <ParamSlider param="vcf_key_follow" label="KEY" scale="continuation" />
-      </div>
+      ></div>
       <div
         style={{
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-evenly",
         }}
-      >
-        <EnvModeSlider param="vcf_env_source"></EnvModeSlider>
-      </div>
+      ></div>
     </div>
   </div>
 );
