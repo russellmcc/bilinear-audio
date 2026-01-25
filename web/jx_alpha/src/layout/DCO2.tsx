@@ -17,6 +17,7 @@ export const DCO2 = () => (
         display: "flex",
         flexDirection: "column",
         alignItems: "stretch",
+        gap: "11px",
       }}
     >
       <div
@@ -36,7 +37,6 @@ export const DCO2 = () => (
           displayFormatter={formatXmod}
         />
       </div>
-      <div style={{ flexGrow: 1, minHeight: "11px" }}></div>
       <div
         style={{
           display: "flex",
@@ -57,7 +57,6 @@ export const DCO2 = () => (
           maxLabel="+"
         />
       </div>
-      <div style={{ flexGrow: 1, minHeight: "11px" }}></div>
       <div
         style={{
           display: "flex",

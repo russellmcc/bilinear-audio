@@ -5,7 +5,9 @@ import SliderTrack from "./SliderTrack";
 import useOnGrabOrRelease from "./useGrabOrRelease";
 import { useCallback } from "react";
 
-const LINE_SPACING = 18;
+export const LINE_SPACING = 20;
+
+export const VALUE_LABEL_TOP_PADDING = 2;
 
 export type Props = {
   /**
@@ -122,12 +124,13 @@ const ValueLabel = ({
   <div
     {...props}
     style={{
-      height: `${LINE_SPACING}px`,
+      height: `${LINE_SPACING - VALUE_LABEL_TOP_PADDING}px`,
       fontWeight: checked ? "400" : "200",
       textAlign: "right",
       cursor: "pointer",
       position: "relative",
       paddingRight: `${DOT_SIZE + 2 * DOT_OFFSET}px`,
+      paddingTop: `${VALUE_LABEL_TOP_PADDING}px`,
     }}
   >
     {CustomGlyph ? <CustomGlyph value={label} /> : <span>{label}</span>}

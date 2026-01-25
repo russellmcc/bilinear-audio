@@ -1,21 +1,17 @@
-import { LABEL_MARGIN } from "./constants";
+import { BALL_SIZE, LABEL_MARGIN } from "./constants";
+import { LINE_SPACING, VALUE_LABEL_TOP_PADDING } from "./EnumSlider";
 
-const LINE_SPACING = 18;
 const BRACKET_WIDTH = 6;
 const BRACKET_STROKE = 1;
-const LABEL_GAP_HEIGHT = 18;
+const LABEL_OFFSET = 1;
 
 const BrokenBracket = ({ height }: { height: number }) => {
   const midY = height / 2;
-  const gapHalf = LABEL_GAP_HEIGHT / 2;
+  const gapHalf = LINE_SPACING / 2;
 
-  // Draw top part
-  // M 0 0 -> L width 0 -> L width (midY - gapHalf)
-  const dTop = `M 0 0 L ${BRACKET_WIDTH} 0 L ${BRACKET_WIDTH} ${midY - gapHalf}`;
+  const dTop = `M 0 ${BRACKET_STROKE / 2} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${BRACKET_STROKE / 2} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${midY - gapHalf + VALUE_LABEL_TOP_PADDING}`;
 
-  // Draw bottom part
-  // M width (midY + gapHalf) -> L width height -> L 0 height
-  const dBottom = `M ${BRACKET_WIDTH} ${midY + gapHalf} L ${BRACKET_WIDTH} ${height} L 0 ${height}`;
+  const dBottom = `M ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${midY + gapHalf + VALUE_LABEL_TOP_PADDING} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${height - BRACKET_STROKE / 2} L ${BRACKET_STROKE / 2} ${height - BRACKET_STROKE / 2}`;
 
   return (
     <svg
@@ -36,20 +32,20 @@ const BrokenBracket = ({ height }: { height: number }) => {
 
 const GroupLabel = ({ label, count }: { label: string; count: number }) => {
   const height = count * LINE_SPACING;
-  const bracketHeight = height - LINE_SPACING; // Center-to-center span
+  const bracketHeight = height - LINE_SPACING;
 
   return (
     <div
       style={{
         height: `${height}px`,
         position: "relative",
-        width: `${BRACKET_WIDTH}px`, // Ensure enough width for the label
+        width: `${BRACKET_WIDTH}px`,
       }}
     >
       <div
         style={{
           position: "absolute",
-          top: `${LINE_SPACING / 2}px`,
+          top: `${LINE_SPACING - BALL_SIZE / 2 - BRACKET_STROKE / 2}px`,
           left: 0,
           height: bracketHeight,
           width: BRACKET_WIDTH,
@@ -58,18 +54,17 @@ const GroupLabel = ({ label, count }: { label: string; count: number }) => {
         <BrokenBracket height={bracketHeight} />
       </div>
 
-      {/* Label positioned at the second row */}
       <div
         style={{
           position: "absolute",
-          top: `${Math.floor((count - 1) / 2) * LINE_SPACING}px`,
+          top: `${Math.floor((count - 1) / 2) * LINE_SPACING + LABEL_OFFSET}px`,
           left: 0,
           width: "100%",
           height: `${LINE_SPACING}px`,
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-start",
-          paddingLeft: BRACKET_WIDTH - 3, // Align roughly with the spine
+          paddingLeft: BRACKET_WIDTH - 3,
         }}
       >
         <span>{label}</span>
@@ -85,21 +80,18 @@ export const EnvSourceLabels = () => (
       style={{
         textAlign: "right",
         marginBottom: `${LABEL_MARGIN}px`,
-        visibility: "hidden",
         width: `${BRACKET_WIDTH}px`,
+        whiteSpace: "nowrap",
+        visibility: "hidden",
+        flexGrow: 0,
       }}
     >
       ENV MODE
     </div>
 
-    {/* Group 1: First 3 items */}
     <GroupLabel label="1" count={3} />
 
-    {/* Group 2: Next 3 items */}
     <GroupLabel label="2" count={3} />
-
-    {/* Last item (Dynamic) has no label */}
-    <div style={{ height: `${LINE_SPACING}px` }} />
   </div>
 );
 

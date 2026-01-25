@@ -29,6 +29,8 @@ body {
 }
 h1 {
   font-size: 14px;
+  margin: 0;
+  margin-bottom: 8px;
   text-align: center;
 }
 

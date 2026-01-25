@@ -2,7 +2,13 @@ import EnvModeSlider from "../components/EnvModeSlider";
 import ParamSlider from "../components/ParamSlider";
 
 export const Mixer = () => (
-  <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+    }}
+  >
     <h1>MIXER</h1>
     <div
       style={{
