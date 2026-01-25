@@ -1,6 +1,7 @@
 import DCO1 from "./layout/DCO1";
 import DCO2 from "./layout/DCO2";
 import DCOMod from "./layout/DCOMod";
+import Mixer from "./layout/Mixer";
 
 const Layout = () => (
   <div style={{ display: "flex", flexDirection: "row", gap: "11px" }}>
@@ -23,6 +24,9 @@ const Layout = () => (
       <div style={{ display: "flex", flexDirection: "row" }}>
         <DCOMod />
       </div>
+    </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
+      <Mixer />
     </div>
   </div>
 );

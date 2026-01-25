@@ -1,5 +1,5 @@
 import ParamEnumKnob from "../components/ParamEnumKnob";
-import ParamEnumSlider from "../components/ParamEnumSlider";
+import EnvModeSlider from "../components/EnvModeSlider";
 
 export const DCOMod = () => (
   <div
@@ -11,7 +11,7 @@ export const DCOMod = () => (
       width: "100%",
     }}
   >
-    <ParamEnumSlider param="dco_env_source" label="ENV MODE" order="reversed" />
+    <EnvModeSlider param="dco_env_source" />
     <div
       style={{
         display: "flex",

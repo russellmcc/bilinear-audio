@@ -126,6 +126,8 @@ const ValueLabel = ({
       fontWeight: checked ? "400" : "200",
       textAlign: "right",
       cursor: "pointer",
+      position: "relative",
+      paddingRight: `${DOT_SIZE + 2 * DOT_OFFSET}px`,
     }}
   >
     {CustomGlyph ? <CustomGlyph value={label} /> : <span>{label}</span>}
@@ -133,11 +135,11 @@ const ValueLabel = ({
       style={{
         verticalAlign: "middle",
         display: "inline-block",
-        marginTop: "-0.5px",
+        bottom: `${BALL_SIZE / 2 - DOT_SIZE / 2}px`,
+        right: `${DOT_OFFSET}px`,
+        position: "absolute",
         height: `${DOT_SIZE}px`,
         width: `${DOT_SIZE}px`,
-        marginLeft: `${DOT_OFFSET}px`,
-        marginRight: `${DOT_OFFSET}px`,
         backgroundColor: "var(--fg-color)",
         borderRadius: `${DOT_SIZE}px`,
       }}

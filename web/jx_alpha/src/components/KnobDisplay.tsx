@@ -1,10 +1,4 @@
-import {
-  BORDER_WIDTH,
-  DOT_OFFSET,
-  DOT_SIZE,
-  DROP_SHADOW_FILTER,
-  LABEL_MARGIN,
-} from "./constants";
+import { BORDER_WIDTH, DOT_OFFSET, DOT_SIZE, LABEL_MARGIN } from "./constants";
 import { rescale } from "music-ui/util";
 import { Knob as KnobModule } from "music-ui/kit";
 
@@ -89,7 +83,7 @@ export const KnobDisplay = ({
           borderStyle: "solid",
           borderColor: "var(--darkest-color)",
           backgroundColor: "var(--darker-color)",
-          filter: DROP_SHADOW_FILTER,
+          boxShadow: "var(--shadow)",
           // Hack for safari to prevent stale rendering
           transform: "translateZ(0)",
         }}
