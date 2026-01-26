@@ -7,7 +7,6 @@ export const VCA = () => (
     style={{
       display: "flex",
       flexDirection: "column",
-      height: "100%",
     }}
   >
     <h1>VCA</h1>

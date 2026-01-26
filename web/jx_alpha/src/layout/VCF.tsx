@@ -3,6 +3,7 @@ import ParamEnumSlider from "../components/ParamEnumSlider";
 import { useCallback } from "react";
 import ParamSlider from "../components/ParamSlider";
 import EnvModeSlider from "../components/EnvModeSlider";
+import VCA from "./VCA";
 
 const HPFSlider = () => {
   const param = "hpf_mode";
@@ -35,6 +36,7 @@ export const VCF = () => (
         display: "flex",
         flexDirection: "column",
         alignItems: "stretch",
+        justifyContent: "space-between",
         gap: "11px",
         height: "100%",
       }}
@@ -43,7 +45,8 @@ export const VCF = () => (
         style={{
           display: "flex",
           flexDirection: "row",
-          gap: "5px",
+          gap: "11px",
+          paddingRight: "11px",
         }}
       >
         <HPFSlider />
@@ -62,24 +65,40 @@ export const VCF = () => (
             label="KEY"
             scale="continuation"
           />
-          <EnvModeSlider param="vcf_env_source"></EnvModeSlider>
         </div>
       </div>
-      <div style={{ flexGrow: 1 }}></div>
       <div
         style={{
           display: "flex",
           flexDirection: "row",
-          justifyContent: "space-around",
+          justifyContent: "space-between",
         }}
-      ></div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-evenly",
-        }}
-      ></div>
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end",
+            paddingBottom: "11px",
+          }}
+        >
+          <EnvModeSlider param="vcf_env_source"></EnvModeSlider>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end",
+            paddingLeft: "11px",
+            paddingBottom: "11px",
+            paddingRight: "11px",
+            borderLeft: "2px solid var(--darkest-color)",
+            borderTop: "2px solid var(--darkest-color)",
+          }}
+        >
+          <VCA />
+        </div>
+      </div>
     </div>
   </div>
 );

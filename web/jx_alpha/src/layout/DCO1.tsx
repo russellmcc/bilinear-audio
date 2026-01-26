@@ -7,7 +7,7 @@ export const DCO1 = () => (
   <div
     style={{
       borderRight: "2px solid var(--darkest-color)",
-      paddingRight: "5px",
+      paddingRight: "11px",
     }}
   >
     <h1>DCO-1</h1>
@@ -24,7 +24,7 @@ export const DCO1 = () => (
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
-          gap: "5px",
+          gap: "11px",
         }}
       >
         <ParamEnumSlider param="dco1_range" label="RANGE" order="reversed" />

@@ -13,6 +13,7 @@ body {
   background-color: var(--bg-color);
   color: var(--fg-color);
   font-size: 10px;
+  margin: 0;
 }
 
 :root {

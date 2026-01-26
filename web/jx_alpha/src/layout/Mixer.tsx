@@ -7,6 +7,7 @@ export const Mixer = () => (
       display: "flex",
       flexDirection: "column",
       height: "100%",
+      paddingBottom: "11px",
     }}
   >
     <h1>MIXER</h1>
@@ -28,6 +29,16 @@ export const Mixer = () => (
         <ParamSlider param="mix_dco1" label="DCO1" scale="labeled" />
         <ParamSlider param="mix_dco2" label="DCO2" scale="continuation" />
         <ParamSlider param="mix_env" label="ENV" scale="continuation" />
+      </div>
+      {/* Somewhat gross alignment hack to get this lined up visually with DCO modules*/}
+      <div style={{ height: "43px" }}> </div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-around",
+        }}
+      >
         <EnvModeSlider param="mix_env_source" />
       </div>
     </div>

@@ -5,7 +5,6 @@ const ENV = ({ env }: { env: "1" | "2" }) => (
     style={{
       display: "flex",
       flexDirection: "column",
-      height: "100%",
     }}
   >
     <h1>{`ENV-${env}`}</h1>

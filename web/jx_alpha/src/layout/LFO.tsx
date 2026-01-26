@@ -3,7 +3,7 @@ import ParamSlider from "../components/ParamSlider";
 import LFOShape from "../glyphs/LFOShape";
 
 export const LFO = () => (
-  <div>
+  <div style={{ display: "flex", flexDirection: "column" }}>
     <h1>LFO</h1>
     <div
       style={{
@@ -11,7 +11,6 @@ export const LFO = () => (
         flexDirection: "column",
         alignItems: "stretch",
         gap: "11px",
-        height: "100%",
       }}
     >
       <div
