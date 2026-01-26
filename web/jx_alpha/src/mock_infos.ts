@@ -196,7 +196,7 @@ const infos = new Map<string, Info>(
       title: "VCF Cutoff",
       type_specific: percentage(100),
     },
-    vcf_key_follow: {
+    vcf_key: {
       title: "VCF Key Follow",
       type_specific: percentage(0),
     },

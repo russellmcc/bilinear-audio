@@ -17,8 +17,8 @@ conformal_vst_wrapper::wrap_factory!(
                 cid: CID,
                 edit_controller_cid: EDIT_CONTROLLER_CID,
                 ui_initial_size: conformal_vst_wrapper::UiSize {
-                    width: 1036,
-                    height: 543,
+                    width: 920,
+                    height: 552,
                 },
             },
             factory: |_: &HostInfo| -> Component { Default::default() },

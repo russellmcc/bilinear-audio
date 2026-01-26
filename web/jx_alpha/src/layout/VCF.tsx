@@ -60,11 +60,7 @@ export const VCF = () => (
           <ParamSlider param="resonance" label="RES" scale="continuation" />
           <ParamSlider param="vcf_env" label="ENV" scale="continuation" />
           <ParamSlider param="vcf_lfo" label="LFO" scale="continuation" />
-          <ParamSlider
-            param="vcf_key_follow"
-            label="KEY"
-            scale="continuation"
-          />
+          <ParamSlider param="vcf_key" label="KEY" scale="continuation" />
         </div>
       </div>
       <div

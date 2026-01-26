@@ -107,6 +107,7 @@ const Layout = () => (
               paddingRight: "11px",
               paddingLeft: "11px",
               borderRight: "2px solid var(--darkest-color)",
+              paddingBottom: "11px",
             }}
           >
             <ENV env="1" />

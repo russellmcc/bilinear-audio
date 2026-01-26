@@ -43,6 +43,7 @@ export const DCOMod = () => (
         flexDirection: "row",
         paddingLeft: "11px",
         paddingRight: "11px",
+        paddingBottom: "11px",
         borderLeft: "2px solid var(--darkest-color)",
         borderTop: "2px solid var(--darkest-color)",
         alignItems: "flex-end",
