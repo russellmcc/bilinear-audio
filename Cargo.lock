@@ -384,9 +384,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_vst_wrapper"
-version = "0.3.8"
+version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8788c759cf3a915ac9f5e23c73ae40667499fca498c094c0da18698c81d97e7f"
+checksum = "47a25641c50d20da654aafc309f79c26c272e10774e4b9e7aa65f2c62ae0abc5"
 dependencies = [
  "conformal_component",
  "conformal_core",
@@ -395,7 +395,7 @@ dependencies = [
  "itertools 0.13.0",
  "rmp-serde",
  "serde",
- "vst3",
+ "vst3 0.3.0",
 ]
 
 [[package]]
@@ -1596,7 +1596,7 @@ version = "0.0.0"
 dependencies = [
  "conformal_vst_wrapper",
  "jx_alpha_component",
- "vst3",
+ "vst3 0.2.0",
 ]
 
 [[package]]
@@ -2026,7 +2026,7 @@ version = "0.0.0"
 dependencies = [
  "conformal_vst_wrapper",
  "p61_component",
- "vst3",
+ "vst3 0.2.0",
 ]
 
 [[package]]
@@ -2578,7 +2578,7 @@ version = "0.0.0"
 dependencies = [
  "conformal_vst_wrapper",
  "rchorus_component",
- "vst3",
+ "vst3 0.2.0",
 ]
 
 [[package]]
@@ -2694,7 +2694,7 @@ version = "0.0.0"
 dependencies = [
  "conformal_vst_wrapper",
  "reverb_component",
- "vst3",
+ "vst3 0.2.0",
 ]
 
 [[package]]
@@ -3587,6 +3587,15 @@ checksum = "9cde7186f5d0d86facd20d4248ddaaf620e221c9523eb86fe4fb2e935b09cd2f"
 dependencies = [
  "com-scrape-types",
  "vst3-bindgen",
+]
+
+[[package]]
+name = "vst3"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e31e3fe7a6f028ded8c5a9984cf283319e6dc63572c9b71da1d4ee9d71d3b6bf"
+dependencies = [
+ "com-scrape-types",
 ]
 
 [[package]]

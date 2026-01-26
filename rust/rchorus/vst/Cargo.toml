@@ -12,6 +12,6 @@ workspace = true
 crate-type = ["cdylib"]
 
 [dependencies]
-conformal_vst_wrapper = "0.3.8"
+conformal_vst_wrapper = "0.3.10"
 vst3 = "0.2.0"
 rchorus_component = { path = "../component" }
