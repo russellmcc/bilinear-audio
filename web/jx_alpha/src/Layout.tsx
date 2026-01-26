@@ -4,6 +4,7 @@ import DCOMod from "./layout/DCOMod";
 import ENV from "./layout/ENV";
 import Mixer from "./layout/Mixer";
 import VCF from "./layout/VCF";
+import logo from "./assets/logo.svg";
 
 const Layout = () => (
   <div
@@ -64,6 +65,18 @@ const Layout = () => (
             }}
           >
             <VCF />
+          </div>
+          <div style={{ position: "relative", flexGrow: "1" }}>
+            <img
+              src={logo}
+              alt="logo"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+              }}
+            />
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "row" }}>
