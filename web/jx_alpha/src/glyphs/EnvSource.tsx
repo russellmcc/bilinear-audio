@@ -20,8 +20,6 @@ export const EnvSource = ({ value }: Props) => {
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "flex-end",
-        height: "100%",
-        verticalAlign: "middle",
       }}
     >
       {isDynamic && <Dynamic />}

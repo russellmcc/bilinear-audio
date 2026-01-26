@@ -1,18 +1,29 @@
+import { useMemo } from "react";
 import { BALL_SIZE, LABEL_MARGIN } from "./constants";
 import { LINE_SPACING, VALUE_LABEL_TOP_PADDING } from "./EnumSlider";
 
-const BRACKET_WIDTH = 6;
+export const BRACKET_WIDTH = 6;
 const BRACKET_STROKE = 1;
 const LABEL_OFFSET = 1;
+const MINI_BRACKET_HEIGHT = 3;
+const MINI_BRACKET_OFFSET = 2.5;
 
 const BrokenBracket = ({ height }: { height: number }) => {
   const midY = height / 2;
   const gapHalf = LINE_SPACING / 2;
+  const [dTop, dBottom] = useMemo(() => {
+    if (height / 2 <= gapHalf) {
+      const dTop = `M 0 ${BRACKET_STROKE / 2} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${BRACKET_STROKE / 2} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${MINI_BRACKET_HEIGHT}`;
 
-  const dTop = `M 0 ${BRACKET_STROKE / 2} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${BRACKET_STROKE / 2} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${midY - gapHalf + VALUE_LABEL_TOP_PADDING}`;
+      const dBottom = `M ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${height - BRACKET_STROKE / 2 - MINI_BRACKET_HEIGHT} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${height - BRACKET_STROKE / 2} L ${BRACKET_STROKE / 2} ${height - BRACKET_STROKE / 2}`;
+      return [dTop, dBottom];
+    } else {
+      const dTop = `M 0 ${BRACKET_STROKE / 2} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${BRACKET_STROKE / 2} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${midY - gapHalf + VALUE_LABEL_TOP_PADDING}`;
 
-  const dBottom = `M ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${midY + gapHalf + VALUE_LABEL_TOP_PADDING} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${height - BRACKET_STROKE / 2} L ${BRACKET_STROKE / 2} ${height - BRACKET_STROKE / 2}`;
-
+      const dBottom = `M ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${midY + gapHalf + VALUE_LABEL_TOP_PADDING} L ${BRACKET_WIDTH - BRACKET_STROKE / 2} ${height - BRACKET_STROKE / 2} L ${BRACKET_STROKE / 2} ${height - BRACKET_STROKE / 2}`;
+      return [dTop, dBottom];
+    }
+  }, [height, gapHalf, midY]);
   return (
     <svg
       width={BRACKET_WIDTH}
@@ -30,9 +41,16 @@ const BrokenBracket = ({ height }: { height: number }) => {
   );
 };
 
-const GroupLabel = ({ label, count }: { label: string; count: number }) => {
+export const GroupLabel = ({
+  label,
+  count,
+}: {
+  label: string;
+  count: number;
+}) => {
   const height = count * LINE_SPACING;
   const bracketHeight = height - LINE_SPACING;
+  const miniBracket = count <= 2;
 
   return (
     <div
@@ -57,7 +75,7 @@ const GroupLabel = ({ label, count }: { label: string; count: number }) => {
       <div
         style={{
           position: "absolute",
-          top: `${Math.floor((count - 1) / 2) * LINE_SPACING + LABEL_OFFSET}px`,
+          top: `${((count - 1) / 2) * LINE_SPACING + LABEL_OFFSET - (miniBracket ? MINI_BRACKET_OFFSET : 0)}px`,
           left: 0,
           width: "100%",
           height: `${LINE_SPACING}px`,

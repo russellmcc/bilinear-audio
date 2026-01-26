@@ -27,13 +27,10 @@ export const VCAEnvSource = ({ value }: Props) => {
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "flex-end",
-        height: "100%",
-        verticalAlign: "middle",
       }}
     >
       {isDynamic && <Dynamic />}
       {isEnv2 ? <Adsr /> : <Gate />}
-      {isEnv2 ? <span>2</span> : null}
     </div>
   );
 };

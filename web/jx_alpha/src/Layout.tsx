@@ -14,7 +14,12 @@ const Layout = () => (
     }}
   >
     <div
-      style={{ display: "flex", flexDirection: "row", alignItems: "stretch" }}
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "stretch",
+        paddingLeft: "22px",
+      }}
     >
       <div
         style={{
@@ -29,6 +34,7 @@ const Layout = () => (
           style={{
             display: "flex",
             flexDirection: "row",
+            paddingTop: "11px",
             paddingRight: "11px",
           }}
         >
@@ -49,6 +55,7 @@ const Layout = () => (
         <div style={{ display: "flex", flexDirection: "row" }}>
           <div
             style={{
+              paddingTop: "11px",
               paddingLeft: "11px",
               paddingRight: "11px",
               borderRight: "2px solid var(--darkest-color)",
@@ -59,6 +66,7 @@ const Layout = () => (
           </div>
           <div
             style={{
+              paddingTop: "11px",
               paddingLeft: "11px",
               borderRight: "2px solid var(--darkest-color)",
               borderBottom: "2px solid var(--darkest-color)",
@@ -66,17 +74,30 @@ const Layout = () => (
           >
             <VCF />
           </div>
-          <div style={{ position: "relative", flexGrow: "1" }}>
-            <img
-              src={logo}
-              alt="logo"
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-around",
+            }}
+          >
+            <div
               style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
               }}
-            />
+            >
+              <img
+                src={logo}
+                alt="logo"
+                style={{
+                  width: "220px",
+                }}
+              />
+              <h1 className="title">SYNTHESIZER PROGRAMMER</h1>
+            </div>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "row" }}>

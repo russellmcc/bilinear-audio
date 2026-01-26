@@ -18,12 +18,27 @@ const SCALE_MARGIN_LEFT = -3;
 const SCALE_MARGIN_RIGHT = -3;
 
 const tickToMiddle = (tick: number) => {
+  // This is a kinda gross hack to align ticks with relevant labels from enum sliders
+
+  const offset = (() => {
+    if (tick === 10) {
+      return -2;
+    }
+    if (tick === 5) {
+      return -0.5;
+    }
+    if (tick === 0) {
+      return 1;
+    }
+    return 0;
+  })();
   const inverted = 10 - tick;
-  return inverted * ((TRACK_LENGTH - BALL_SIZE - 1) / 10) + BALL_SIZE / 2;
+  return (
+    inverted * ((TRACK_LENGTH - BALL_SIZE - 1) / 10) + BALL_SIZE / 2 + offset
+  );
 };
 
 const TickLabel = ({ tick }: { tick: number }) => (
-  // TODO: align with enum slider labels
   <div
     style={{
       width: `${LABEL_WIDTH}px`,

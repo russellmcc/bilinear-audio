@@ -1,3 +1,6 @@
+import { LABEL_MARGIN } from "../components/constants";
+import { LINE_SPACING } from "../components/EnumSlider";
+import { BRACKET_WIDTH, GroupLabel } from "../components/EnvSourceLabels";
 import ParamEnumSlider from "../components/ParamEnumSlider";
 import ParamSlider from "../components/ParamSlider";
 import VCAEnvSource from "../glyphs/VCAEnvSource";
@@ -27,12 +30,31 @@ export const VCA = () => (
         }}
       >
         <ParamSlider param="level" label="LEVEL" scale="labeled" />
-        {/* TODO: add right label for env 2 */}
-        <ParamEnumSlider
-          param="vca_env_source"
-          label="ENV MODE"
-          CustomGlyph={VCAEnvSource}
-        />
+        <div style={{ display: "flex", flexDirection: "row" }}>
+          <ParamEnumSlider
+            param="vca_env_source"
+            label="ENV MODE"
+            CustomGlyph={VCAEnvSource}
+          />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {/* Spacer to align with the slider label "ENV MODE" */}
+            <div
+              style={{
+                textAlign: "right",
+                marginBottom: `${LABEL_MARGIN}px`,
+                width: `${BRACKET_WIDTH}px`,
+                whiteSpace: "nowrap",
+                visibility: "hidden",
+                flexGrow: 0,
+              }}
+            >
+              ENV MODE
+            </div>
+            <div style={{ height: `${LINE_SPACING * 3}px` }}></div>
+
+            <GroupLabel label="2" count={2} />
+          </div>
+        </div>
       </div>
     </div>
   </div>

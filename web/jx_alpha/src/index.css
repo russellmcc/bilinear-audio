@@ -6,6 +6,14 @@
   src: url(./fonts/InterDisplay-Regular.woff2) format("woff2");
 }
 
+@font-face {
+  font-family: "Orbitron";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(./fonts/Orbitron-Regular.woff2) format("woff2");
+}
+
 body {
   user-select: none;
   -webkit-user-select: none;
@@ -33,6 +41,11 @@ h1 {
   margin: 0;
   margin-bottom: 8px;
   text-align: center;
+}
+
+h1.title {
+  font-size: 12px;
+  font-family: "Orbitron", sans-serif;
 }
 
 :focus {
