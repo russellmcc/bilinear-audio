@@ -28,13 +28,13 @@ const Layout = () => (
           gap: "11px",
           borderRight: "2px solid var(--darkest-color)",
           alignItems: "stretch",
+          justifyContent: "space-between",
         }}
       >
         <div
           style={{
             display: "flex",
             flexDirection: "row",
-            paddingTop: "11px",
             paddingRight: "11px",
           }}
         >
@@ -93,7 +93,7 @@ const Layout = () => (
                 src={logo}
                 alt="logo"
                 style={{
-                  width: "220px",
+                  width: "210px",
                 }}
               />
               <h1 className="title">SYNTHESIZER PROGRAMMER</h1>
@@ -120,7 +120,6 @@ const Layout = () => (
               position: "relative",
               top: "-2px",
               borderTop: "2px solid var(--darkest-color)",
-              borderRight: "2px solid var(--darkest-color)",
             }}
           >
             <ENV env="2" />

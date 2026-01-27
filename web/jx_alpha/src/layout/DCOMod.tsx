@@ -17,6 +17,7 @@ export const DCOMod = () => (
         flexDirection: "row",
         gap: "22px",
         paddingRight: "11px",
+        paddingBottom: "11px",
       }}
     >
       <EnvModeSlider param="dco_env_source" />
@@ -44,6 +45,7 @@ export const DCOMod = () => (
         paddingLeft: "11px",
         paddingRight: "11px",
         paddingBottom: "11px",
+        paddingTop: "11px",
         borderLeft: "2px solid var(--darkest-color)",
         borderTop: "2px solid var(--darkest-color)",
         alignItems: "flex-end",

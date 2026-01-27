@@ -14,6 +14,7 @@ export const DCO1 = () => (
       backgroundSize: "2px 100%",
       backgroundOrigin: "border-box",
       paddingRight: "11px",
+      paddingTop: "11px",
     }}
   >
     <h1>DCO-1</h1>

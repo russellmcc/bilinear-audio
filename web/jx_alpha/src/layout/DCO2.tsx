@@ -8,7 +8,8 @@ import { formatXmod } from "../glyphs/xmod";
 export const DCO2 = () => (
   <div
     style={{
-      paddingLeft: "5px",
+      paddingLeft: "11px",
+      paddingTop: "11px",
     }}
   >
     <h1>DCO-2</h1>
