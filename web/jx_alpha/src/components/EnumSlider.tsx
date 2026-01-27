@@ -5,7 +5,10 @@ import SliderTrack from "./SliderTrack";
 import useOnGrabOrRelease from "./useGrabOrRelease";
 import { useCallback } from "react";
 
-const LINE_SPACING = 18;
+export const LINE_SPACING = 20;
+
+export const VALUE_LABEL_TOP_PADDING = 2;
+const DOT_LEFT_MARGIN = 3;
 
 export type Props = {
   /**
@@ -39,6 +42,11 @@ export type Props = {
    * Overrides the label for certain values with a custom element.
    */
   CustomGlyph?: React.FC<{ value: string }>;
+
+  /**
+   * Formatter for the values.
+   */
+  displayFormatter?: (value: string) => string;
 
   /**
    * Callback for when the slider is grabbed.
@@ -117,10 +125,13 @@ const ValueLabel = ({
   <div
     {...props}
     style={{
-      height: `${LINE_SPACING}px`,
+      height: `${LINE_SPACING - VALUE_LABEL_TOP_PADDING}px`,
       fontWeight: checked ? "400" : "200",
       textAlign: "right",
       cursor: "pointer",
+      position: "relative",
+      paddingRight: `${DOT_SIZE + DOT_OFFSET + DOT_LEFT_MARGIN}px`,
+      paddingTop: `${VALUE_LABEL_TOP_PADDING}px`,
     }}
   >
     {CustomGlyph ? <CustomGlyph value={label} /> : <span>{label}</span>}
@@ -128,11 +139,11 @@ const ValueLabel = ({
       style={{
         verticalAlign: "middle",
         display: "inline-block",
-        marginTop: "-0.5px",
+        bottom: `${BALL_SIZE / 2 - DOT_SIZE / 2}px`,
+        right: `${DOT_OFFSET}px`,
+        position: "absolute",
         height: `${DOT_SIZE}px`,
         width: `${DOT_SIZE}px`,
-        marginLeft: `${DOT_OFFSET}px`,
-        marginRight: `${DOT_OFFSET}px`,
         backgroundColor: "var(--fg-color)",
         borderRadius: `${DOT_SIZE}px`,
       }}
@@ -152,7 +163,7 @@ const Label = ({ label }: { label: string }) => (
 );
 
 export const EnumSlider = (props: Props) => {
-  const { grab, release, CustomGlyph } = props;
+  const { grab, release, CustomGlyph, displayFormatter } = props;
   const onGrabOrRelease = useOnGrabOrRelease({ grab, release });
   const valueLabel = useCallback(
     (props: EnumSliderModule.ValueLabelProps) => (
@@ -161,8 +172,8 @@ export const EnumSlider = (props: Props) => {
     [CustomGlyph],
   );
   const valueFormatter = useCallback(
-    (value: string) => value.toUpperCase(),
-    [],
+    (value: string) => displayFormatter?.(value) ?? value.toUpperCase(),
+    [displayFormatter],
   );
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>

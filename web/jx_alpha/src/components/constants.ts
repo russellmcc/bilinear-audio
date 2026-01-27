@@ -4,5 +4,4 @@ export const LABEL_MARGIN = 5;
 export const DOT_SIZE = 4;
 export const DOT_OFFSET = 2;
 export const BORDER_WIDTH = 2;
-export const DROP_SHADOW_FILTER =
-  "drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.25))";
+export const TRACK_WIDTH = 8;

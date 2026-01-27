@@ -1,10 +1,4 @@
-import {
-  BORDER_WIDTH,
-  DOT_OFFSET,
-  DOT_SIZE,
-  DROP_SHADOW_FILTER,
-  LABEL_MARGIN,
-} from "./constants";
+import { BORDER_WIDTH, DOT_OFFSET, DOT_SIZE, LABEL_MARGIN } from "./constants";
 import { rescale } from "music-ui/util";
 import { Knob as KnobModule } from "music-ui/kit";
 
@@ -16,21 +10,31 @@ const TICK_LENGTH = 5;
 const TICK_WIDTH = 1;
 const TICK_MARGIN = 2;
 const KNOB_MARGIN = 5;
+const LABEL_HEIGHT = 10;
 
 export const KnobDisplay = ({
   value,
   minLabel,
   maxLabel,
-}: KnobModule.DisplayProps & { minLabel?: string; maxLabel?: string }) => {
+  showCenterTick,
+}: KnobModule.DisplayProps & {
+  minLabel?: string;
+  maxLabel?: string;
+  showCenterTick?: boolean;
+}) => {
   const angle = rescale(value, 0, 100, MIN_ANGLE, MAX_ANGLE);
   return (
     <div
       style={{
         position: "relative",
         marginTop: `${TICK_MARGIN + TICK_LENGTH + KNOB_MARGIN}px`,
+        marginBottom: `${LABEL_HEIGHT + LABEL_MARGIN}px`,
       }}
     >
-      {[MIN_ANGLE, 0, MAX_ANGLE].map((a) => (
+      {((showCenterTick ?? true)
+        ? [MIN_ANGLE, 0, MAX_ANGLE]
+        : [MIN_ANGLE, MAX_ANGLE]
+      ).map((a) => (
         <div
           key={a}
           style={{
@@ -79,7 +83,7 @@ export const KnobDisplay = ({
           borderStyle: "solid",
           borderColor: "var(--darkest-color)",
           backgroundColor: "var(--darker-color)",
-          filter: DROP_SHADOW_FILTER,
+          boxShadow: "var(--shadow)",
           // Hack for safari to prevent stale rendering
           transform: "translateZ(0)",
         }}

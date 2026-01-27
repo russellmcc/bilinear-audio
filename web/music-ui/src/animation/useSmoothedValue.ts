@@ -27,7 +27,7 @@ export const useSmoothedValue = (value: number, options: Options = {}) => {
         const next = elapsed
           ? prev + (value - prev) * Math.min(1.0, rateRef.current * elapsed)
           : prev;
-        if (Math.abs(next - value) < 0.01) {
+        if (Math.abs(next - value) < 0.1) {
           return value;
         }
         return next;

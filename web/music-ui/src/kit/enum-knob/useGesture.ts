@@ -50,7 +50,9 @@ export const useGesture = ({
     lastValue.current = valueNumber ?? 0;
   }, [valueNumber]);
   const [tempValue, setTempValue] = useState<number | undefined>(undefined);
-  const displayValue = useSmoothedValue(tempValue ?? valueNumber ?? 0);
+  const displayValue = useSmoothedValue(tempValue ?? valueNumber ?? 0, {
+    time: tempValue !== undefined ? 0.01 : undefined,
+  });
 
   const touches = useRef<Map<number, TouchState>>(new Map());
   const containerElem = useRef<HTMLDivElement>(null);
@@ -97,7 +99,7 @@ export const useGesture = ({
       }
       const springDistance = (newTempValue - Math.round(newTempValue)) * 2;
       const x =
-        Math.pow(Math.abs(springDistance), 3) * (springDistance > 0 ? 1 : -1);
+        Math.pow(Math.abs(springDistance), 2) * (springDistance > 0 ? 1 : -1);
       setTempValue(Math.round(newTempValue) + x / 2);
       touches.current.set(event.pointerId, {
         lastTouchPos: event.clientY,

@@ -1,10 +1,4 @@
-import {
-  BALL_SIZE,
-  BORDER_WIDTH,
-  DOT_OFFSET,
-  DOT_SIZE,
-  DROP_SHADOW_FILTER,
-} from "./constants";
+import { BALL_SIZE, BORDER_WIDTH, DOT_OFFSET, DOT_SIZE } from "./constants";
 
 const borderRadius = 5;
 
@@ -19,13 +13,13 @@ export const SliderBall = ({ bottom, ref }: Props) => (
       width: `${BALL_SIZE - 2 * BORDER_WIDTH}px`,
       left: "0px",
       position: "absolute",
-      bottom: `${bottom}px`,
+      bottom: `${Math.round(bottom)}px`,
       backgroundColor: "var(--darker-color)",
       borderColor: "var(--darkest-color)",
       borderWidth: `${BORDER_WIDTH}px`,
       borderStyle: "solid",
       borderRadius: `${borderRadius}px`,
-      filter: DROP_SHADOW_FILTER,
+      boxShadow: "var(--shadow)",
       // Hack for safari to prevent stale rendering
       transform: "translateZ(0)",
     }}

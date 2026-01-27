@@ -1,6 +1,11 @@
 import { Slider as MusicUISlider, useSlider } from "music-ui/kit";
 import { useCallback } from "react";
-import { BALL_SIZE, LABEL_MARGIN, TRACK_LENGTH } from "./constants";
+import {
+  BALL_SIZE,
+  LABEL_MARGIN,
+  TRACK_LENGTH,
+  TRACK_WIDTH,
+} from "./constants";
 import SliderBall from "./SliderBall";
 import SliderTrack from "./SliderTrack";
 import useOnGrabOrRelease from "./useGrabOrRelease";
@@ -8,7 +13,7 @@ import useOnGrabOrRelease from "./useGrabOrRelease";
 export type ScaleType = "none" | "continuation" | "labeled";
 
 const TICK_HEIGHT = 1;
-const BOLD_TICK_HEIGHT = 2;
+const BOLD_TICK_HEIGHT = 1.5;
 const BOLD_TICKS: readonly number[] = [10, 5, 0];
 const SCALE_WIDTH = 17;
 const LABEL_WIDTH = 10;
@@ -18,8 +23,23 @@ const SCALE_MARGIN_LEFT = -3;
 const SCALE_MARGIN_RIGHT = -3;
 
 const tickToMiddle = (tick: number) => {
+  // This offset is a kinda gross hack to align ticks with relevant labels from enum sliders
+  const offset = (() => {
+    if (tick === 10) {
+      return -2;
+    }
+    if (tick === 5) {
+      return -0.5;
+    }
+    if (tick === 0) {
+      return 1;
+    }
+    return 0;
+  })();
   const inverted = 10 - tick;
-  return inverted * ((TRACK_LENGTH - BALL_SIZE - 1) / 10) + BALL_SIZE / 2;
+  return (
+    inverted * ((TRACK_LENGTH - BALL_SIZE - 1) / 10) + BALL_SIZE / 2 + offset
+  );
 };
 
 const TickLabel = ({ tick }: { tick: number }) => (
@@ -36,9 +56,10 @@ const TickLabel = ({ tick }: { tick: number }) => (
   </div>
 );
 
-const Scale = ({ type }: { type: ScaleType }): React.ReactNode => {
+const Scale = ({ type }: { type?: ScaleType }): React.ReactNode => {
   switch (type) {
     case "none":
+    case undefined:
       return null;
     case "continuation":
       return (
@@ -146,15 +167,44 @@ const InternalSlider = ({
     </div>
   );
 };
-const Label = ({ label }: MusicUISlider.LabelProps) => (
-  <div
-    style={{
-      width: `${SCALE_WIDTH + SCALE_MARGIN_LEFT + SCALE_MARGIN_RIGHT + BALL_SIZE}px`,
-      textAlign: "right",
-      marginBottom: `${LABEL_MARGIN}px`,
-    }}
-  >
-    {label}
+
+const Label = ({
+  label,
+  scale,
+}: MusicUISlider.LabelProps & { scale?: ScaleType }) => (
+  <div style={{ display: "flex", flexDirection: "row" }}>
+    <div
+      style={{
+        width: (() => {
+          switch (scale) {
+            case undefined:
+            case "none":
+              return "0px";
+            case "continuation":
+              return `${SCALE_WIDTH + TRACK_WIDTH / 2}px`;
+            case "labeled":
+              return `${LABELED_SCALE_MARGIN + LABELED_SCALE_WIDTH + TRACK_WIDTH / 2 + LABEL_WIDTH}px`;
+          }
+        })(),
+      }}
+    ></div>
+    <div
+      style={{
+        width: 0,
+        marginBottom: `${LABEL_MARGIN}px`,
+      }}
+    >
+      <div
+        style={{
+          textAlign: "center",
+          display: "inline-block",
+          whiteSpace: "nowrap",
+          transform: "translateX(-50%)",
+        }}
+      >
+        {label}
+      </div>
+    </div>
   </div>
 );
 
@@ -209,10 +259,14 @@ export const Slider = (props: Props) => {
     ),
     [scale],
   );
+  const label = useCallback(
+    (args: MusicUISlider.LabelProps) => <Label {...args} scale={scale} />,
+    [scale],
+  );
   return (
     <MusicUISlider.Slider
       Slider={sliderWithScale}
-      Label={Label}
+      Label={label}
       onGrabOrRelease={onGrabOrRelease}
       valueFormatter={(value) => value.toFixed(0)}
       showLabel="before"

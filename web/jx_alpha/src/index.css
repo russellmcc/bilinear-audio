@@ -6,6 +6,14 @@
   src: url(./fonts/InterDisplay-Regular.woff2) format("woff2");
 }
 
+@font-face {
+  font-family: "Orbitron";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(./fonts/Orbitron-Regular.woff2) format("woff2");
+}
+
 body {
   user-select: none;
   -webkit-user-select: none;
@@ -13,9 +21,11 @@ body {
   background-color: var(--bg-color);
   color: var(--fg-color);
   font-size: 10px;
+  margin: 0;
 }
 
 :root {
+  --shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
   --darkest-color: #0e0d11;
   --darker-color: #2b2a2e;
   --bg-color: #3a3842;
@@ -28,6 +38,14 @@ body {
 }
 h1 {
   font-size: 14px;
+  margin: 0;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+h1.title {
+  font-size: 11px;
+  font-family: "Orbitron", sans-serif;
 }
 
 :focus {

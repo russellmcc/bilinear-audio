@@ -1,4 +1,5 @@
 import { randomLcg } from "d3-random";
+import { GLYPH_HEIGHT, GLYPH_Y_MARGIN } from "./constants";
 
 export type Props = {
   /**
@@ -6,9 +7,6 @@ export type Props = {
    */
   value: string;
 };
-
-const GLYPH_HEIGHT = 10;
-const GLYPH_Y_MARGIN = 1;
 
 const Saw = () => (
   <svg width="22" height={GLYPH_HEIGHT} viewBox={`0 0 22 ${GLYPH_HEIGHT}`}>
@@ -94,7 +92,7 @@ const Noise = () => {
   const centerY = (maxY + minY) / 2;
   const range = maxY - minY;
 
-  const rng = randomLcg(0.1337);
+  const rng = randomLcg(5);
   let d = `M${startX} ${centerY}`;
   for (let i = 1; i <= steps; i++) {
     const t = i / steps;

@@ -62,7 +62,7 @@ const envParams = (envName: string, prefix: string): Record<string, Info> =>
             ] as const,
         ),
         [`${prefix}_t4`, `${envName} T4`, percentage(0)],
-        [`${prefix}_key_follow`, `${envName} Key Follow`, percentage(0)],
+        [`${prefix}_key`, `${envName} Key Follow`, percentage(0)],
       ] as const
     ).map(([key, title, type_specific]): [string, Info] => [
       key,
@@ -196,7 +196,7 @@ const infos = new Map<string, Info>(
       title: "VCF Cutoff",
       type_specific: percentage(100),
     },
-    vcf_key_follow: {
+    vcf_key: {
       title: "VCF Key Follow",
       type_specific: percentage(0),
     },

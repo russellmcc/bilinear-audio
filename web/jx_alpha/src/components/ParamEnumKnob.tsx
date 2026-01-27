@@ -26,17 +26,19 @@ export type Props = {
    * The label for the end of the range
    */
   maxLabel?: string;
+
+  /**
+   * Whether to show a center tick.
+   */
+  showCenterTick?: boolean;
 };
 
 export const ParamEnumKnob = (props: Props) => {
-  const { param, label, accessibilityLabel, minLabel, maxLabel } = props;
+  const { param } = props;
   const { value, set, grab, release, info } = useEnumParam(param);
   return (
     <EnumKnob
-      label={label}
-      accessibilityLabel={accessibilityLabel}
-      minLabel={minLabel}
-      maxLabel={maxLabel}
+      {...props}
       value={value}
       onValue={set}
       grab={grab}

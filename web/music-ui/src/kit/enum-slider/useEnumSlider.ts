@@ -135,7 +135,7 @@ export const useEnumSlider = <Container extends Element, Ball extends Element>({
         let nextBottom =
           prev.bottom +
           Math.min(1.0, RATE * elapsed) * (bottomTarget - prev.bottom);
-        if (Math.abs(nextBottom - bottomTarget) < 0.01) {
+        if (Math.abs(nextBottom - bottomTarget) < 1.0) {
           nextBottom = bottomTarget;
         }
 
