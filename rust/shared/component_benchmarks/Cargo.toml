@@ -9,9 +9,9 @@ publish = false
 workspace = true
 
 [dependencies]
-conformal_component = "0.3.5"
-fxhash = "0.2.1"
-serde = { version = "1.0.226", features = ["derive"] }
-itertools = "0.13.0"
-criterion = { version = "0.3" }
-dsp = { path = "../dsp", features = ["test-utils"] }
+conformal_component.workspace = true
+fxhash.workspace = true
+serde.workspace = true
+itertools.workspace = true
+criterion.workspace = true
+dsp = { workspace = true, features = ["test-utils"] }

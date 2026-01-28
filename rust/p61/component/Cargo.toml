@@ -6,25 +6,25 @@ license = "ISC"
 publish = false
 
 [dependencies]
-itertools = "0.13.0"
-num-derive = "0.4.2"
-num-traits = "0.2.19"
-conformal_component = "0.3.5"
-conformal_poly = "0.3.6"
-dsp = { path = "../../shared/dsp" }
-rtsan-standalone = "0.1.2"
+itertools.workspace = true
+num-derive.workspace = true
+num-traits.workspace = true
+conformal_component.workspace = true
+conformal_poly.workspace = true
+dsp.workspace = true
+rtsan-standalone.workspace = true
 
 [lints]
 workspace = true
 
 [dev-dependencies]
-assert_approx_eq = "1.1.0"
-more-asserts = "0.3.1"
-snapshots = { path = "../../shared/snapshots" }
-component_benchmarks = { path = "../../shared/component_benchmarks" }
-component_snapshots = { path = "../../shared/component_snapshots" }
-dsp = { path = "../../shared/dsp", features = ["test-utils"] }
-criterion = "0.3"
+assert_approx_eq.workspace = true
+more-asserts.workspace = true
+snapshots.workspace = true
+component_benchmarks.workspace = true
+component_snapshots.workspace = true
+dsp = { workspace = true, features = ["test-utils"] }
+criterion.workspace = true
 
 [features]
 rtsan = ["rtsan-standalone/enable"]
