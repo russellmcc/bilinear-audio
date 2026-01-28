@@ -40,3 +40,36 @@ default_trait_access = "allow"
 [workspace.lints.clippy.pedantic]
 level = "warn"
 priority = -1
+
+[workspace.dependencies]
+arrayvec = "0.7.6"
+assert_approx_eq = "1.1.0"
+bitvec = "1.0.1"
+conformal_component = "0.3.5"
+conformal_poly = "0.3.6"
+conformal_vst_wrapper = "0.3.10"
+criterion = "0.3"
+fxhash = "0.2.1"
+itertools = "0.13.0"
+more-asserts = "0.3.1"
+num = "0.4.3"
+num-derive = "0.4.2"
+num-traits = "0.2.19"
+proptest = "1.8.0"
+rand = "0.8.5"
+rand_xoshiro = "0.6.0"
+realfft = "3.5.0"
+rtsan-standalone = "0.1.2"
+serde = { version = "1.0.226", features = ["derive"] }
+vst3 = "0.2.0"
+wavers = "1.5.1"
+
+# Internal crates
+component_benchmarks = { path = "rust/shared/component_benchmarks" }
+component_snapshots = { path = "rust/shared/component_snapshots" }
+dsp = { path = "rust/shared/dsp" }
+jx_alpha_component = { path = "rust/jx_alpha/component" }
+p61_component = { path = "rust/p61/component" }
+rchorus_component = { path = "rust/rchorus/component" }
+reverb_component = { path = "rust/reverb/component" }
+snapshots = { path = "rust/shared/snapshots" }

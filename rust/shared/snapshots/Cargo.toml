@@ -6,4 +6,4 @@ edition.workspace = true
 workspace = true
 
 [dependencies]
-wavers = "1.5.1"
+wavers.workspace = true

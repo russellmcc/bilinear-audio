@@ -5,24 +5,24 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
-bitvec = "1.0.1"
-conformal_component = "0.3.5"
-rand = "0.8.5"
-rand_xoshiro = "0.6.0"
-dsp = { path = "../../shared/dsp" }
-arrayvec = "0.7.6"
-rtsan-standalone = "0.1.2"
+bitvec.workspace = true
+conformal_component.workspace = true
+rand.workspace = true
+rand_xoshiro.workspace = true
+dsp.workspace = true
+arrayvec.workspace = true
+rtsan-standalone.workspace = true
 
 [lints]
 workspace = true
 
 [dev-dependencies]
-assert_approx_eq = "1.1.0"
-snapshots = { path = "../../shared/snapshots" }
-component_benchmarks = { path = "../../shared/component_benchmarks" }
-component_snapshots = { path = "../../shared/component_snapshots" }
-dsp = { path = "../../shared/dsp", features = ["test-utils"] }
-criterion = "0.3"
+assert_approx_eq.workspace = true
+snapshots.workspace = true
+component_benchmarks.workspace = true
+component_snapshots.workspace = true
+dsp = { workspace = true, features = ["test-utils"] }
+criterion.workspace = true
 
 [features]
 rtsan = ["rtsan-standalone/enable"]
