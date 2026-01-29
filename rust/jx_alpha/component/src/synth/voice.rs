@@ -202,7 +202,7 @@ impl VoiceTrait for Voice {
             env2: env::Env::default(),
             level_slew: SlewLimiter::default(),
             cutoff_slew: SlewLimiter::default(),
-            control_slew_rate: slew::rate_from_time(0.02, sampling_rate) * 100.0,
+            control_slew_rate: slew::rate_from_time(0.1, sampling_rate) * 100.0,
             gate_coeffs: adsr::calc_coeffs(
                 &adsr::Params {
                     attack_time: GATE_ATTACK_TIME_SECONDS,
