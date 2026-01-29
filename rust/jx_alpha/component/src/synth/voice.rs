@@ -4,6 +4,7 @@ use conformal_poly::{EventData, Voice as VoiceTrait};
 use dsp::{
     env::adsr,
     f32::{rescale, rescale_clamped, rescale_points},
+    slew::{self, SlewLimiter},
 };
 use itertools::izip;
 use num_derive::FromPrimitive;
@@ -61,6 +62,10 @@ pub struct Voice {
     vcf: vcf::Vcf,
     env1: env::Env,
     env2: env::Env,
+
+    level_slew: SlewLimiter,
+    cutoff_slew: SlewLimiter,
+    control_slew_rate: f32,
 
     // Optimization opportunity: we're using a full env here but don't need all the logic.
     gate_coeffs: adsr::Coeffs,
@@ -195,6 +200,9 @@ impl VoiceTrait for Voice {
             vcf: vcf::Vcf::default(),
             env1: env::Env::default(),
             env2: env::Env::default(),
+            level_slew: SlewLimiter::default(),
+            cutoff_slew: SlewLimiter::default(),
+            control_slew_rate: slew::rate_from_time(0.1, sampling_rate) * 100.0,
             gate_coeffs: adsr::calc_coeffs(
                 &adsr::Params {
                     attack_time: GATE_ATTACK_TIME_SECONDS,
@@ -472,7 +480,8 @@ impl VoiceTrait for Voice {
                 },
             });
 
-            let adjusted_vcf_cutoff = rescale(vcf_cutoff, 0.0..=100.0, 0.0..=144.0)
+            let smoothed_cutoff = self.cutoff_slew.process(vcf_cutoff, self.control_slew_rate);
+            let adjusted_vcf_cutoff = rescale(smoothed_cutoff, 0.0..=100.0, 0.0..=144.0)
                 + rescale_points(
                     adjusted_pitch - KEY_FOLLOW_NOMINAL_PITCH,
                     0.0,
@@ -495,13 +504,16 @@ impl VoiceTrait for Voice {
                 resonance,
             };
             let vcf_output = self.vcf.process(oscillators_output, &vcf_settings);
-            let vca_volume = rescale(level, 0.0..=100.0, 0.0..=1.0)
-                * get_vca_env_from_source(
-                    FromPrimitive::from_u32(vca_env_source_int).unwrap(),
-                    env2,
-                    gate,
-                    self.velocity,
-                );
+            let vca_volume = rescale(
+                self.level_slew.process(level, self.control_slew_rate),
+                0.0..=100.0,
+                0.0..=1.0,
+            ) * get_vca_env_from_source(
+                FromPrimitive::from_u32(vca_env_source_int).unwrap(),
+                env2,
+                gate,
+                self.velocity,
+            );
 
             *sample = volume_to_gain(vca_volume) * vcf_output;
         }
@@ -517,6 +529,8 @@ impl VoiceTrait for Voice {
         self.vcf.reset();
         self.env1.reset();
         self.env2.reset();
+        self.level_slew.reset();
+        self.cutoff_slew.reset();
         self.gate.reset();
     }
 }

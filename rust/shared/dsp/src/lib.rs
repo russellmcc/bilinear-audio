@@ -10,6 +10,7 @@ pub mod iter;
 pub mod look_behind;
 pub mod osc_utils;
 pub mod sine_lfo;
+pub mod slew;
 pub mod slice_ops;
 pub mod window;
 
