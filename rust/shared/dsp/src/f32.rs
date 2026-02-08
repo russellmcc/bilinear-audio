@@ -65,22 +65,28 @@ pub fn exp2_approx(x: f32) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use proptest::prelude::*;
 
     #[test]
-    fn test_exp2_approx() {
-        // We allow 3% error
-        let assert_approx_eq_3_percent = |a: f32| {
-            assert!(
-                ((exp2_approx(a) - 2f32.powf(a)).abs() / (2f32.powf(a)).abs()) < 0.03,
-                "Expected {} to be approximately equal to {} within 3% error",
-                exp2_approx(a),
-                2f32.powf(a)
-            );
-        };
+    fn test_exp2_approx_basic() {
+        // This simple test gives us miri coverage of exp2_approx. Full testing is a proptest below.
+        assert!((exp2_approx(0.0) - 1.0).abs() < 0.03);
+    }
 
-        for case in [0.0, 3.0, 10.0, 25.0, 50.0, 60.0] {
-            assert_approx_eq_3_percent(case);
-            assert_approx_eq_3_percent(-case);
+    proptest! {
+        #[test]
+        #[cfg_attr(miri, ignore)]
+        fn test_exp2_approx(x in -60.0f32..=60.0f32) {
+            let approx = exp2_approx(x);
+            let exact = 2f32.powf(x);
+            let relative_error = (approx - exact).abs() / exact.abs();
+            prop_assert!(
+                relative_error < 0.03,
+                "Expected {} to be approximately equal to {} within 3% error (got {:.4}%)",
+                approx,
+                exact,
+                relative_error * 100.0,
+            );
         }
     }
 }
