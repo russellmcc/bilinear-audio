@@ -22,3 +22,9 @@ snapshots.workspace = true
 more-asserts.workspace = true
 dsp = { workspace = true, features = ["test-utils"] }
 assert_approx_eq.workspace = true
+component_benchmarks.workspace = true
+criterion.workspace = true
+
+[[bench]]
+name = "process"
+harness = false
