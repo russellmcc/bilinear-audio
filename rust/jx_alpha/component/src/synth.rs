@@ -23,6 +23,14 @@ fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
     (440f32 * 2.0f32.powf((midi_pitch - 69f32) / 12f32) / sampling_rate).clamp(0.0, 0.45)
 }
 
+/// Converts a MIDI pitch to a phase increment with 3% accuracy.
+///
+/// This is _not_ appropriate for audible pitches! But it's useful for LFOs or
+/// other calculations where we can accept relatively high error.
+fn increment_approx(midi_pitch: f32, sampling_rate: f32) -> f32 {
+    (440f32 * exp2_approx((midi_pitch - 69f32) / 12f32) / sampling_rate).clamp(0.0, 0.45)
+}
+
 #[derive(Debug)]
 pub struct Synth {
     poly: Poly<voice::Voice>,
@@ -88,7 +96,7 @@ impl SynthTrait for Synth {
                 }
                 lfo_events.next();
             }
-            let incr = increment(
+            let incr = increment_approx(
                 rescale(rate, 0.0..=100.0, LFO_NOTE_RANGE),
                 self.sampling_rate,
             );

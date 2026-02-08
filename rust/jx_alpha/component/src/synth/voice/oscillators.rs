@@ -18,6 +18,8 @@ pub struct Oscillators {
     downsampler: downsampler::Downsampler,
 }
 
+pub use oscillator::needs_pwm;
+
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct OscillatorSettings {
     pub increment: f32,
