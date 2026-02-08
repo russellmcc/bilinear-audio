@@ -1,6 +1,6 @@
 use conformal_component::audio::{Buffer, BufferMut};
-use conformal_component::effect::Effect as EffectTrait;
-use conformal_component::parameters::{self, BufferStates, Flags, InfoRef, TypeSpecificInfoRef};
+use conformal_component::effect::{Effect as EffectTrait, HandleParametersContext, ProcessContext};
+use conformal_component::parameters::{self, Flags, InfoRef, TypeSpecificInfoRef};
 use conformal_component::pzip;
 use conformal_component::{Component as ComponentTrait, ProcessingEnvironment, Processor};
 use dsp::f32::lerp;
@@ -158,18 +158,18 @@ impl Processor for Effect {
 
 impl EffectTrait for Effect {
     #[nonblocking]
-    fn handle_parameters<P: parameters::States>(&mut self, _: P) {}
+    fn handle_parameters(&mut self, _: &impl HandleParametersContext) {}
 
     #[nonblocking]
-    fn process<P: BufferStates, I: Buffer, O: BufferMut>(
+    fn process(
         &mut self,
-        parameters: P,
-        input: &I,
-        output: &mut O,
+        context: &impl ProcessContext,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
     ) {
         // Snapshot the parameters at the start of the buffer - we don't support per-sample automation.
         if let Some(params) = pzip!(
-            parameters[switch "bypass", numeric "mix", numeric "brightness", numeric "tone", numeric "time", numeric "early_reflections", numeric "density"]
+            context.parameters()[switch "bypass", numeric "mix", numeric "brightness", numeric "tone", numeric "time", numeric "early_reflections", numeric "density"]
         )
         .map(|(bypass, mix, brightness, tone, time, early_reflections, density)| reverb::Params {
             mix: if bypass { 0.0 } else { to_internal(mix, INTERNAL_MIX) },
@@ -252,7 +252,7 @@ mod tests {
         assert!(all_approx_eq(buff_512, buff_1024, 1e-6));
     }
 
-    fn impulse_response_for_params(params: HashMap<&'_ str, InternalValue>) -> Vec<f32> {
+    fn impulse_response_for_params(params: &HashMap<&'_ str, InternalValue>) -> Vec<f32> {
         const SNAPSHOT_LENGTH: usize = 48_000 * 2;
         let mut impulse_vec = vec![0.0; SNAPSHOT_LENGTH];
         impulse_vec[0] = 1.0;
@@ -265,7 +265,7 @@ mod tests {
         assert_snapshot!(
             "impulse_default",
             48000,
-            impulse_response_for_params(HashMap::new())
+            impulse_response_for_params(&HashMap::new())
         );
     }
 
@@ -275,7 +275,7 @@ mod tests {
         assert_snapshot!(
             "impulse_short",
             48000,
-            impulse_response_for_params(HashMap::from([("time", InternalValue::Numeric(0.7))]))
+            impulse_response_for_params(&HashMap::from([("time", InternalValue::Numeric(0.7))]))
         );
     }
 
@@ -285,7 +285,7 @@ mod tests {
         assert_snapshot!(
             "impulse_long",
             48000,
-            impulse_response_for_params(HashMap::from([("time", InternalValue::Numeric(3.1))]))
+            impulse_response_for_params(&HashMap::from([("time", InternalValue::Numeric(3.1))]))
         );
     }
 
@@ -295,7 +295,7 @@ mod tests {
         assert_snapshot!(
             "impulse_dark",
             48000,
-            impulse_response_for_params(HashMap::from([
+            impulse_response_for_params(&HashMap::from([
                 ("brightness", InternalValue::Numeric(0.0)),
                 ("tone", InternalValue::Numeric(0.0)),
             ]))
@@ -308,7 +308,7 @@ mod tests {
         assert_snapshot!(
             "impulse_mid_dark",
             48000,
-            impulse_response_for_params(HashMap::from([
+            impulse_response_for_params(&HashMap::from([
                 ("brightness", InternalValue::Numeric(50.0)),
                 ("tone", InternalValue::Numeric(50.0)),
             ]))
@@ -321,7 +321,7 @@ mod tests {
         assert_snapshot!(
             "impulse_early_reflections_late",
             48000,
-            impulse_response_for_params(HashMap::from([(
+            impulse_response_for_params(&HashMap::from([(
                 "early_reflections",
                 InternalValue::Numeric(100.0)
             )]))
@@ -334,7 +334,7 @@ mod tests {
         assert_snapshot!(
             "impulse_early_reflections_early",
             48000,
-            impulse_response_for_params(HashMap::from([(
+            impulse_response_for_params(&HashMap::from([(
                 "early_reflections",
                 InternalValue::Numeric(0.0)
             )]))
@@ -347,7 +347,10 @@ mod tests {
         assert_snapshot!(
             "impulse_mid_density",
             48000,
-            impulse_response_for_params(HashMap::from([("density", InternalValue::Numeric(50.0))]))
+            impulse_response_for_params(&HashMap::from([(
+                "density",
+                InternalValue::Numeric(50.0)
+            )]))
         );
     }
 
@@ -357,7 +360,7 @@ mod tests {
         assert_snapshot!(
             "impulse_low_density",
             48000,
-            impulse_response_for_params(HashMap::from([("density", InternalValue::Numeric(0.0))]))
+            impulse_response_for_params(&HashMap::from([("density", InternalValue::Numeric(0.0))]))
         );
     }
 }

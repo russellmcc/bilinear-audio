@@ -1,3 +1,5 @@
+#![allow(clippy::implicit_hasher)]
+
 use conformal_component::ProcessingMode;
 
 pub mod effect;

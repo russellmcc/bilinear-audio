@@ -3,10 +3,9 @@ use std::ops::RangeInclusive;
 use conformal_component::{
     ProcessingEnvironment, Processor,
     audio::{BufferMut, channels_mut},
-    events::{self, Data, Event, Events},
-    parameters::{self, BufferStates},
+    events::{Data, Event},
     pzip,
-    synth::Synth as SynthTrait,
+    synth::{HandleEventsContext, ProcessContext, Synth as SynthTrait},
 };
 use conformal_poly::Poly;
 use dsp::f32::rescale;
@@ -58,23 +57,14 @@ impl Processor for Synth {
 }
 
 impl SynthTrait for Synth {
-    fn handle_events<E: Iterator<Item = events::Data> + Clone, P: parameters::States>(
-        &mut self,
-        events: E,
-        _parameters: P,
-    ) {
-        self.poly.handle_events(events);
+    fn handle_events(&mut self, context: &impl HandleEventsContext) {
+        self.poly.handle_events(context);
     }
 
-    fn process<E: Iterator<Item = Event> + Clone, P: BufferStates, O: BufferMut>(
-        &mut self,
-        events: Events<E>,
-        parameters: P,
-        output: &mut O,
-    ) {
+    fn process(&mut self, context: &impl ProcessContext, output: &mut impl BufferMut) {
         let lfo_scratch = &mut self.lfo_scratch[..output.num_frames()];
-        let mut lfo_events = events.clone().into_iter().peekable();
-
+        let mut lfo_events = context.events().into_iter().peekable();
+        let parameters = context.parameters();
         for ((index, sample), (rate, delay, shape_int)) in lfo_scratch
             .iter_mut()
             .enumerate()
@@ -95,7 +85,6 @@ impl SynthTrait for Synth {
                     Data::NoteOff { .. } => {
                         self.lfo_delay_env.off();
                     }
-                    Data::NoteExpression { .. } => {}
                 }
                 lfo_events.next();
             }
@@ -128,12 +117,8 @@ impl SynthTrait for Synth {
                     .generate(incr, FromPrimitive::from_u32(shape_int).unwrap());
         }
 
-        self.poly.process(
-            events.into_iter(),
-            &parameters,
-            &voice::SharedData { lfo: lfo_scratch },
-            output,
-        );
+        self.poly
+            .process(context, &voice::SharedData { lfo: lfo_scratch }, output);
 
         // we don't support sample-accurate switching of hpf mode, we just grab from parameters at start of buffer
         let mode = Mode::from_u32(pzip!(parameters[enum "hpf_mode"]).next().unwrap()).unwrap();
