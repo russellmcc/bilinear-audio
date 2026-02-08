@@ -1,6 +1,6 @@
 use conformal_poly::{Event, EventData, Voice as VoiceT, VoiceProcessContext};
 use dsp::{
-    f32::{lerp, rescale},
+    f32::{exp2_approx, lerp, rescale},
     osc_utils::increment,
 };
 
@@ -483,7 +483,7 @@ impl VoiceT for Voice {
                         sampling_rate: self.sampling_rate,
                     })
                     .clamp(0.0, 0.4),
-                    rescale(params.vcf_resonance, 0.0..=100.0, -0.5f32..=3f32).exp2(),
+                    exp2_approx(rescale(params.vcf_resonance, 0.0..=100.0, -0.5f32..=3f32)),
                 ),
                 params.vca_level
                     * 0.01

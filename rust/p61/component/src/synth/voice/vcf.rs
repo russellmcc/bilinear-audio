@@ -193,6 +193,7 @@ impl Vcf {
 mod tests {
     use super::Vcf;
     use assert_approx_eq::assert_approx_eq;
+    use dsp::f32::exp2_approx;
     use dsp::test_utils::estimate_tuning;
     use dsp::{
         f32::rescale,
@@ -294,7 +295,11 @@ mod tests {
         for (index, sample) in processed.iter_mut().enumerate() {
             *sample = vcf.process(
                 *sample,
-                0.5 * rescale(index as f32, 0.0..=(num_samples as f32), -7.0..=0.0).exp2(),
+                0.5 * exp2_approx(rescale(
+                    index as f32,
+                    0.0..=(num_samples as f32),
+                    -7.0..=0.0,
+                )),
                 10.0,
             ) / 10.0;
         }

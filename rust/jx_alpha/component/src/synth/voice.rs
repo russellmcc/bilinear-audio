@@ -3,7 +3,7 @@ use conformal_component::{events::NoteData, pzip, synth::NumericPerNoteExpressio
 use conformal_poly::{EventData, Voice as VoiceTrait, VoiceProcessContext};
 use dsp::{
     env::adsr,
-    f32::{rescale, rescale_clamped, rescale_points},
+    f32::{exp2_approx, rescale, rescale_clamped, rescale_points},
     slew::{self, SlewLimiter},
 };
 use itertools::izip;
@@ -112,7 +112,7 @@ fn env_param_to_time(param: f32) -> f32 {
     let max_time_log2 = MAX_TIME.log2();
 
     let time_log2 = rescale_clamped(param, 0.0..=100.0, min_time_log2..=max_time_log2);
-    time_log2.exp2()
+    exp2_approx(time_log2)
 }
 
 #[allow(clippy::cast_precision_loss)]

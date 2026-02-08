@@ -39,3 +39,38 @@ pub fn lerp(value_at_zero: f32, value_at_one: f32, t: f32) -> f32 {
 pub fn lerp_clamped(value_at_zero: f32, value_at_one: f32, t: f32) -> f32 {
     lerp(value_at_zero, value_at_one, t.clamp(0.0, 1.0))
 }
+
+#[must_use]
+#[allow(clippy::cast_possible_truncation)]
+pub fn exp2_approx(x: f32) -> f32 {
+    // See https://specbranch.com/posts/fast-exp/ for how this works!
+    const BASE: f32 = 8_388_608.0; // 2^23
+    const K: i32 = 366_393; // Tuning constant - see article above. This shifts curve to minimize maximum error.
+    let x_base = x * BASE;
+    let x_base_int = x_base as i32;
+    let result_int = x_base_int + (127 << 23) - K;
+    f32::from_bits(result_int as u32)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_exp2_approx() {
+        // We allow 3% error
+        let assert_approx_eq_3_percent = |a: f32| {
+            assert!(
+                ((exp2_approx(a) - 2f32.powf(a)).abs() / (2f32.powf(a)).abs()) < 0.03,
+                "Expected {} to be approximately equal to {} within 3% error",
+                exp2_approx(a),
+                2f32.powf(a)
+            );
+        };
+
+        for case in [0.0, 3.0, 10.0, 25.0, 50.0, 60.0] {
+            assert_approx_eq_3_percent(case);
+            assert_approx_eq_3_percent(-case);
+        }
+    }
+}

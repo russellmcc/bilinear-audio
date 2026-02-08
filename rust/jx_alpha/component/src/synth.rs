@@ -8,7 +8,7 @@ use conformal_component::{
     synth::{HandleEventsContext, ProcessContext, Synth as SynthTrait},
 };
 use conformal_poly::Poly;
-use dsp::f32::rescale;
+use dsp::f32::{exp2_approx, rescale};
 use hpf::{Hpf, Mode};
 use num_traits::FromPrimitive;
 
@@ -94,7 +94,7 @@ impl SynthTrait for Synth {
             );
             // LFO delay follows the somewhat bizarre trimming measured from hardware.
             let lfo_delay_time_seconds = if delay > 0.0 {
-                rescale(delay, 0.0..=100.0, -5.5..=4.5).exp2()
+                exp2_approx(rescale(delay, 0.0..=100.0, -5.5..=4.5))
             } else {
                 0.0
             };
