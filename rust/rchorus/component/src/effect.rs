@@ -4,11 +4,11 @@ use crate::compander::{PeakLevelDetector, compress, expand};
 use crate::nonlinearity::nonlinearity;
 use crate::{anti_aliasing_filter::AntiAliasingFilter, lfo, modulated_delay};
 use conformal_component::audio::channels_mut;
+use conformal_component::effect::{HandleParametersContext, ProcessContext};
 use conformal_component::{
     ProcessingEnvironment, Processor,
     audio::{Buffer, BufferMut, ChannelLayout},
     effect::Effect as EffectT,
-    parameters::{self, BufferStates},
     pzip,
 };
 use dsp::iir::dc_blocker::DcBlocker;
@@ -233,18 +233,19 @@ impl Effect {
 
 impl EffectT for Effect {
     #[nonblocking]
-    fn handle_parameters<P: parameters::States>(&mut self, _: P) {}
+    fn handle_parameters(&mut self, _: &impl HandleParametersContext) {}
 
     #[nonblocking]
-    fn process<P: BufferStates, I: Buffer, O: BufferMut>(
+    fn process(
         &mut self,
-        parameters: P,
-        input: &I,
-        output: &mut O,
+        context: &impl ProcessContext,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
     ) {
         debug_assert_eq!(input.channel_layout(), output.channel_layout());
         debug_assert_eq!(input.num_frames(), output.num_frames());
         let rate_to_incr_scale = self.rate_to_incr_scale;
+        let parameters = context.parameters();
         let lfo::Buffer { forward, reverse } = self.lfo.run(
             pzip!(parameters[numeric "rate", numeric "depth"])
                 .take(input.num_frames())

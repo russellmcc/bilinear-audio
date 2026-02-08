@@ -4,21 +4,35 @@ use super::ProcessingParams;
 use conformal_component::{
     Component, ProcessingEnvironment, Processor,
     audio::{Buffer, BufferData, BufferMut, ChannelLayout},
-    effect::Effect,
+    effect::{Effect, ProcessContext},
     parameters::{BufferStates, ConstantBufferStates, InternalValue, StatesMap, override_defaults},
 };
 use dsp::iter::move_into;
+
+struct SnapshotProcessContext<P> {
+    parameters: P,
+}
+
+impl<P: BufferStates> ProcessContext for SnapshotProcessContext<&P> {
+    fn parameters(&self) -> &impl BufferStates {
+        self.parameters
+    }
+}
 
 /// Generate a snapshot of the effect with the given parameters.
 fn generate_buffer_snapshot_with_params(
     effect: &mut impl Effect,
     input: &[f32],
-    params: impl BufferStates,
+    parameters: &impl BufferStates,
 ) -> Vec<f32> {
     let mut input_data = BufferData::new(ChannelLayout::Mono, input.len());
     dsp::iter::move_into(input.iter().copied(), input_data.channel_mut(0));
     let mut output_buffer = BufferData::new(ChannelLayout::Mono, input.len());
-    effect.process(params, &input_data, &mut output_buffer);
+    effect.process(
+        &SnapshotProcessContext { parameters },
+        &input_data,
+        &mut output_buffer,
+    );
     output_buffer.channel(0).to_vec()
 }
 
@@ -26,7 +40,7 @@ pub fn generate_snapshot_with_params(
     effect: &mut impl Effect,
     input: &[f32],
     max_buffer_size: usize,
-    params: &(impl BufferStates + Clone),
+    params: &impl BufferStates,
 ) -> Vec<f32> {
     let mut output = vec![0.0; input.len()];
 
@@ -36,7 +50,7 @@ pub fn generate_snapshot_with_params(
         .zip(output.chunks_mut(max_buffer_size))
     {
         move_into(
-            generate_buffer_snapshot_with_params(effect, chunk, params.clone()).into_iter(),
+            generate_buffer_snapshot_with_params(effect, chunk, params).into_iter(),
             output_chunk,
         );
     }

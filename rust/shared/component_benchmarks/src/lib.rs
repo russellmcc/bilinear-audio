@@ -3,14 +3,26 @@
 use conformal_component::{
     Component, ProcessingEnvironment, ProcessingMode, Processor,
     audio::{BufferData, BufferMut, ChannelLayout},
-    effect::Effect,
+    effect::{self, Effect},
     events,
-    parameters::{self, InternalValue, RampedStatesMap, StatesMap, override_defaults},
-    synth::{CONTROLLER_PARAMETERS, Synth},
+    parameters::{
+        BufferStates, InternalValue, RampedStatesMap, SynthRampedStatesMap, SynthStatesMap,
+    },
+    synth::{self, Synth, SynthParamBufferStates, SynthParamStates},
 };
 use criterion::{BenchmarkId, Criterion, Throughput, black_box};
 use dsp::test_utils::white_noise;
 use std::collections::HashMap;
+
+struct BenchmarkEffectProcessContext<P> {
+    parameters: P,
+}
+
+impl<P: BufferStates> effect::ProcessContext for BenchmarkEffectProcessContext<&P> {
+    fn parameters(&self) -> &impl BufferStates {
+        self.parameters
+    }
+}
 
 pub fn benchmark_effect_mono_process<C: Component<Processor: Effect>>(
     name: &str,
@@ -44,9 +56,12 @@ pub fn benchmark_effect_mono_process<C: Component<Processor: Effect>>(
                     processing_mode: ProcessingMode::Realtime,
                 });
                 effect.set_processing(true);
+                let context = BenchmarkEffectProcessContext {
+                    parameters: &params,
+                };
                 b.iter(|| {
                     effect.process(
-                        black_box(params.clone()),
+                        black_box(&context),
                         black_box(&input),
                         black_box(&mut output),
                     );
@@ -90,15 +105,52 @@ pub fn benchmark_effect_stereo_process<C: Component<Processor: Effect>>(
                     processing_mode: ProcessingMode::Realtime,
                 });
                 effect.set_processing(true);
+                let context = BenchmarkEffectProcessContext {
+                    parameters: &params,
+                };
                 b.iter(|| {
                     effect.process(
-                        black_box(params.clone()),
+                        black_box(&context),
                         black_box(&input),
                         black_box(&mut output),
                     );
                 });
             },
         );
+    }
+}
+
+struct BenchmarkSynthProcessContext<E, P> {
+    events: E,
+    parameters: P,
+}
+
+impl<E: Iterator<Item = events::Event> + Clone, P: SynthParamBufferStates> synth::ProcessContext
+    for BenchmarkSynthProcessContext<events::Events<E>, &P>
+{
+    fn events(&self) -> events::Events<impl Iterator<Item = events::Event> + Clone> {
+        self.events.clone()
+    }
+
+    fn parameters(&self) -> &impl SynthParamBufferStates {
+        self.parameters
+    }
+}
+
+struct BenchmarkSynthHandleEventsContext<E, P> {
+    events: E,
+    parameters: P,
+}
+
+impl<E: Iterator<Item = events::Data> + Clone, P: SynthParamStates> synth::HandleEventsContext
+    for BenchmarkSynthHandleEventsContext<E, &P>
+{
+    fn events(&self) -> impl Iterator<Item = events::Data> + Clone {
+        self.events.clone()
+    }
+
+    fn parameters(&self) -> &impl SynthParamStates {
+        self.parameters
     }
 }
 
@@ -122,13 +174,13 @@ pub fn benchmark_synth_process<C: Component<Processor: Synth>>(
             |b, &buffer_size| {
                 let mut output = BufferData::new(channel_layout, buffer_size);
                 let component = f();
-                let user_params = {
-                    let mut user_params: Vec<parameters::Info> = component.parameter_infos();
-                    user_params.extend(CONTROLLER_PARAMETERS.iter().map(Into::into));
-                    user_params
-                };
-                let params =
-                    RampedStatesMap::new_const(user_params.iter().map(Into::into), overrides);
+                let user_params = component.parameter_infos();
+                let params = SynthRampedStatesMap::new_const(
+                    user_params.iter().map(Into::into),
+                    overrides,
+                    &HashMap::new(),
+                    &HashMap::new(),
+                );
                 let mut synth = component.create_processor(&ProcessingEnvironment {
                     sampling_rate: 48000.0,
                     max_samples_per_process_call: buffer_size,
@@ -136,10 +188,8 @@ pub fn benchmark_synth_process<C: Component<Processor: Synth>>(
                     processing_mode: ProcessingMode::Realtime,
                 });
                 synth.set_processing(true);
-
-                // Turn on N notes
-                synth.handle_events(
-                    (0..notes).map(|i| events::Data::NoteOn {
+                let events_context = BenchmarkSynthHandleEventsContext {
+                    events: (0..notes).map(|i| events::Data::NoteOn {
                         data: events::NoteData {
                             id: events::NoteID::from_id(i.into()),
                             pitch: 60 + i,
@@ -147,20 +197,25 @@ pub fn benchmark_synth_process<C: Component<Processor: Synth>>(
                             tuning: 0.,
                         },
                     }),
-                    StatesMap::from(override_defaults(
+                    parameters: &SynthStatesMap::new_override_defaults(
                         component.parameter_infos().iter().map(Into::into),
                         overrides,
-                    )),
-                );
+                        &HashMap::new(),
+                        &HashMap::new(),
+                    ),
+                };
+                // Turn on N notes
+                synth.handle_events(&events_context);
+
                 let empty_events = [];
                 let empty_events =
                     events::Events::new(empty_events.iter().cloned(), buffer_size).unwrap();
+                let process_context = BenchmarkSynthProcessContext {
+                    events: empty_events,
+                    parameters: &params,
+                };
                 b.iter(|| {
-                    synth.process(
-                        black_box(empty_events.clone()),
-                        black_box(params.clone()),
-                        black_box(&mut output),
-                    );
+                    synth.process(black_box(&process_context), black_box(&mut output));
                 });
             },
         );

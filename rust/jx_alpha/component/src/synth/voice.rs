@@ -1,6 +1,6 @@
 use super::increment;
-use conformal_component::{events::NoteData, parameters, pzip};
-use conformal_poly::{EventData, Voice as VoiceTrait};
+use conformal_component::{events::NoteData, pzip, synth::NumericPerNoteExpression};
+use conformal_poly::{EventData, Voice as VoiceTrait, VoiceProcessContext};
 use dsp::{
     env::adsr,
     f32::{rescale, rescale_clamped, rescale_points},
@@ -191,7 +191,7 @@ fn env_params(params: &RawEnvParams) -> env::Params {
 impl VoiceTrait for Voice {
     type SharedData<'a> = SharedData<'a>;
 
-    fn new(_max_samples_per_process_call: usize, sampling_rate: f32) -> Self {
+    fn new(_voice_index: usize, _max_samples_per_process_call: usize, sampling_rate: f32) -> Self {
         Self {
             pitch: 20.0,
             velocity: 0.0,
@@ -240,15 +240,14 @@ impl VoiceTrait for Voice {
     #[allow(clippy::too_many_lines)]
     fn process(
         &mut self,
-        events: impl IntoIterator<Item = conformal_poly::Event>,
-        params: &impl parameters::BufferStates,
-        note_expressions: conformal_poly::NoteExpressionCurve<
-            impl Iterator<Item = conformal_poly::NoteExpressionPoint> + Clone,
-        >,
-        shared_data: Self::SharedData<'_>,
+        context: &impl VoiceProcessContext,
+        shared_data: &Self::SharedData<'_>,
         output: &mut [f32],
     ) {
-        let mut events = events.into_iter().peekable();
+        let mut events = context.events().peekable();
+        let per_note_pitch_bend = context.per_note_expression(NumericPerNoteExpression::PitchBend);
+        let params = context.parameters();
+
         for (
             (index, sample),
             (
@@ -299,8 +298,8 @@ impl VoiceTrait for Voice {
                 env2_l3,
                 env2_t4,
                 env2_key,
+                expression_pitch_bend,
             ),
-            expression,
             lfo,
         ) in izip!(
             output.iter_mut().enumerate(),
@@ -328,7 +327,7 @@ impl VoiceTrait for Voice {
                 numeric "mix_dco2",
                 numeric "mix_env",
                 enum "mix_env_source",
-                numeric "pitch_bend",
+                global_expression_numeric PitchBend,
                 numeric "vcf_cutoff",
                 numeric "resonance",
                 numeric "vcf_key",
@@ -351,9 +350,9 @@ impl VoiceTrait for Voice {
                 numeric "env2_t3",
                 numeric "env2_l3",
                 numeric "env2_t4",
-                numeric "env2_key"
+                numeric "env2_key",
+                external_numeric (per_note_pitch_bend)
             ]),
-            note_expressions.iter_by_sample(),
             shared_data.lfo,
         ) {
             while let Some(conformal_poly::Event {
@@ -370,7 +369,7 @@ impl VoiceTrait for Voice {
 
             let total_pitch_bend = global_pitch_bend
                 * (num_traits::cast::<u32, f32>(dco_bend_range + 1).unwrap())
-                + expression.pitch_bend;
+                + expression_pitch_bend;
             let adjusted_pitch = self.pitch + total_pitch_bend;
 
             let env1_coeffs = env::calc_coeffs(

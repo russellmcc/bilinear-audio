@@ -1,10 +1,10 @@
 use conformal_component::{
     ProcessingEnvironment, Processor,
     audio::BufferMut,
-    events::{Data, Event, Events},
+    events::{Data, Event},
     parameters::{self},
     pzip,
-    synth::Synth as SynthT,
+    synth::{HandleEventsContext, ProcessContext, Synth as SynthT},
 };
 use rtsan_standalone::nonblocking;
 
@@ -76,13 +76,9 @@ impl Processor for Synth {
 
 impl SynthT for Synth {
     #[nonblocking]
-    fn handle_events<E: IntoIterator<Item = Data> + Clone, P: parameters::States>(
-        &mut self,
-        events: E,
-        _parameters: P,
-    ) {
-        self.poly.handle_events(events.clone());
-        for data in events {
+    fn handle_events(&mut self, context: &impl HandleEventsContext) {
+        self.poly.handle_events(context);
+        for data in context.events() {
             match data {
                 Data::NoteOn { .. } => {
                     self.mg_env.on();
@@ -90,21 +86,15 @@ impl SynthT for Synth {
                 Data::NoteOff { .. } => {
                     self.mg_env.off();
                 }
-                Data::NoteExpression { .. } => {}
             }
         }
     }
 
     #[nonblocking]
-    fn process<E: Iterator<Item = Event> + Clone, P: parameters::BufferStates, O: BufferMut>(
-        &mut self,
-        events: Events<E>,
-        parameters: P,
-        output: &mut O,
-    ) {
+    fn process(&mut self, context: &impl ProcessContext, output: &mut impl BufferMut) {
         let mg_scratch = &mut self.mg_scratch[..output.num_frames()];
         let wheel_scratch = &mut self.wheel_scratch[..output.num_frames()];
-        let mut mg_events = events.clone().into_iter().peekable();
+        let mut mg_events = context.events().into_iter().peekable();
         for (
             ((index, sample), wheel_sample),
             MgParams {
@@ -116,7 +106,7 @@ impl SynthT for Synth {
             .iter_mut()
             .enumerate()
             .zip(&mut wheel_scratch.iter_mut())
-            .zip(mg_params(&parameters))
+            .zip(mg_params(context.parameters()))
         {
             while let Some(Event {
                 sample_offset,
@@ -133,7 +123,6 @@ impl SynthT for Synth {
                     Data::NoteOff { .. } => {
                         self.mg_env.off();
                     }
-                    Data::NoteExpression { .. } => {}
                 }
                 mg_events.next();
             }
@@ -156,8 +145,7 @@ impl SynthT for Synth {
             *wheel_sample = self.wheel_mg.generate(wheel_incr);
         }
         self.poly.process(
-            events.into_iter(),
-            &parameters,
+            context,
             &SharedData {
                 mg_data: mg_scratch,
                 wheel_data: wheel_scratch,

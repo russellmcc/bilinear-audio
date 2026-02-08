@@ -1,10 +1,10 @@
-use conformal_poly::{Event, EventData, NoteExpressionCurve, NoteExpressionPoint, Voice as VoiceT};
+use conformal_poly::{Event, EventData, Voice as VoiceT, VoiceProcessContext};
 use dsp::{
     f32::{lerp, rescale},
     osc_utils::increment,
 };
 
-use conformal_component::{parameters, pzip};
+use conformal_component::{pzip, synth::NumericPerNoteExpression};
 
 mod dco1;
 mod dco2;
@@ -114,10 +114,15 @@ struct Params {
 
     timbre: f32,
     timbre_vcf: f32,
+
+    per_note_pitch_bend: f32,
+    per_note_timbre: f32,
 }
 
-fn per_sample_params(params: &impl parameters::BufferStates) -> impl Iterator<Item = Params> {
-    pzip!(params[enum "dco1_shape",
+fn per_sample_params(context: &impl VoiceProcessContext) -> impl Iterator<Item = Params> {
+    let pitch_bend = context.per_note_expression(NumericPerNoteExpression::PitchBend);
+    let timbre = context.per_note_expression(NumericPerNoteExpression::Timbre);
+    pzip!(context.parameters()[enum "dco1_shape",
                  numeric "dco1_width",
                  enum "dco1_octave",
                  enum "dco2_shape",
@@ -138,12 +143,14 @@ fn per_sample_params(params: &impl parameters::BufferStates) -> impl Iterator<It
                  numeric "vca_level",
                  numeric "mg_pitch",
                  numeric "mg_vcf",
-                 numeric "pitch_bend",
-                 numeric "mod_wheel",
+                 global_expression_numeric PitchBend,
+                 global_expression_numeric ModWheel,
                  numeric "wheel_dco",
                  numeric "wheel_vcf",
-                 numeric "timbre",
-                 numeric "timbre_vcf"
+                 global_expression_numeric Timbre,
+                 numeric "timbre_vcf",
+                 external_numeric (pitch_bend),
+                 external_numeric (timbre)
     ])
     .map(
         |(
@@ -174,6 +181,8 @@ fn per_sample_params(params: &impl parameters::BufferStates) -> impl Iterator<It
             wheel_vcf,
             timbre,
             timbre_vcf,
+            per_note_pitch_bend,
+            per_note_timbre,
         )| Params {
             osc: OscSectionParams {
                 dco1_shape: FromPrimitive::from_u32(dco1_shape).unwrap(),
@@ -209,6 +218,9 @@ fn per_sample_params(params: &impl parameters::BufferStates) -> impl Iterator<It
 
             timbre,
             timbre_vcf,
+
+            per_note_pitch_bend,
+            per_note_timbre,
         },
     )
 }
@@ -375,7 +387,7 @@ fn vcf_incr(
 impl VoiceT for Voice {
     type SharedData<'a> = SharedData<'a>;
 
-    fn new(_max_samples_per_process_call: usize, sampling_rate: f32) -> Self {
+    fn new(_voice_index: usize, _max_samples_per_process_call: usize, sampling_rate: f32) -> Self {
         Self {
             sampling_rate,
 
@@ -400,19 +412,16 @@ impl VoiceT for Voice {
 
     fn process(
         &mut self,
-        events: impl IntoIterator<Item = Event>,
-        params: &impl parameters::BufferStates,
-        note_expression: NoteExpressionCurve<impl Iterator<Item = NoteExpressionPoint> + Clone>,
-        shared_data: Self::SharedData<'_>,
+        context: &impl VoiceProcessContext,
+        shared_data: &Self::SharedData<'_>,
         output: &mut [f32],
     ) {
-        let mut events = events.into_iter().peekable();
-        for ((index, sample), params, mg, wheel_mg, expression) in izip!(
+        let mut events = context.events().peekable();
+        for ((index, sample), params, mg, wheel_mg) in izip!(
             output.iter_mut().enumerate(),
-            per_sample_params(params),
+            per_sample_params(context),
             shared_data.mg_data,
             shared_data.wheel_data,
-            note_expression.iter_by_sample(),
         ) {
             while let Some(Event {
                 sample_offset,
@@ -442,8 +451,8 @@ impl VoiceT for Voice {
 
             let osc_wheel =
                 wheel_mg * params.wheel * lerp(0.0, MAX_WHEEL_DEPTH, params.wheel_dco * 0.01);
-            let pitch_bend = params.pitch_bend * PITCH_BEND_WIDTH + expression.pitch_bend;
-            let timbre = params.timbre + expression.timbre;
+            let pitch_bend = params.pitch_bend * PITCH_BEND_WIDTH + params.per_note_pitch_bend;
+            let timbre = params.timbre + params.per_note_timbre;
             let osc_midi_number =
                 lerp(0.0, 12.0, params.mg_pitch * 0.01) * mg + pitch_bend + midi_number + osc_wheel;
 
@@ -524,12 +533,16 @@ mod tests {
     use assert_approx_eq::assert_approx_eq;
     use conformal_component::{
         events::{NoteData, NoteID},
-        parameters::{ConstantBufferStates, InternalValue, StatesMap, override_synth_defaults},
+        parameters::{
+            ConstantBufferStates, InternalValue, NumericBufferState, PiecewiseLinearCurve,
+            PiecewiseLinearCurvePoint, SynthStatesMap,
+        },
+        synth::{
+            NumericGlobalExpression, NumericPerNoteExpression, SynthParamBufferStates,
+            valid_range_for_per_note_expression,
+        },
     };
-    use conformal_poly::{
-        Event, EventData, NoteExpressionCurve, NoteExpressionPoint, NoteExpressionState,
-        Voice as VoiceT, default_note_expression_curve,
-    };
+    use conformal_poly::{Event, EventData, Voice as VoiceT, VoiceProcessContext};
     use snapshots::assert_snapshot;
     use std::collections::HashMap;
 
@@ -555,14 +568,15 @@ mod tests {
         }
     }
 
-    fn dummy_params() -> ConstantBufferStates<StatesMap> {
-        dummy_params_with(&[])
+    fn dummy_params() -> ConstantBufferStates<SynthStatesMap> {
+        dummy_params_with(&[], &[])
     }
 
     fn dummy_params_with(
         extra_params: &[(&str, InternalValue)],
-    ) -> ConstantBufferStates<StatesMap> {
-        ConstantBufferStates::new(StatesMap::from(override_synth_defaults(
+        numeric_expressions: &[(NumericGlobalExpression, f32)],
+    ) -> ConstantBufferStates<SynthStatesMap> {
+        ConstantBufferStates::new(SynthStatesMap::new_override_defaults(
             PARAMETERS.iter().cloned(),
             &HashMap::<_, _>::from_iter(
                 [
@@ -582,12 +596,44 @@ mod tests {
                 .into_iter()
                 .chain(extra_params.iter().cloned()),
             ),
-        )))
+            &HashMap::from_iter(numeric_expressions.iter().cloned()),
+            &HashMap::new(),
+        ))
+    }
+
+    struct FakeVoiceContext<E, P, I> {
+        events: E,
+        params: P,
+        curve: HashMap<NumericPerNoteExpression, NumericBufferState<I>>,
+    }
+
+    impl<
+        E: Iterator<Item = Event> + Clone,
+        P: SynthParamBufferStates,
+        I: Iterator<Item = PiecewiseLinearCurvePoint> + Clone,
+    > VoiceProcessContext for FakeVoiceContext<E, &P, I>
+    {
+        fn events(&self) -> impl Iterator<Item = Event> + Clone {
+            self.events.clone()
+        }
+        fn parameters(&self) -> &impl SynthParamBufferStates {
+            self.params
+        }
+
+        fn per_note_expression(
+            &self,
+            expression: conformal_component::synth::NumericPerNoteExpression,
+        ) -> NumericBufferState<impl Iterator<Item = PiecewiseLinearCurvePoint> + Clone> {
+            self.curve
+                .get(&expression)
+                .unwrap_or(&NumericBufferState::Constant(0.0))
+                .clone()
+        }
     }
 
     #[test]
     fn reset_basics() {
-        let mut voice = Voice::new(100, 48000.0);
+        let mut voice = Voice::new(0, 100, 48000.0);
         let mut output = vec![0f32; 100];
         let events = vec![Event {
             sample_offset: 0,
@@ -603,19 +649,23 @@ mod tests {
 
         let params = dummy_params();
         voice.process(
-            events.iter().cloned(),
-            &params,
-            default_note_expression_curve(),
-            get_shared_data_from_mg(&get_silent_mg(output.len()), &get_silent_mg(output.len())),
+            &FakeVoiceContext {
+                events: events.iter().cloned(),
+                params: &params,
+                curve: HashMap::<_, NumericBufferState<std::iter::Empty<_>>>::new(),
+            },
+            &get_shared_data_from_mg(&get_silent_mg(output.len()), &get_silent_mg(output.len())),
             &mut output,
         );
         voice.reset();
         let mut reset = vec![0f32; 100];
         voice.process(
-            events.iter().cloned(),
-            &params,
-            default_note_expression_curve(),
-            get_shared_data_from_mg(&get_silent_mg(output.len()), &get_silent_mg(output.len())),
+            &FakeVoiceContext {
+                events: events.iter().cloned(),
+                params: &params,
+                curve: HashMap::<_, NumericBufferState<std::iter::Empty<_>>>::new(),
+            },
+            &get_shared_data_from_mg(&get_silent_mg(output.len()), &get_silent_mg(output.len())),
             &mut reset,
         );
         for (a, b) in output.iter().zip(reset.iter()) {
@@ -625,11 +675,14 @@ mod tests {
 
     fn snapshot_for_data_and_params(
         data: SharedData<'_>,
-        params: ConstantBufferStates<StatesMap>,
-        expression: NoteExpressionCurve<impl Iterator<Item = NoteExpressionPoint> + Clone>,
+        params: ConstantBufferStates<SynthStatesMap>,
+        expression: HashMap<
+            NumericPerNoteExpression,
+            NumericBufferState<impl Iterator<Item = PiecewiseLinearCurvePoint> + Clone>,
+        >,
     ) -> Vec<f32> {
         let num_samples = data.mg_data.len();
-        let mut voice = Voice::new(num_samples, 48000.0);
+        let mut voice = Voice::new(0, num_samples, 48000.0);
         let mut output = vec![0f32; num_samples];
         let events = vec![
             Event {
@@ -657,17 +710,23 @@ mod tests {
         ];
 
         voice.process(
-            events.iter().cloned(),
-            &params,
-            expression,
-            data,
+            &FakeVoiceContext {
+                events: events.iter().cloned(),
+                params: &params,
+                curve: expression,
+            },
+            &data,
             &mut output,
         );
         output
     }
 
     fn snapshot_for_data(data: SharedData<'_>) -> Vec<f32> {
-        snapshot_for_data_and_params(data, dummy_params(), default_note_expression_curve())
+        snapshot_for_data_and_params(
+            data,
+            dummy_params(),
+            HashMap::<_, NumericBufferState<std::iter::Empty<_>>>::new(),
+        )
     }
 
     #[test]
@@ -704,8 +763,8 @@ mod tests {
             48000,
             snapshot_for_data_and_params(
                 get_shared_data_from_mg(&get_silent_mg(48000), &get_sine_mg(4.0 / 48000.0, 48000)),
-                dummy_params_with(&[("mod_wheel", InternalValue::Numeric(1.0))]),
-                default_note_expression_curve()
+                dummy_params_with(&[], &[(NumericGlobalExpression::ModWheel, 1.0)]),
+                HashMap::<_, NumericBufferState<std::iter::Empty<_>>>::new(),
             )
         );
     }
@@ -719,28 +778,33 @@ mod tests {
             snapshot_for_data_and_params(
                 get_shared_data_from_mg(&get_silent_mg(48000), &get_silent_mg(48000)),
                 dummy_params(),
-                NoteExpressionCurve::new(
-                    [
-                        NoteExpressionPoint {
-                            sample_offset: 0,
-                            state: NoteExpressionState {
-                                pitch_bend: 0f32,
-                                timbre: 0f32,
-                                aftertouch: 0f32,
-                            },
-                        },
-                        NoteExpressionPoint {
-                            sample_offset: 20000,
-                            state: NoteExpressionState {
-                                pitch_bend: 12f32,
-                                timbre: 0f32,
-                                aftertouch: 0f32,
-                            },
-                        },
-                    ]
-                    .into_iter()
-                )
-                .unwrap()
+                HashMap::from([(
+                    NumericPerNoteExpression::PitchBend,
+                    NumericBufferState::PiecewiseLinear(
+                        PiecewiseLinearCurve::new(
+                            vec![
+                                PiecewiseLinearCurvePoint {
+                                    sample_offset: 0,
+                                    value: 0f32
+                                },
+                                PiecewiseLinearCurvePoint {
+                                    sample_offset: 19999,
+                                    value: 0f32
+                                },
+                                PiecewiseLinearCurvePoint {
+                                    sample_offset: 20000,
+                                    value: 12f32
+                                },
+                            ]
+                            .into_iter(),
+                            48000,
+                            valid_range_for_per_note_expression(
+                                NumericPerNoteExpression::PitchBend
+                            )
+                        )
+                        .unwrap()
+                    )
+                ),])
             )
         );
     }

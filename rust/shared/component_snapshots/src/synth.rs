@@ -3,27 +3,44 @@ use std::{collections::HashMap, ops::Range};
 use conformal_component::{
     Component, ProcessingEnvironment, Processor,
     audio::{Buffer, BufferData, ChannelLayout},
-    events::{Data, Event, Events, NoteData, NoteID},
-    parameters::{
-        BufferStates, ConstantBufferStates, InternalValue, StatesMap, override_defaults, to_infos,
-    },
-    synth::{CONTROLLER_PARAMETERS, Synth},
+    events::{self, Data, Event, Events, NoteData, NoteID},
+    parameters::{ConstantBufferStates, InfoRef, InternalValue, SynthStatesMap},
+    synth::{HandleEventsContext, ProcessContext, Synth, SynthParamBufferStates, SynthParamStates},
 };
 use dsp::iter::move_into;
 
 use super::ProcessingParams;
 
+struct SnapshotContext<E, P> {
+    events: Events<E>,
+    params: P,
+}
+
+impl<E: Iterator<Item = Event> + Clone, P: SynthParamBufferStates> ProcessContext
+    for SnapshotContext<E, &P>
+{
+    fn events(&self) -> Events<impl Iterator<Item = Event> + Clone> {
+        self.events.clone()
+    }
+
+    fn parameters(&self) -> &impl SynthParamBufferStates {
+        self.params
+    }
+}
+
 /// Generate a snapshot of the effect with the given parameters.
 fn generate_buffer_snapshot_with_params(
     synth: &mut impl Synth,
     num_frames: usize,
-    params: impl BufferStates,
+    params: &impl SynthParamBufferStates,
     events: impl Iterator<Item = Event> + Clone,
 ) -> Vec<f32> {
     let mut output_buffer = BufferData::new(ChannelLayout::Mono, num_frames);
     synth.process(
-        Events::new(events, num_frames).unwrap(),
-        params,
+        &SnapshotContext {
+            events: Events::new(events, num_frames).unwrap(),
+            params,
+        },
         &mut output_buffer,
     );
     output_buffer.channel(0).to_vec()
@@ -53,7 +70,7 @@ pub fn generate_snapshot_with_params(
     effect: &mut impl Synth,
     num_frames: usize,
     max_buffer_size: usize,
-    params: &(impl BufferStates + Clone),
+    params: &impl SynthParamBufferStates,
     events: &(impl Iterator<Item = Event> + Clone),
 ) -> Vec<f32> {
     let mut output = vec![0.0; num_frames];
@@ -67,7 +84,7 @@ pub fn generate_snapshot_with_params(
         let current_buffer_output = generate_buffer_snapshot_with_params(
             effect,
             current_buffer_range.len(),
-            params.clone(),
+            params,
             current_buffer_events,
         );
 
@@ -81,11 +98,11 @@ pub fn generate_snapshot_with_params(
     output
 }
 
-pub fn generate_snapshot<S: ::std::hash::BuildHasher>(
+pub fn generate_snapshot(
     component: &impl Component<Processor: Synth>,
     num_frames: usize,
     processing_params: &ProcessingParams,
-    param_overrides: &HashMap<&'_ str, InternalValue, S>,
+    param_overrides: &HashMap<&'_ str, InternalValue>,
     events: &(impl Iterator<Item = Event> + Clone),
 ) -> Vec<f32> {
     let mut synth = component.create_processor(&ProcessingEnvironment {
@@ -94,14 +111,13 @@ pub fn generate_snapshot<S: ::std::hash::BuildHasher>(
         channel_layout: ChannelLayout::Mono,
         processing_mode: processing_params.processing_mode,
     });
-    let params = ConstantBufferStates::new(StatesMap::from(override_defaults(
-        component
-            .parameter_infos()
-            .iter()
-            .map(Into::into)
-            .chain(to_infos(&CONTROLLER_PARAMETERS).iter().map(Into::into)),
-        param_overrides,
-    )));
+    let params: ConstantBufferStates<SynthStatesMap> =
+        ConstantBufferStates::new(SynthStatesMap::new_override_defaults(
+            component.parameter_infos().iter().map(InfoRef::from),
+            param_overrides,
+            &HashMap::new(),
+            &HashMap::new(),
+        ));
 
     synth.set_processing(true);
     generate_snapshot_with_params(
@@ -142,11 +158,11 @@ pub fn get_single_note_events(num_frames: usize) -> impl Iterator<Item = Event> 
     events.into_iter()
 }
 
-pub fn generate_snapshot_with_reset<S: ::std::hash::BuildHasher>(
+pub fn generate_snapshot_with_reset(
     component: &impl Component<Processor: Synth>,
     num_frames: usize,
     processing_params: &ProcessingParams,
-    param_overrides: &HashMap<&'_ str, InternalValue, S>,
+    param_overrides: &HashMap<&'_ str, InternalValue>,
     events: &(impl Iterator<Item = Event> + Clone),
 ) -> (Vec<f32>, Vec<f32>) {
     let mut synth = component.create_processor(&ProcessingEnvironment {
@@ -156,14 +172,13 @@ pub fn generate_snapshot_with_reset<S: ::std::hash::BuildHasher>(
         processing_mode: processing_params.processing_mode,
     });
     synth.set_processing(true);
-    let params = ConstantBufferStates::new(StatesMap::from(override_defaults(
-        component
-            .parameter_infos()
-            .iter()
-            .map(Into::into)
-            .chain(to_infos(&CONTROLLER_PARAMETERS).iter().map(Into::into)),
-        param_overrides,
-    )));
+    let params: ConstantBufferStates<SynthStatesMap> =
+        ConstantBufferStates::new(SynthStatesMap::new_override_defaults(
+            component.parameter_infos().iter().map(InfoRef::from),
+            param_overrides,
+            &HashMap::new(),
+            &HashMap::new(),
+        ));
     let before = generate_snapshot_with_params(
         &mut synth,
         num_frames,
@@ -183,11 +198,28 @@ pub fn generate_snapshot_with_reset<S: ::std::hash::BuildHasher>(
     (before, after)
 }
 
-pub fn generate_separate_events_snapshot<S: ::std::hash::BuildHasher>(
+struct SnapshotHandleEventsContext<E, P> {
+    events: E,
+    params: P,
+}
+
+impl<E: Iterator<Item = events::Data> + Clone, P: SynthParamStates> HandleEventsContext
+    for SnapshotHandleEventsContext<E, &P>
+{
+    fn events(&self) -> impl Iterator<Item = events::Data> + Clone {
+        self.events.clone()
+    }
+
+    fn parameters(&self) -> &impl SynthParamStates {
+        self.params
+    }
+}
+
+pub fn generate_separate_events_snapshot(
     component: &impl Component<Processor: Synth>,
     num_frames: usize,
     processing_params: &ProcessingParams,
-    param_overrides: &HashMap<&'_ str, InternalValue, S>,
+    param_overrides: &HashMap<&'_ str, InternalValue>,
     events: impl Iterator<Item = Event>,
 ) -> Vec<f32> {
     let mut synth = component.create_processor(&ProcessingEnvironment {
@@ -196,14 +228,12 @@ pub fn generate_separate_events_snapshot<S: ::std::hash::BuildHasher>(
         channel_layout: ChannelLayout::Mono,
         processing_mode: processing_params.processing_mode,
     });
-    let params_state = StatesMap::from(override_defaults(
-        component
-            .parameter_infos()
-            .iter()
-            .map(Into::into)
-            .chain(to_infos(&CONTROLLER_PARAMETERS).iter().map(Into::into)),
+    let params_state = SynthStatesMap::new_override_defaults(
+        component.parameter_infos().iter().map(Into::into),
         param_overrides,
-    ));
+        &HashMap::new(),
+        &HashMap::new(),
+    );
     let params = ConstantBufferStates::new(params_state.clone());
 
     let mut output = vec![0.0; num_frames];
@@ -215,7 +245,10 @@ pub fn generate_separate_events_snapshot<S: ::std::hash::BuildHasher>(
                 break;
             }
 
-            synth.handle_events(std::iter::once(event.data.clone()), params_state.clone());
+            synth.handle_events(&SnapshotHandleEventsContext {
+                events: std::iter::once(event.data.clone()),
+                params: &params_state,
+            });
             events.next();
         }
         let process_to = events.peek().map_or(num_frames, |e| e.sample_offset);
@@ -233,10 +266,10 @@ pub fn generate_separate_events_snapshot<S: ::std::hash::BuildHasher>(
     output
 }
 
-pub fn generate_basic_snapshot<S: ::std::hash::BuildHasher>(
+pub fn generate_basic_snapshot(
     component: &impl Component<Processor: Synth>,
     num_frames: usize,
-    param_overrides: &HashMap<&'_ str, InternalValue, S>,
+    param_overrides: &HashMap<&'_ str, InternalValue>,
 ) -> Vec<f32> {
     generate_snapshot(
         component,
