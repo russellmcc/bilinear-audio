@@ -1,4 +1,4 @@
-use dsp::osc_utils::polyblep2_residual;
+use dsp::{f32::exp_approx, osc_utils::polyblep2_residual};
 
 use crate::synth::osc_utils::pulse;
 
@@ -11,7 +11,7 @@ pub struct Dco1 {
 /// Poly-61, which charges a capacitor with a voltage source
 /// (rather than a current source, which would yield a linear ramp).
 fn saw_waveshape(phase: f32, note: f32) -> f32 {
-    let shaped = 1.0 - (-phase * 10.0 * 2f32.log2()).exp();
+    let shaped = 1.0 - exp_approx(-phase * 10.0 * 2f32.log2());
 
     // At low frequencies the effect is more pronounced.
     // We emulate this by blending the unshaped phase with the

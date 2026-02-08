@@ -8,7 +8,7 @@ use conformal_component::{
     synth::{HandleEventsContext, ProcessContext, Synth as SynthTrait},
 };
 use conformal_poly::Poly;
-use dsp::f32::rescale;
+use dsp::f32::{exp2_approx, rescale};
 use hpf::{Hpf, Mode};
 use num_traits::FromPrimitive;
 
@@ -21,6 +21,14 @@ const LFO_NOTE_RANGE: RangeInclusive<f32> = -105.0f32..=15.0f32;
 /// Converts a MIDI pitch to a phase increment
 fn increment(midi_pitch: f32, sampling_rate: f32) -> f32 {
     (440f32 * 2.0f32.powf((midi_pitch - 69f32) / 12f32) / sampling_rate).clamp(0.0, 0.45)
+}
+
+/// Converts a MIDI pitch to a phase increment with 3% accuracy.
+///
+/// This is _not_ appropriate for audible pitches! But it's useful for LFOs or
+/// other calculations where we can accept relatively high error.
+fn increment_approx(midi_pitch: f32, sampling_rate: f32) -> f32 {
+    (440f32 * exp2_approx((midi_pitch - 69f32) / 12f32) / sampling_rate).clamp(0.0, 0.45)
 }
 
 #[derive(Debug)]
@@ -88,13 +96,13 @@ impl SynthTrait for Synth {
                 }
                 lfo_events.next();
             }
-            let incr = increment(
+            let incr = increment_approx(
                 rescale(rate, 0.0..=100.0, LFO_NOTE_RANGE),
                 self.sampling_rate,
             );
             // LFO delay follows the somewhat bizarre trimming measured from hardware.
             let lfo_delay_time_seconds = if delay > 0.0 {
-                rescale(delay, 0.0..=100.0, -5.5..=4.5).exp2()
+                exp2_approx(rescale(delay, 0.0..=100.0, -5.5..=4.5))
             } else {
                 0.0
             };

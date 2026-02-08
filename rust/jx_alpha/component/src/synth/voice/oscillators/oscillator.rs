@@ -129,6 +129,11 @@ pub struct Settings {
     pub width: f32,
 }
 
+/// Returns true if the shape needs the PWM LFO to run.
+pub fn needs_pwm(shape: Shape) -> bool {
+    matches!(shape, Shape::PwmSaw | Shape::Pulse)
+}
+
 impl Oscillator {
     pub fn reset(&mut self) {
         *self = Self::default();

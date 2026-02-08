@@ -1,9 +1,11 @@
+use crate::synth::increment_approx;
+
 use super::increment;
 use conformal_component::{events::NoteData, pzip, synth::NumericPerNoteExpression};
 use conformal_poly::{EventData, Voice as VoiceTrait, VoiceProcessContext};
 use dsp::{
     env::adsr,
-    f32::{rescale, rescale_clamped, rescale_points},
+    f32::{exp_approx, exp2_approx, rescale, rescale_clamped, rescale_points},
     slew::{self, SlewLimiter},
 };
 use itertools::izip;
@@ -97,7 +99,11 @@ fn volume_to_gain(volume: f32) -> f32 {
     if volume < BREAK_VOLUME {
         rescale_clamped(volume, 0.0..=BREAK_VOLUME, 0.0..=break_gain)
     } else {
-        rescale_clamped(volume, BREAK_VOLUME..=1.0, break_log_gain..=0.0).exp()
+        exp_approx(rescale_clamped(
+            volume,
+            BREAK_VOLUME..=1.0,
+            break_log_gain..=0.0,
+        ))
     }
 }
 
@@ -112,7 +118,7 @@ fn env_param_to_time(param: f32) -> f32 {
     let max_time_log2 = MAX_TIME.log2();
 
     let time_log2 = rescale_clamped(param, 0.0..=100.0, min_time_log2..=max_time_log2);
-    time_log2.exp2()
+    exp2_approx(time_log2)
 }
 
 #[allow(clippy::cast_precision_loss)]
@@ -152,7 +158,7 @@ fn get_dco_pwm_incr(pwm_rate: f32, sampling_rate: f32) -> f32 {
     if pwm_rate == 0.0 {
         0.0
     } else {
-        increment(
+        increment_approx(
             rescale(pwm_rate, 0.0..=100.0, super::LFO_NOTE_RANGE),
             sampling_rate,
         )
@@ -451,32 +457,46 @@ impl VoiceTrait for Voice {
                             self.velocity,
                         ),
             );
-            let oscillators_output = self.oscillators.generate(&oscillators::Settings {
-                oscillators: [
-                    OscillatorSettings {
-                        increment: osc0_incr,
-                        shape: FromPrimitive::from_u32(dco1_shape_int).unwrap(),
-                        gain: osc0_gain,
-                        pwm_depth: rescale(dco1_pwm_depth, 0.0..=100.0, 0.0..=1.0),
-                        pwm_incr: get_dco_pwm_incr(dco1_pwm_rate, self.sampling_rate),
+            let oscillators_output = self.oscillators.generate(&{
+                let shape0 = FromPrimitive::from_u32(dco1_shape_int).unwrap();
+                let shape1 = FromPrimitive::from_u32(dco2_shape_int).unwrap();
+                oscillators::Settings {
+                    oscillators: [
+                        OscillatorSettings {
+                            increment: osc0_incr,
+                            shape: shape0,
+                            gain: osc0_gain,
+                            pwm_depth: rescale(dco1_pwm_depth, 0.0..=100.0, 0.0..=1.0),
+                            pwm_incr: if oscillators::needs_pwm(shape0) {
+                                get_dco_pwm_incr(dco1_pwm_rate, self.sampling_rate)
+                            } else {
+                                0.0
+                            },
+                        },
+                        OscillatorSettings {
+                            increment: osc1_incr,
+                            shape: shape1,
+                            gain: osc1_gain,
+                            pwm_depth: rescale(dco2_pwm_depth, 0.0..=100.0, 0.0..=1.0),
+                            pwm_incr: if oscillators::needs_pwm(shape1) {
+                                get_dco_pwm_incr(dco2_pwm_rate, self.sampling_rate)
+                            } else {
+                                0.0
+                            },
+                        },
+                    ],
+                    x_mod: match x_mod {
+                        Dco2XMod::Bit => oscillators::CrossModulation::And,
+                        Dco2XMod::Off | Dco2XMod::Sync => oscillators::CrossModulation::Off,
+                        Dco2XMod::Ring | Dco2XMod::SyncPlusRing => {
+                            oscillators::CrossModulation::Ring
+                        }
                     },
-                    OscillatorSettings {
-                        increment: osc1_incr,
-                        shape: FromPrimitive::from_u32(dco2_shape_int).unwrap(),
-                        gain: osc1_gain,
-                        pwm_depth: rescale(dco2_pwm_depth, 0.0..=100.0, 0.0..=1.0),
-                        pwm_incr: get_dco_pwm_incr(dco2_pwm_rate, self.sampling_rate),
+                    sync: match x_mod {
+                        Dco2XMod::Sync | Dco2XMod::SyncPlusRing => oscillators::Sync::Hard,
+                        _ => oscillators::Sync::Off,
                     },
-                ],
-                x_mod: match x_mod {
-                    Dco2XMod::Bit => oscillators::CrossModulation::And,
-                    Dco2XMod::Off | Dco2XMod::Sync => oscillators::CrossModulation::Off,
-                    Dco2XMod::Ring | Dco2XMod::SyncPlusRing => oscillators::CrossModulation::Ring,
-                },
-                sync: match x_mod {
-                    Dco2XMod::Sync | Dco2XMod::SyncPlusRing => oscillators::Sync::Hard,
-                    _ => oscillators::Sync::Off,
-                },
+                }
             });
 
             let smoothed_cutoff = self.cutoff_slew.process(vcf_cutoff, self.control_slew_rate);

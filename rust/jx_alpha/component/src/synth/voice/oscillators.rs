@@ -18,6 +18,8 @@ pub struct Oscillators {
     downsampler: downsampler::Downsampler,
 }
 
+pub use oscillator::needs_pwm;
+
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct OscillatorSettings {
     pub increment: f32,
@@ -94,8 +96,16 @@ impl Oscillators {
 
     fn generate_high_rate(&mut self, settings: &Settings) -> f32 {
         let [osc0, osc1] = &mut self.oscillators;
-        let pwm0_out = self.pwm_lfos[0].generate(settings.oscillators[0].pwm_incr);
-        let pwm1_out = self.pwm_lfos[1].generate(settings.oscillators[1].pwm_incr);
+        let pwm0_out = if oscillator::needs_pwm(settings.oscillators[0].shape) {
+            self.pwm_lfos[0].generate(settings.oscillators[0].pwm_incr)
+        } else {
+            0.0
+        };
+        let pwm1_out = if oscillator::needs_pwm(settings.oscillators[1].shape) {
+            self.pwm_lfos[1].generate(settings.oscillators[1].pwm_incr)
+        } else {
+            0.0
+        };
         let osc0_settings = to_raw_settings(settings.oscillators[0], pwm0_out);
         let osc1_settings = to_raw_settings(settings.oscillators[1], pwm1_out);
         let osc0_out = osc0.generate(osc0_settings);

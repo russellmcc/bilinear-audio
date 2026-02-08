@@ -72,3 +72,6 @@ p61_component = { path = "rust/p61/component" }
 rchorus_component = { path = "rust/rchorus/component" }
 reverb_component = { path = "rust/reverb/component" }
 snapshots = { path = "rust/shared/snapshots" }
+
+[profile.release]
+lto = "thin"
