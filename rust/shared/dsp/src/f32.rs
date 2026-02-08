@@ -49,12 +49,28 @@ pub fn lerp_clamped(value_at_zero: f32, value_at_one: f32, t: f32) -> f32 {
     lerp(value_at_zero, value_at_one, t.clamp(0.0, 1.0))
 }
 
+const F32_EXP_BASE: f32 = 8_388_608.0; // 2^23
+
+/// Approximates 2^x within 3% error.
 #[inline]
 #[must_use]
 #[allow(clippy::cast_possible_truncation)]
 pub fn exp2_approx(x: f32) -> f32 {
     // See https://specbranch.com/posts/fast-exp/ for how this works!
-    const BASE: f32 = 8_388_608.0; // 2^23
+    const K: i32 = 366_393; // Tuning constant - see article above. This shifts curve to minimize maximum error.
+    let x_base = x * F32_EXP_BASE;
+    let x_base_int = x_base as i32;
+    let result_int = x_base_int + (127 << 23) - K;
+    f32::from_bits(result_int as u32)
+}
+
+/// Approximates e^x within 3% error.
+#[inline]
+#[must_use]
+#[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
+pub fn exp_approx(x: f32) -> f32 {
+    // See https://specbranch.com/posts/fast-exp/ for how this works!
+    const BASE: f32 = std::f32::consts::LOG2_E * F32_EXP_BASE;
     const K: i32 = 366_393; // Tuning constant - see article above. This shifts curve to minimize maximum error.
     let x_base = x * BASE;
     let x_base_int = x_base as i32;
@@ -70,7 +86,7 @@ mod tests {
     #[test]
     fn test_exp2_approx_basic() {
         // This simple test gives us miri coverage of exp2_approx. Full testing is a proptest below.
-        assert!((exp2_approx(0.0) - 1.0).abs() < 0.03);
+        assert!((exp2_approx(1.0) - 2.0).abs() < 0.03 * 2.0);
     }
 
     proptest! {
@@ -79,6 +95,29 @@ mod tests {
         fn test_exp2_approx(x in -60.0f32..=60.0f32) {
             let approx = exp2_approx(x);
             let exact = 2f32.powf(x);
+            let relative_error = (approx - exact).abs() / exact.abs();
+            prop_assert!(
+                relative_error < 0.03,
+                "Expected {} to be approximately equal to {} within 3% error (got {:.4}%)",
+                approx,
+                exact,
+                relative_error * 100.0,
+            );
+        }
+    }
+
+    #[test]
+    fn test_exp_approx_basic() {
+        // This simple test gives us miri coverage of exp_approx. Full testing is a proptest below.
+        assert!((exp_approx(1.0) - 1.0f32.exp()).abs() < 0.03 * 1.0f32.exp());
+    }
+
+    proptest! {
+        #[test]
+        #[cfg_attr(miri, ignore)]
+        fn test_exp_approx(x in -60.0f32..=60.0f32) {
+            let approx = exp_approx(x);
+            let exact = x.exp();
             let relative_error = (approx - exact).abs() / exact.abs();
             prop_assert!(
                 relative_error < 0.03,

@@ -1,3 +1,5 @@
+use dsp::f32::exp_approx;
+
 #[derive(Clone)]
 pub struct Lfo {
     point: f32,
@@ -35,7 +37,7 @@ pub struct Parameters {
 
 /// Time-constant in samples
 fn alpha_from_time_constant(t: f32) -> f32 {
-    1. - (-2. / t).exp()
+    1. - exp_approx(-2. / t)
 }
 
 impl Lfo {

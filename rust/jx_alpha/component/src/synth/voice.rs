@@ -3,7 +3,7 @@ use conformal_component::{events::NoteData, pzip, synth::NumericPerNoteExpressio
 use conformal_poly::{EventData, Voice as VoiceTrait, VoiceProcessContext};
 use dsp::{
     env::adsr,
-    f32::{exp2_approx, rescale, rescale_clamped, rescale_points},
+    f32::{exp_approx, exp2_approx, rescale, rescale_clamped, rescale_points},
     slew::{self, SlewLimiter},
 };
 use itertools::izip;
@@ -97,7 +97,11 @@ fn volume_to_gain(volume: f32) -> f32 {
     if volume < BREAK_VOLUME {
         rescale_clamped(volume, 0.0..=BREAK_VOLUME, 0.0..=break_gain)
     } else {
-        rescale_clamped(volume, BREAK_VOLUME..=1.0, break_log_gain..=0.0).exp()
+        exp_approx(rescale_clamped(
+            volume,
+            BREAK_VOLUME..=1.0,
+            break_log_gain..=0.0,
+        ))
     }
 }
 
