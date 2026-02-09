@@ -315,11 +315,10 @@ dependencies = [
 
 [[package]]
 name = "conformal_component"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1d7166378efa15ea7adfeb98253ef38715bf0e4406718c303daba69218fe6fd"
+checksum = "0e040d90655c884aa8df7965ead0e98b097044da0debcec3cded9109f2a93590"
 dependencies = [
- "fxhash",
  "itertools 0.13.0",
 ]
 
@@ -345,9 +344,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_poly"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1be92cdf53a406bfa95203be2309fa4458ebf4b791df0661bc52bdeea7ba4f7e"
+checksum = "5175d76db41a77a7a4354ae9eafdd59a5d6c3e744388ced77755f8c1d6831f96"
 dependencies = [
  "arrayvec",
  "conformal_component",
@@ -384,9 +383,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_vst_wrapper"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "673c5760d43983767d45439cc8e726f86b4006cbd1378e6d6a58c7f69adc302c"
+checksum = "27c54ccafc3d6ea2893d41b404647fb90ca40756a4814f65b4f9a51b80bb1830"
 dependencies = [
  "conformal_component",
  "conformal_core",

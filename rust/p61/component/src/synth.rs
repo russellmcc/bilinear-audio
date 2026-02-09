@@ -18,7 +18,7 @@ mod voice;
 
 #[derive(Debug)]
 pub struct Synth {
-    poly: Poly<voice::Voice>,
+    poly: Poly<voice::Voice, 8>,
     mg: dsp::sine_lfo::SineLfo,
     mg_env: dsp::env::duck::Ar,
     mg_scratch: Vec<f32>,
@@ -32,7 +32,7 @@ pub struct Synth {
 impl Synth {
     pub fn new(env: &ProcessingEnvironment) -> Self {
         Self {
-            poly: Poly::new(env, 8),
+            poly: Poly::new(env),
             mg: Default::default(),
             mg_env: Default::default(),
             mg_scratch: vec![0f32; env.max_samples_per_process_call],

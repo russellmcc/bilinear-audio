@@ -33,7 +33,7 @@ fn increment_approx(midi_pitch: f32, sampling_rate: f32) -> f32 {
 
 #[derive(Debug)]
 pub struct Synth {
-    poly: Poly<voice::Voice>,
+    poly: Poly<voice::Voice, 6>,
     hpfs: [Hpf; 2],
     lfo: lfo::Lfo,
     lfo_delay_env: dsp::env::duck::Ar,
@@ -44,7 +44,7 @@ pub struct Synth {
 impl Synth {
     pub fn new(env: &ProcessingEnvironment) -> Self {
         Self {
-            poly: Poly::new(env, 6),
+            poly: Poly::new(env),
             hpfs: core::array::from_fn(|_| Hpf::new(env.sampling_rate)),
             lfo: Default::default(),
             lfo_delay_env: Default::default(),
