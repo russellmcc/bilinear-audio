@@ -10,6 +10,7 @@ use conformal_component::{
 use conformal_poly::Poly;
 use dsp::f32::{exp2_approx, rescale};
 use hpf::{Hpf, Mode};
+use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 mod hpf;
@@ -64,6 +65,13 @@ impl Processor for Synth {
     }
 }
 
+#[derive(FromPrimitive, Debug, Clone, Copy, PartialEq, Default)]
+enum LfoTrig {
+    #[default]
+    Auto,
+    Wheel,
+}
+
 impl SynthTrait for Synth {
     fn handle_events(&mut self, context: &impl HandleEventsContext) {
         self.poly.handle_events(context);
@@ -73,10 +81,10 @@ impl SynthTrait for Synth {
         let lfo_scratch = &mut self.lfo_scratch[..output.num_frames()];
         let mut lfo_events = context.events().into_iter().peekable();
         let parameters = context.parameters();
-        for ((index, sample), (rate, delay, shape_int)) in lfo_scratch
+        for ((index, sample), (rate, delay, shape_int, wheel, trig_int)) in lfo_scratch
             .iter_mut()
             .enumerate()
-            .zip(pzip!(parameters[numeric "lfo_rate", numeric "lfo_delay", enum "lfo_shape"]))
+            .zip(pzip!(parameters[numeric "lfo_rate", numeric "lfo_delay", enum "lfo_shape", global_expression_numeric ModWheel, enum "lfo_trig"]))
         {
             while let Some(Event {
                 sample_offset,
@@ -119,7 +127,12 @@ impl SynthTrait for Synth {
                 },
                 self.sampling_rate,
             );
-            *sample = self.lfo_delay_env.process(&coeffs)
+            let delay_env = self.lfo_delay_env.process(&coeffs);
+            let scale = match LfoTrig::from_u32(trig_int).unwrap() {
+                LfoTrig::Auto => delay_env,
+                LfoTrig::Wheel => wheel,
+            };
+            *sample = scale
                 * self
                     .lfo
                     .generate(incr, FromPrimitive::from_u32(shape_int).unwrap());

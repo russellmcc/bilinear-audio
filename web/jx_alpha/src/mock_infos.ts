@@ -238,6 +238,14 @@ const infos = new Map<string, Info>(
         values: ["Sine", "Square", "Rand"],
       },
     },
+    lfo_trig: {
+      title: "LFO Trig",
+      type_specific: {
+        t: "enum",
+        default: "Auto",
+        values: ["Auto", "Wheel"],
+      },
+    },
   }),
 );
 
