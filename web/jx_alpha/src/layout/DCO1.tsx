@@ -3,15 +3,10 @@ import ParamEnumSlider from "../components/ParamEnumSlider";
 import ParamSlider from "../components/ParamSlider";
 import Shape from "../glyphs/Shape";
 
-const BORDER_PERCENTAGE = 85;
 export const DCO1 = () => (
   <div
     style={{
-      borderRight: "2px solid transparent",
-      backgroundImage: `linear-gradient(to bottom, var(--darkest-color) ${BORDER_PERCENTAGE}%, transparent ${BORDER_PERCENTAGE}%)`,
-      backgroundRepeat: "no-repeat",
-      backgroundPosition: "right top",
-      backgroundSize: "2px 100%",
+      borderRight: "2px solid var(--darkest-color)",
       backgroundOrigin: "border-box",
       paddingRight: "11px",
       paddingTop: "11px",

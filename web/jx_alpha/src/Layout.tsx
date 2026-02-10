@@ -5,6 +5,7 @@ import ENV from "./layout/ENV";
 import Mixer from "./layout/Mixer";
 import VCF from "./layout/VCF";
 import logo from "./assets/logo.svg";
+import LFO from "./layout/LFO";
 
 const Layout = () => (
   <div
@@ -25,7 +26,7 @@ const Layout = () => (
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "11px",
+          gap: "9px",
           borderRight: "2px solid var(--darkest-color)",
           alignItems: "stretch",
           justifyContent: "space-between",
@@ -41,7 +42,12 @@ const Layout = () => (
           <DCO1 />
           <DCO2 />
         </div>
-        <div style={{ display: "flex", flexDirection: "row" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+          }}
+        >
           <DCOMod />
         </div>
       </div>
@@ -79,7 +85,7 @@ const Layout = () => (
               position: "relative",
               display: "flex",
               flexDirection: "column",
-              justifyContent: "space-around",
+              paddingTop: "14px",
             }}
           >
             <div
@@ -89,14 +95,15 @@ const Layout = () => (
                 flexDirection: "column",
               }}
             >
+              <h1 className="title">SYNTHESIZER PROGRAMMER</h1>
               <img
                 src={logo}
                 alt="logo"
                 style={{
-                  width: "210px",
+                  width: "205px",
                 }}
               />
-              <h1 className="title">SYNTHESIZER PROGRAMMER</h1>
+              <LFO />
             </div>
           </div>
         </div>
