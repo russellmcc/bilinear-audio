@@ -51,3 +51,7 @@ h1.title {
 :focus {
   outline: 0;
 }
+
+html {
+  overscroll-behavior: none;
+}

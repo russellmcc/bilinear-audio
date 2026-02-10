@@ -40,7 +40,7 @@ const ENV_SOURCE: TypeSpecificInfoRef<'static, &'static str> = TypeSpecificInfoR
     ],
 };
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 50] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 51] = [
     InfoRef {
         title: "Level",
         short_title: "Level",
@@ -410,6 +410,16 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 50] = [
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
             values: &["Sine", "Square", "Rand"],
+        },
+    },
+    InfoRef {
+        title: "LFO Trig",
+        short_title: "LFO Trig",
+        unique_id: "lfo_trig",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 0,
+            values: &["Auto", "Wheel"],
         },
     },
 ];
