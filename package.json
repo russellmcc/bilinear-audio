@@ -6,6 +6,7 @@
   ],
   "scripts": {
     "bootstrap": "conformal-scripts bootstrap",
+    "bootstrap-rust-toolchain": "conformal-scripts bootstrap-rust-toolchain",
     "ci": "conformal-scripts ci",
     "check-lfs": "conformal-scripts check-lfs",
     "check-todo": "conformal-scripts check-todo",
@@ -19,7 +20,7 @@
     "web-build": "conformal-scripts web-script -s build",
     "web-lint": "bun run --filter '*' lint",
     "web-test": "bun test",
-    "rust-miri": "PROPTEST_DISABLE_FAILURE_PERSISTENCE=true MIRIFLAGS='-Zmiri-env-forward=PROPTEST_DISABLE_FAILURE_PERSISTENCE' conformal-scripts cargo +nightly miri test",
+    "rust-miri": "CARGO_TARGET_DIR=target/miri PROPTEST_DISABLE_FAILURE_PERSISTENCE=true MIRIFLAGS='-Zmiri-env-forward=PROPTEST_DISABLE_FAILURE_PERSISTENCE' conformal-scripts cargo +nightly miri test",
     "rust-build": "conformal-scripts cargo build",
     "rust-lint": "conformal-scripts cargo clippy",
     "rust-test": "conformal-scripts cargo test",
@@ -29,7 +30,7 @@
     "validate": "conformal-scripts web-script -s validate"
   },
   "devDependencies": {
-    "@conformal/scripts": "^0.8.3",
+    "@conformal/scripts": "^0.9.0",
     "@happy-dom/global-registrator": "^20.3.3",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
