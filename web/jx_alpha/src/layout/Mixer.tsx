@@ -1,3 +1,4 @@
+import DynModeSlider from "../components/DynModeSlider";
 import EnvModeSlider from "../components/EnvModeSlider";
 import ParamSlider from "../components/ParamSlider";
 
@@ -37,9 +38,11 @@ export const Mixer = () => (
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-around",
+          gap: "11px",
         }}
       >
         <EnvModeSlider param="mix_env_source" />
+        <DynModeSlider param="mix_dyn_mode" />
       </div>
     </div>
   </div>

@@ -1,5 +1,6 @@
 import ParamEnumKnob from "../components/ParamEnumKnob";
 import EnvModeSlider from "../components/EnvModeSlider";
+import DynModeSlider from "../components/DynModeSlider";
 
 export const DCOMod = () => (
   <div
@@ -13,6 +14,7 @@ export const DCOMod = () => (
     }}
   >
     <EnvModeSlider param="dco_env_source" />
+    <DynModeSlider param="dco_dyn_mode" />
     <div
       style={{
         display: "flex",
