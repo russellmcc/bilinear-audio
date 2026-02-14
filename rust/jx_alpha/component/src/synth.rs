@@ -4,7 +4,7 @@ use conformal_component::{
     ProcessingEnvironment, Processor,
     audio::{BufferMut, channels_mut},
     events::{Data, Event},
-    pzip,
+    pgrab, pzip,
     synth::{HandleEventsContext, ProcessContext, Synth as SynthTrait},
 };
 use conformal_poly::Poly;
@@ -81,10 +81,11 @@ impl SynthTrait for Synth {
         let lfo_scratch = &mut self.lfo_scratch[..output.num_frames()];
         let mut lfo_events = context.events().into_iter().peekable();
         let parameters = context.parameters();
-        for ((index, sample), (rate, delay, shape_int, wheel, trig_int)) in lfo_scratch
+        let (rate, delay, shape_int, trig_int, hpf_mode) = pgrab!(parameters[numeric "lfo_rate", numeric "lfo_delay", enum "lfo_shape", enum "lfo_trig", enum "hpf_mode"]);
+        for ((index, sample), wheel) in lfo_scratch
             .iter_mut()
             .enumerate()
-            .zip(pzip!(parameters[numeric "lfo_rate", numeric "lfo_delay", enum "lfo_shape", global_expression_numeric ModWheel, enum "lfo_trig"]))
+            .zip(pzip!(parameters[global_expression_numeric ModWheel]))
         {
             while let Some(Event {
                 sample_offset,
@@ -141,10 +142,8 @@ impl SynthTrait for Synth {
         self.poly
             .process(context, &voice::SharedData { lfo: lfo_scratch }, output);
 
-        // we don't support sample-accurate switching of hpf mode, we just grab from parameters at start of buffer
-        let mode = Mode::from_u32(pzip!(parameters[enum "hpf_mode"]).next().unwrap()).unwrap();
         for (channel, hpf) in channels_mut(output).zip(self.hpfs.iter_mut()) {
-            hpf.process(mode, channel);
+            hpf.process(Mode::from_u32(hpf_mode).unwrap(), channel);
         }
     }
 }
