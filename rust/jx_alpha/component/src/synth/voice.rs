@@ -47,6 +47,16 @@ pub enum EnvSource {
 }
 
 #[derive(FromPrimitive, Copy, Clone, Debug, PartialEq, Default)]
+pub enum DynamicMode {
+    #[default]
+    Velocity,
+    Touch,
+    Timbre,
+    VelocityPlusTouch,
+    VelocityPlusTimbre,
+}
+
+#[derive(FromPrimitive, Copy, Clone, Debug, PartialEq, Default)]
 pub enum VcaEnvSource {
     #[default]
     Gate,
@@ -132,25 +142,53 @@ fn dco_adjust(dco_range: DcoRange, dco_tune: u32, dco_fine_tune: f32) -> f32 {
         + (dco_tune as f32 - 12.0f32)
 }
 
-fn get_env_from_source(source: EnvSource, env1: f32, env2: f32, velocity: f32) -> f32 {
+fn get_dynamic_value(velocity: f32, touch: f32, timbre: f32, dynamic_mode: DynamicMode) -> f32 {
+    match dynamic_mode {
+        DynamicMode::Velocity => velocity,
+        DynamicMode::Touch => touch,
+        DynamicMode::Timbre => timbre,
+        DynamicMode::VelocityPlusTouch => velocity + touch,
+        DynamicMode::VelocityPlusTimbre => velocity + timbre,
+    }
+}
+
+fn get_env_from_source(
+    source: EnvSource,
+    env1: f32,
+    env2: f32,
+    velocity: f32,
+    touch: f32,
+    timbre: f32,
+    dynamic_mode: DynamicMode,
+) -> f32 {
+    let get_dyn = || get_dynamic_value(velocity, touch, timbre, dynamic_mode);
     // Linear scale with velocity for now - this hasn't been measured yet.
     match source {
         EnvSource::Env1 => env1,
         EnvSource::Env1Inverse => -env1,
-        EnvSource::Env1Dynamic => env1 * velocity,
+        EnvSource::Env1Dynamic => env1 * get_dyn(),
         EnvSource::Env2 => env2,
         EnvSource::Env2Inverse => -env2,
-        EnvSource::Env2Dynamic => env2 * velocity,
-        EnvSource::Dynamic => velocity * 0.5,
+        EnvSource::Env2Dynamic => env2 * get_dyn(),
+        EnvSource::Dynamic => get_dyn() * 0.5,
     }
 }
 
-fn get_vca_env_from_source(source: VcaEnvSource, env2: f32, gate: f32, velocity: f32) -> f32 {
+fn get_vca_env_from_source(
+    source: VcaEnvSource,
+    env2: f32,
+    gate: f32,
+    velocity: f32,
+    touch: f32,
+    timbre: f32,
+    dynamic_mode: DynamicMode,
+) -> f32 {
+    let get_dyn = || get_dynamic_value(velocity, touch, timbre, dynamic_mode);
     match source {
         VcaEnvSource::Env2 => env2,
-        VcaEnvSource::Env2Dynamic => env2 * velocity,
+        VcaEnvSource::Env2Dynamic => env2 * get_dyn(),
         VcaEnvSource::Gate => gate,
-        VcaEnvSource::GateDynamic => gate * velocity,
+        VcaEnvSource::GateDynamic => gate * get_dyn(),
     }
 }
 
@@ -252,6 +290,8 @@ impl VoiceTrait for Voice {
     ) {
         let mut events = context.events().peekable();
         let per_note_pitch_bend = context.per_note_expression(NumericPerNoteExpression::PitchBend);
+        let per_note_aftertouch = context.per_note_expression(NumericPerNoteExpression::Aftertouch);
+        let per_note_timbre = context.per_note_expression(NumericPerNoteExpression::Timbre);
         let params = context.parameters();
         let (
             dco1_shape_int,
@@ -272,13 +312,17 @@ impl VoiceTrait for Voice {
             x_mod_int,
             dco_bend_range,
             dco_env_source_int,
+            dco_dyn_mode_int,
             mix_env,
             mix_env_source_int,
+            mix_dyn_mode_int,
             vcf_key,
             vcf_env,
             vcf_lfo,
             vcf_env_source_int,
+            vcf_dyn_mode_int,
             vca_env_source_int,
+            vca_dyn_mode_int,
             env1_t1,
             env1_l1,
             env1_t2,
@@ -314,13 +358,17 @@ impl VoiceTrait for Voice {
             enum "x_mod",
             enum "dco_bend_range",
             enum "dco_env_source",
+            enum "dco_dyn_mode",
             numeric "mix_env",
             enum "mix_env_source",
+            enum "mix_dyn_mode",
             numeric "vcf_key",
             numeric "vcf_env",
             numeric "vcf_lfo",
             enum "vcf_env_source",
+            enum "vcf_dyn_mode",
             enum "vca_env_source",
+            enum "vca_dyn_mode",
             numeric "env1_t1",
             numeric "env1_l1",
             numeric "env1_t2",
@@ -340,23 +388,31 @@ impl VoiceTrait for Voice {
         ]);
         let x_mod = Dco2XMod::from_u32(x_mod_int).unwrap();
         let dco_env_source = EnvSource::from_u32(dco_env_source_int).unwrap();
+        let dco_dyn_mode = DynamicMode::from_u32(dco_dyn_mode_int).unwrap();
         let shape0 = Shape::from_u32(dco1_shape_int).unwrap();
         let shape1 = Shape::from_u32(dco2_shape_int).unwrap();
         let mix_env_source = EnvSource::from_u32(mix_env_source_int).unwrap();
+        let mix_dyn_mode = DynamicMode::from_u32(mix_dyn_mode_int).unwrap();
         let dco1_range = DcoRange::from_u32(dco1_range_int).unwrap();
         let dco2_range = DcoRange::from_u32(dco2_range_int).unwrap();
         let vcf_env_source = EnvSource::from_u32(vcf_env_source_int).unwrap();
+        let vcf_dyn_mode = DynamicMode::from_u32(vcf_dyn_mode_int).unwrap();
         let vca_env_source = VcaEnvSource::from_u32(vca_env_source_int).unwrap();
+        let vca_dyn_mode = DynamicMode::from_u32(vca_dyn_mode_int).unwrap();
         for (
             (index, sample),
             (
                 level,
                 mix_dco1,
                 mix_dco2,
-                global_pitch_bend,
                 vcf_cutoff,
                 resonance,
+                global_pitch_bend,
                 expression_pitch_bend,
+                global_aftertouch,
+                expression_aftertouch,
+                global_timbre,
+                expression_timbre,
             ),
             lfo,
         ) in izip!(
@@ -365,13 +421,19 @@ impl VoiceTrait for Voice {
                 numeric "level",
                 numeric "mix_dco1",
                 numeric "mix_dco2",
-                global_expression_numeric PitchBend,
                 numeric "vcf_cutoff",
                 numeric "resonance",
-                external_numeric (per_note_pitch_bend)
+                global_expression_numeric PitchBend,
+                external_numeric (per_note_pitch_bend),
+                global_expression_numeric Aftertouch,
+                external_numeric (per_note_aftertouch),
+                global_expression_numeric Timbre,
+                external_numeric (per_note_timbre)
             ]),
             shared_data.lfo,
         ) {
+            let total_aftertouch = global_aftertouch + expression_aftertouch;
+            let total_timbre = global_timbre + expression_timbre;
             while let Some(conformal_poly::Event {
                 sample_offset,
                 data,
@@ -420,7 +482,15 @@ impl VoiceTrait for Voice {
             );
             let env2 = self.env2.process(&env2_coeffs);
             let gate = self.gate.process(&self.gate_coeffs);
-            let dco_env = get_env_from_source(dco_env_source, env1, env2, self.velocity);
+            let dco_env = get_env_from_source(
+                dco_env_source,
+                env1,
+                env2,
+                self.velocity,
+                total_aftertouch,
+                total_timbre,
+                dco_dyn_mode,
+            );
             let osc0_env_scale = rescale(dco1_env, 0.0..=100.0, 0.0..=1.0);
             let osc0_env = dco_env * osc0_env_scale * osc0_env_scale * 32.0;
             let osc0_lfo_adjust = rescale(dco1_lfo, 0.0..=100.0, 0.0..=5.0) * lfo;
@@ -447,7 +517,15 @@ impl VoiceTrait for Voice {
             let osc1_gain = volume_to_gain(
                 rescale(mix_dco2, 0.0..=100.0, 0.0..=1.0)
                     + rescale(mix_env, 0.0..=100.0, 0.0..=1.0)
-                        * get_env_from_source(mix_env_source, env1, env2, self.velocity),
+                        * get_env_from_source(
+                            mix_env_source,
+                            env1,
+                            env2,
+                            self.velocity,
+                            total_aftertouch,
+                            total_timbre,
+                            mix_dyn_mode,
+                        ),
             );
             let oscillators_output = self.oscillators.generate(&{
                 oscillators::Settings {
@@ -499,7 +577,15 @@ impl VoiceTrait for Voice {
                     rescale(vcf_key, 0.0..=100.0, 0.0..=1.0),
                 )
                 + rescale(vcf_env, 0.0..=100.0, 0.0..=120.0)
-                    * get_env_from_source(vcf_env_source, env1, env2, self.velocity)
+                    * get_env_from_source(
+                        vcf_env_source,
+                        env1,
+                        env2,
+                        self.velocity,
+                        total_aftertouch,
+                        total_timbre,
+                        vcf_dyn_mode,
+                    )
                 + rescale(vcf_lfo, 0.0..=100.0, 0.0..=84.0) * lfo;
             let cutoff_incr = increment(adjusted_vcf_cutoff, self.sampling_rate);
             let resonance = rescale(resonance, 0.0..=100.0, 0.0..=1.0);
@@ -512,7 +598,15 @@ impl VoiceTrait for Voice {
                 self.level_slew.process(level, self.control_slew_rate),
                 0.0..=100.0,
                 0.0..=1.0,
-            ) * get_vca_env_from_source(vca_env_source, env2, gate, self.velocity);
+            ) * get_vca_env_from_source(
+                vca_env_source,
+                env2,
+                gate,
+                self.velocity,
+                total_aftertouch,
+                total_timbre,
+                vca_dyn_mode,
+            );
 
             *sample = volume_to_gain(vca_volume) * vcf_output;
         }

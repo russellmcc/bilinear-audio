@@ -40,7 +40,18 @@ const ENV_SOURCE: TypeSpecificInfoRef<'static, &'static str> = TypeSpecificInfoR
     ],
 };
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 51] = [
+const DYNAMIC_MODE: TypeSpecificInfoRef<'static, &'static str> = TypeSpecificInfoRef::Enum {
+    default: 0,
+    values: &[
+        "Velocity",
+        "Touch",
+        "Timbre",
+        "Velocity+Touch",
+        "Velocity+Timbre",
+    ],
+};
+
+const PARAMETERS: [InfoRef<'static, &'static str>; 55] = [
     InfoRef {
         title: "Level",
         short_title: "Level",
@@ -187,6 +198,13 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 51] = [
         type_specific: ENV_SOURCE,
     },
     InfoRef {
+        title: "DCO Dynamic Mode",
+        short_title: "DCO Dynamic Mode",
+        unique_id: "dco_dyn_mode",
+        flags: Flags { automatable: true },
+        type_specific: DYNAMIC_MODE,
+    },
+    InfoRef {
         title: "Mix DCO1",
         short_title: "Mix DCO1",
         unique_id: "mix_dco1",
@@ -213,6 +231,13 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 51] = [
         unique_id: "mix_env_source",
         flags: Flags { automatable: true },
         type_specific: ENV_SOURCE,
+    },
+    InfoRef {
+        title: "Mix Dynamic Mode",
+        short_title: "Mix Dynamic Mode",
+        unique_id: "mix_dyn_mode",
+        flags: Flags { automatable: true },
+        type_specific: DYNAMIC_MODE,
     },
     InfoRef {
         title: "HPF Mode",
@@ -267,6 +292,13 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 51] = [
         type_specific: ENV_SOURCE,
     },
     InfoRef {
+        title: "VCF Dynamic Mode",
+        short_title: "VCF Dynamic Mode",
+        unique_id: "vcf_dyn_mode",
+        flags: Flags { automatable: true },
+        type_specific: DYNAMIC_MODE,
+    },
+    InfoRef {
         title: "VCA Env Source",
         short_title: "VCA Env Source",
         unique_id: "vca_env_source",
@@ -275,6 +307,13 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 51] = [
             default: 0,
             values: &["Gate", "Gate-Dynamic", "Env2", "Env2-Dynamic"],
         },
+    },
+    InfoRef {
+        title: "VCA Dynamic Mode",
+        short_title: "VCA Dynamic Mode",
+        unique_id: "vca_dyn_mode",
+        flags: Flags { automatable: true },
+        type_specific: DYNAMIC_MODE,
     },
     InfoRef {
         title: "Env1 T1",
