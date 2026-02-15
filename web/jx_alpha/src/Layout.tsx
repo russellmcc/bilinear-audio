@@ -98,6 +98,7 @@ const Layout = () => (
                   marginLeft: "-105px",
                   paddingTop: "14px",
                   paddingLeft: "11px",
+                  paddingBottom: "11px",
                   display: "flex",
                   flexDirection: "column",
                   borderLeft: "2px solid var(--darkest-color)",
@@ -109,6 +110,7 @@ const Layout = () => (
                   alt="logo"
                   style={{
                     width: "205px",
+                    height: "171px",
                   }}
                 />
               </div>

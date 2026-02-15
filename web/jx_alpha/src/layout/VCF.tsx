@@ -31,7 +31,7 @@ export const VCF = () => (
       height: "100%",
     }}
   >
-    <h1>VCF</h1>
+    <h1 style={{ width: "220px" }}>VCF</h1>
     <div
       style={{
         display: "flex",
