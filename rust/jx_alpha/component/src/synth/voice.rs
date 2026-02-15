@@ -170,7 +170,7 @@ fn get_env_from_source(
         EnvSource::Env2 => env2,
         EnvSource::Env2Inverse => -env2,
         EnvSource::Env2Dynamic => env2 * get_dyn(),
-        EnvSource::Dynamic => get_dyn() * 0.5,
+        EnvSource::Dynamic => get_dyn(),
     }
 }
 
