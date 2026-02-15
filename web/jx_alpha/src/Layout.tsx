@@ -27,8 +27,7 @@ const Layout = () => (
           display: "flex",
           flexDirection: "column",
           gap: "9px",
-          borderRight: "2px solid var(--darkest-color)",
-          alignItems: "stretch",
+          alignItems: "flex-start",
           justifyContent: "space-between",
         }}
       >
@@ -64,8 +63,9 @@ const Layout = () => (
               paddingTop: "11px",
               paddingLeft: "11px",
               paddingRight: "11px",
+              width: "141px",
+              borderLeft: "2px solid var(--darkest-color)",
               borderRight: "2px solid var(--darkest-color)",
-              borderBottom: "2px solid var(--darkest-color)",
             }}
           >
             <Mixer />
@@ -74,8 +74,6 @@ const Layout = () => (
             style={{
               paddingTop: "11px",
               paddingLeft: "11px",
-              borderRight: "2px solid var(--darkest-color)",
-              borderBottom: "2px solid var(--darkest-color)",
             }}
           >
             <VCF />
@@ -85,7 +83,6 @@ const Layout = () => (
               position: "relative",
               display: "flex",
               flexDirection: "column",
-              paddingTop: "14px",
             }}
           >
             <div
@@ -95,24 +92,45 @@ const Layout = () => (
                 flexDirection: "column",
               }}
             >
-              <h1 className="title">SYNTHESIZER PROGRAMMER</h1>
-              <img
-                src={logo}
-                alt="logo"
+              <div
                 style={{
-                  width: "205px",
+                  position: "relative",
+                  marginLeft: "-105px",
+                  paddingTop: "14px",
+                  paddingLeft: "11px",
+                  display: "flex",
+                  flexDirection: "column",
+                  borderLeft: "2px solid var(--darkest-color)",
                 }}
-              />
+              >
+                <h1 className="title">SYNTHESIZER PROGRAMMER</h1>
+                <img
+                  src={logo}
+                  alt="logo"
+                  style={{
+                    width: "205px",
+                  }}
+                />
+              </div>
               <LFO />
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "row" }}>
+        <div
+          style={{
+            marginLeft: "-130px",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "flex-start",
+            borderLeft: "2px solid var(--darkest-color)",
+          }}
+        >
           <div
             style={{
               paddingTop: "11px",
               paddingRight: "11px",
               paddingLeft: "11px",
+              borderTop: "2px solid var(--darkest-color)",
               borderRight: "2px solid var(--darkest-color)",
               paddingBottom: "11px",
             }}
@@ -125,8 +143,11 @@ const Layout = () => (
               paddingRight: "11px",
               paddingLeft: "11px",
               position: "relative",
-              top: "-2px",
               borderTop: "2px solid var(--darkest-color)",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              width: "325px",
             }}
           >
             <ENV env="2" />

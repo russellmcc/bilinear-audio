@@ -77,6 +77,7 @@ export const VCF = () => (
             flexDirection: "row",
             justifyContent: "flex-end",
             paddingBottom: "11px",
+            paddingRight: "11px",
             gap: "11px",
           }}
         >

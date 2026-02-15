@@ -25,6 +25,7 @@ export const Mixer = () => (
         style={{
           display: "flex",
           flexDirection: "row",
+          justifyContent: "center",
         }}
       >
         <ParamSlider param="mix_dco1" label="DCO1" scale="labeled" />

@@ -7,10 +7,9 @@ export const DCOMod = () => (
     style={{
       display: "flex",
       flexDirection: "row",
-      flexGrow: 1,
       paddingRight: "11px",
       paddingBottom: "11px",
-      justifyContent: "space-around",
+      gap: "11px",
     }}
   >
     <EnvModeSlider param="dco_env_source" />
