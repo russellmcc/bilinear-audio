@@ -67,6 +67,10 @@ export const GroupLabel = ({
           left: 0,
           height: bracketHeight,
           width: BRACKET_WIDTH,
+          // Hack for a safari bug where subpixel rendering causes us to wiggle.
+          // Putting in a 0px translate causes safari to put this in its own layer
+          // that doesn't wiggle.
+          transform: "translateZ(0px)",
         }}
       >
         <BrokenBracket height={bracketHeight} />
