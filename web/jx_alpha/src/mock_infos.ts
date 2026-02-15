@@ -39,6 +39,12 @@ const envSource: Info["type_specific"] = {
   ],
 };
 
+const dynamicMode: Info["type_specific"] = {
+  t: "enum",
+  default: "Velocity",
+  values: ["Velocity", "Touch", "Timbre", "Velocity+Touch", "Velocity+Timbre"],
+};
+
 const envParams = (envName: string, prefix: string): Record<string, Info> =>
   Object.fromEntries(
     (
@@ -164,6 +170,10 @@ const infos = new Map<string, Info>(
       title: "DCO Env Source",
       type_specific: envSource,
     },
+    dco_dyn_mode: {
+      title: "DCO Dynamic Mode",
+      type_specific: dynamicMode,
+    },
     mix_dco1: {
       title: "Mix DCO1",
       type_specific: percentage(100),
@@ -179,6 +189,10 @@ const infos = new Map<string, Info>(
     mix_env_source: {
       title: "Mix Env Source",
       type_specific: envSource,
+    },
+    mix_dyn_mode: {
+      title: "Mix Dynamic Mode",
+      type_specific: dynamicMode,
     },
     hpf_mode: {
       title: "HPF Mode",
@@ -212,6 +226,10 @@ const infos = new Map<string, Info>(
       title: "VCF Env Source",
       type_specific: envSource,
     },
+    vcf_dyn_mode: {
+      title: "VCF Dynamic Mode",
+      type_specific: dynamicMode,
+    },
     vca_env_source: {
       title: "VCA Env Source",
       type_specific: {
@@ -219,6 +237,10 @@ const infos = new Map<string, Info>(
         default: "Gate",
         values: ["Gate", "Gate-Dynamic", "Env2", "Env2-Dynamic"],
       },
+    },
+    vca_dyn_mode: {
+      title: "VCA Dynamic Mode",
+      type_specific: dynamicMode,
     },
     ...envParams("Env1", "env1"),
     ...envParams("Env2", "env2"),

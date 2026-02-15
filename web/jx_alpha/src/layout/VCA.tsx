@@ -1,4 +1,5 @@
 import { LABEL_MARGIN } from "../components/constants";
+import DynModeSlider from "../components/DynModeSlider";
 import { LINE_SPACING } from "../components/EnumSlider";
 import { BRACKET_WIDTH, GroupLabel } from "../components/EnvSourceLabels";
 import ParamEnumSlider from "../components/ParamEnumSlider";
@@ -53,6 +54,9 @@ export const VCA = () => (
             <div style={{ height: `${LINE_SPACING * 3}px` }}></div>
 
             <GroupLabel label="2" count={2} />
+          </div>
+          <div style={{ marginLeft: "11px" }}>
+            <DynModeSlider param="vca_dyn_mode" />
           </div>
         </div>
       </div>

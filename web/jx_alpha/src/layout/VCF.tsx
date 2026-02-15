@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import ParamSlider from "../components/ParamSlider";
 import EnvModeSlider from "../components/EnvModeSlider";
 import VCA from "./VCA";
+import DynModeSlider from "../components/DynModeSlider";
 
 const HPFSlider = () => {
   const param = "hpf_mode";
@@ -30,7 +31,7 @@ export const VCF = () => (
       height: "100%",
     }}
   >
-    <h1>VCF</h1>
+    <h1 style={{ width: "220px" }}>VCF</h1>
     <div
       style={{
         display: "flex",
@@ -73,12 +74,15 @@ export const VCF = () => (
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
+            flexDirection: "row",
             justifyContent: "flex-end",
             paddingBottom: "11px",
+            paddingRight: "11px",
+            gap: "11px",
           }}
         >
           <EnvModeSlider param="vcf_env_source"></EnvModeSlider>
+          <DynModeSlider param="vcf_dyn_mode" />
         </div>
         <div
           style={{

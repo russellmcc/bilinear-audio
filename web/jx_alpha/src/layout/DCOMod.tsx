@@ -1,18 +1,19 @@
 import ParamEnumKnob from "../components/ParamEnumKnob";
 import EnvModeSlider from "../components/EnvModeSlider";
+import DynModeSlider from "../components/DynModeSlider";
 
 export const DCOMod = () => (
   <div
     style={{
       display: "flex",
       flexDirection: "row",
-      flexGrow: 1,
       paddingRight: "11px",
       paddingBottom: "11px",
-      justifyContent: "space-around",
+      gap: "11px",
     }}
   >
     <EnvModeSlider param="dco_env_source" />
+    <DynModeSlider param="dco_dyn_mode" />
     <div
       style={{
         display: "flex",

@@ -5,3 +5,5 @@ export const formatXmod = (value: string) => {
     .map((v) => (v.length > 0 ? v[0]!.toUpperCase() : ""));
   return firstParts.join("+");
 };
+
+export default formatXmod;
