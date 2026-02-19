@@ -1,5 +1,5 @@
 import { Knob as KnobKit } from "music-ui/kit";
-import { lerp } from "music-ui/util";
+import { lerp, Scale } from "music-ui/util";
 import { useKnob } from "plugin-ui";
 import { useMemo } from "react";
 
@@ -9,6 +9,7 @@ export type Props = {
   style: Style;
   param: string;
   label: string;
+  scale?: Scale;
 };
 
 type DisplayProps = {
@@ -79,8 +80,8 @@ const BigLabel = ({ ...props }: KnobKit.LabelProps) => (
   <Label {...props} style="big" />
 );
 
-export const Knob = ({ style, param, label }: Props) => {
-  const { ...props } = useKnob({ param });
+export const Knob = ({ style, param, label, scale }: Props) => {
+  const { ...props } = useKnob({ param, scale });
 
   const { display, labelComponent } = useMemo(
     () =>

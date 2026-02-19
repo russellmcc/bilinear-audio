@@ -1,3 +1,4 @@
+import { exponentialScale } from "music-ui/util";
 import BypassSlider from "../components/BypassSlider";
 import Knob from "../components/Knob";
 
@@ -34,7 +35,12 @@ export const ControlLayout = () => (
         width: "calc(100% - 26px)",
       }}
     >
-      <Knob style="small" param="time" label="time" />
+      <Knob
+        style="small"
+        param="time"
+        label="time"
+        scale={exponentialScale(0.5, 0.1)}
+      />
       <Knob style="small" param="tone" label="tone" />
       <Knob style="small" param="brightness" label="bright" />
       <Knob style="small" param="density" label="dense" />
