@@ -2,6 +2,7 @@
   "rustPackage": "reverb_vst",
   "name": "Fluffyverb",
   "id": "com.russellmcc.fluffyverb",
+  "vendor": "Bilinear Audio",
   "sig": "RMcC",
   "version": "0.0.0"
 }

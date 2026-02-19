@@ -2,6 +2,7 @@
   "rustPackage": "rchorus_vst",
   "name": "Chorus-R",
   "id": "com.russellmcc.chorus-r",
+  "vendor": "Bilinear Audio",
   "sig": "RMcC",
   "version": "0.0.0"
 }
