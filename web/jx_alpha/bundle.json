@@ -2,6 +2,7 @@
   "rustPackage": "jx_alpha_vst",
   "name": "Alpha JX",
   "id": "com.russellmcc.jx_alpha",
+  "vendor": "Bilinear Audio",
   "sig": "RMcC",
   "version": "0.0.0"
 }
