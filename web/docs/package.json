@@ -10,7 +10,7 @@
     "check-format": "prettier -c .",
     "format": "prettier --write .",
     "dev": "bun x next dev",
-    "build": "bun x --bun next build"
+    "build": "bun x --bun next build && bun x --bun pagefind --site .next/server/app --output-path out/_pagefind"
   },
   "dependencies": {
     "next": "catalog:",
@@ -23,11 +23,12 @@
     "typescript": "*"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "catalog:",
+    "@next/eslint-plugin-next": "catalog:",
     "@types/node": "^24.10.0",
     "@types/react": "catalog:",
     "eslint-config-custom": "workspace:*",
-    "@eslint/eslintrc": "catalog:",
-    "@next/eslint-plugin-next": "catalog:"
+    "pagefind": "catalog:"
   },
   "type": "module"
 }

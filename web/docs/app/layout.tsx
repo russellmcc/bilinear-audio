@@ -32,6 +32,7 @@ const MyLayout = async ({ children }: { children: React.ReactNode }) => {
       <body>
         <Layout
           navbar={navbar}
+          copyPageButton={false}
           footer={<Footer />}
           editLink="Edit this page"
           docsRepositoryBase="https://github.com/russellmcc/bilinear-audio/tree/main/web/docs"
