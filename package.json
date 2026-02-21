@@ -81,6 +81,7 @@
     "eslint-plugin-prefer-arrow-functions": "^3.9.1",
     "eslint-plugin-storybook": "^10.1.11",
     "typescript-eslint": "^8.46.3",
-    "@next/eslint-plugin-next": "^15.5.3"
+    "@next/eslint-plugin-next": "^15.5.3",
+    "pagefind": "^1.4.0"
   }
 }
