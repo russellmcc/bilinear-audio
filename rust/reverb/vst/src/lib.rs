@@ -1,6 +1,8 @@
 use reverb_component::Component;
 
-use conformal_vst_wrapper::{ClassID, ClassInfoBuilder, EffectClass, HostInfo, Info};
+use conformal_vst_wrapper::{
+    ClassID, ClassInfoBuilder, EffectClass, HostInfo, Info, ResizingOptions,
+};
 
 const CID: ClassID = [
     0x02, 0xec, 0x71, 0x35, 0x3a, 0x08, 0x47, 0x26, 0x97, 0xb9, 0xad, 0xad, 0xaf, 0x40, 0x1c, 0xb8,
@@ -21,6 +23,13 @@ conformal_vst_wrapper::wrap_factory!(
                     height: 400,
                 },
             )
+            .resizable(ResizingOptions {
+                ui_min_size: Some(conformal_vst_wrapper::UiSize {
+                    width: 600,
+                    height: 400,
+                }),
+                ui_max_size: None,
+            })
             .build(),
             factory: |_: &HostInfo| -> Component { Default::default() },
             category: "Fx",
