@@ -9,7 +9,7 @@ pub struct PerSampleDelay {
 impl PerSampleDelay {
     pub fn new(delay: usize) -> Self {
         Self {
-            buffer: vec![0.0; delay],
+            buffer: vec![0.0; delay.max(1)],
             head: 0,
         }
     }
