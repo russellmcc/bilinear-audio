@@ -1,6 +1,6 @@
 use jx_alpha_component::Component;
 
-use conformal_vst_wrapper::{ClassID, ClassInfo, HostInfo, Info, SynthClass};
+use conformal_vst_wrapper::{ClassID, ClassInfoBuilder, HostInfo, Info, SynthClass};
 
 const CID: ClassID = [
     0x93, 0x25, 0x34, 0xb4, 0x08, 0x5f, 0x49, 0xa9, 0xa9, 0x1d, 0x95, 0x0e, 0xcc, 0x90, 0x29, 0x1c,
@@ -12,15 +12,16 @@ const EDIT_CONTROLLER_CID: ClassID = [
 conformal_vst_wrapper::wrap_factory!(
     &const {
         [&SynthClass {
-            info: ClassInfo {
-                name: "Alpha JX",
-                cid: CID,
-                edit_controller_cid: EDIT_CONTROLLER_CID,
-                ui_initial_size: conformal_vst_wrapper::UiSize {
+            info: ClassInfoBuilder::new(
+                "Alpha JX",
+                CID,
+                EDIT_CONTROLLER_CID,
+                conformal_vst_wrapper::UiSize {
                     width: 1003,
                     height: 552,
                 },
-            },
+            )
+            .build(),
             factory: |_: &HostInfo| -> Component { Default::default() },
         }]
     },

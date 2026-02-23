@@ -1,6 +1,6 @@
 use reverb_component::Component;
 
-use conformal_vst_wrapper::{ClassID, ClassInfo, EffectClass, HostInfo, Info};
+use conformal_vst_wrapper::{ClassID, ClassInfoBuilder, EffectClass, HostInfo, Info};
 
 const CID: ClassID = [
     0x02, 0xec, 0x71, 0x35, 0x3a, 0x08, 0x47, 0x26, 0x97, 0xb9, 0xad, 0xad, 0xaf, 0x40, 0x1c, 0xb8,
@@ -12,15 +12,16 @@ const EDIT_CONTROLLER_CID: ClassID = [
 conformal_vst_wrapper::wrap_factory!(
     &const {
         [&EffectClass {
-            info: ClassInfo {
-                name: "Fluffyverb",
-                cid: CID,
-                edit_controller_cid: EDIT_CONTROLLER_CID,
-                ui_initial_size: conformal_vst_wrapper::UiSize {
+            info: ClassInfoBuilder::new(
+                "Fluffyverb",
+                CID,
+                EDIT_CONTROLLER_CID,
+                conformal_vst_wrapper::UiSize {
                     width: 600,
                     height: 400,
                 },
-            },
+            )
+            .build(),
             factory: |_: &HostInfo| -> Component { Default::default() },
             category: "Fx",
             bypass_id: "bypass",

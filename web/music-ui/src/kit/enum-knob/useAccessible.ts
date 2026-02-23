@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 
 export type UseAccessibleProps = {
   value?: string;
-  values: string[];
+  values: readonly string[];
   onValue?: (value: string) => void;
   displayFormatter?: (value: string) => string;
   label: string;

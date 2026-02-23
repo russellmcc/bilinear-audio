@@ -315,38 +315,30 @@ dependencies = [
 
 [[package]]
 name = "conformal_component"
-version = "0.4.2"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e040d90655c884aa8df7965ead0e98b097044da0debcec3cded9109f2a93590"
+checksum = "f2996c166d99185caa1d36b51ba0fd707c65d8b89a65e3bbf12ce5c7551540e3"
 dependencies = [
  "itertools 0.13.0",
 ]
 
 [[package]]
 name = "conformal_core"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f89d3382287a00ef3a793a465350fb17cfbc0c244afa5b4675452ecdf201c093"
+checksum = "776e1f0b867a8330a7dceddb562ecd556a2553e7baa1df99e7d71178338a137b"
 dependencies = [
  "conformal_component",
+ "objc",
+ "process_path",
  "serde",
 ]
 
 [[package]]
-name = "conformal_macos_bundle"
-version = "0.3.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b94fc6956cc5cbaef446a6ab431c55987f0cfee5ee6953526e93c6b374ed575"
-dependencies = [
- "objc",
- "process_path",
-]
-
-[[package]]
 name = "conformal_poly"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5175d76db41a77a7a4354ae9eafdd59a5d6c3e744388ced77755f8c1d6831f96"
+checksum = "f52cc5953b2406ffe044b4ee52906137332d499f1178342f8a49e457056d5b0d"
 dependencies = [
  "arrayvec",
  "conformal_component",
@@ -354,25 +346,25 @@ dependencies = [
 
 [[package]]
 name = "conformal_preferences"
-version = "0.3.6"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd57811eee977c0d13842950a368d3bf994527f4172ab786fd4e69155981dad6"
+checksum = "9fc507e9101880c4fccd0c6107da6214fdb56a88eb001e52b3fb95e161adb498"
 dependencies = [
  "objc",
  "serde",
  "serde_json",
+ "windows-registry",
 ]
 
 [[package]]
 name = "conformal_ui"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a88dd29b52c63d78f3c8712e1e250dc71edfe74eb517e181958e6547685a59c8"
+checksum = "d2c870d95d66a0836dff6e95fde566b35013c821af84ee6d47568e079de6483e"
 dependencies = [
  "base64",
  "conformal_component",
  "conformal_core",
- "conformal_macos_bundle",
  "conformal_preferences",
  "mime_guess",
  "rmp-serde",
@@ -383,18 +375,19 @@ dependencies = [
 
 [[package]]
 name = "conformal_vst_wrapper"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27c54ccafc3d6ea2893d41b404647fb90ca40756a4814f65b4f9a51b80bb1830"
+checksum = "ae118d3baf84dfe3c96540e3dc8e8f3640c59674c2ab0196d72af728169c82e8"
 dependencies = [
  "conformal_component",
  "conformal_core",
- "conformal_macos_bundle",
  "conformal_ui",
  "const_format",
  "itertools 0.13.0",
+ "process_path",
  "rmp-serde",
  "serde",
+ "serde_bytes",
  "vst3 0.3.0",
 ]
 

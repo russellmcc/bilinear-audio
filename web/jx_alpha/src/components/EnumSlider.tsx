@@ -24,7 +24,7 @@ export type Props = {
   /**
    * The possible values of the enum
    */
-  values: string[];
+  values: readonly string[];
 
   /**
    * The currently selected value.

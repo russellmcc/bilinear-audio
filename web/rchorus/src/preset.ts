@@ -1,7 +1,7 @@
 import {
-  useNumericAtom,
-  useStringAtom,
-  useBooleanAtom,
+  useNumericParam,
+  useEnumParam,
+  useSwitchParam,
 } from "@conformal/plugin";
 import { typedInfos } from "./mock_infos";
 import { useCallback, useMemo } from "react";
@@ -26,21 +26,21 @@ const presetParamInfos: {
   routing: typedInfos.routing,
 } as const;
 
-const atomSetters = {
-  numeric: useNumericAtom,
-  enum: useStringAtom,
-  switch: useBooleanAtom,
+const paramHooks = {
+  numeric: useNumericParam,
+  enum: useEnumParam,
+  switch: useSwitchParam,
 } as const;
-type ParamType = keyof typeof atomSetters;
+type ParamType = keyof typeof paramHooks;
 
 type SetterForParamType<T extends ParamType> = ReturnType<
-  (typeof atomSetters)[T]
->[1];
+  (typeof paramHooks)[T]
+>["set"];
 
 const useSelectSetter = <T extends ParamType>(
   t: T,
   key: string,
-): SetterForParamType<T> => atomSetters[t](key)[1];
+): SetterForParamType<T> => paramHooks[t](key).set;
 
 type ParamTypeOf<K extends PresetParam> =
   (typeof presetParamInfos)[K]["type_specific"]["t"];
