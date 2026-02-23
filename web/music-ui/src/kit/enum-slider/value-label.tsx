@@ -109,7 +109,7 @@ export const ValueLabelInternal = ({
 
 export type LabelGroupProps = {
   accessibilityLabel: string;
-  values: string[];
+  values: readonly string[];
   value?: string;
   displayFormatter?: (value: string) => string;
   valueLabel: ValueLabel;

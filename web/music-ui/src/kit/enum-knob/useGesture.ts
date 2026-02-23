@@ -4,7 +4,7 @@ import { clamp } from "../../util";
 
 export type UseGestureProps = {
   value?: string;
-  values: string[];
+  values: readonly string[];
   onValue?: (value: string) => void;
   onGrabOrRelease?: (grabbed: boolean) => void;
   defaultValue?: string;

@@ -18,7 +18,7 @@
     "web-storybook": "conformal-scripts web-script -s storybook",
     "web-build-storybook": "conformal-scripts web-script -s build-storybook",
     "web-build": "conformal-scripts web-script -s build",
-    "web-lint": "bun run --filter '*' lint",
+    "web-lint": "conformal-scripts web-script -s lint",
     "web-test": "bun test",
     "rust-miri": "CARGO_TARGET_DIR=target/miri PROPTEST_DISABLE_FAILURE_PERSISTENCE=true MIRIFLAGS='-Zmiri-env-forward=PROPTEST_DISABLE_FAILURE_PERSISTENCE' conformal-scripts cargo +nightly miri test",
     "rust-build": "conformal-scripts cargo build",
@@ -30,7 +30,7 @@
     "validate": "conformal-scripts web-script -s validate"
   },
   "devDependencies": {
-    "@conformal/scripts": "^0.10.0",
+    "@conformal/scripts": "^0.11.0",
     "@happy-dom/global-registrator": "^20.3.3",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -51,7 +51,7 @@
     "dequal": "^2.0.3",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
-    "@conformal/plugin": "^0.4.0",
+    "@conformal/plugin": "^0.6.0",
     "next": "^15.5.3",
     "nextra": "^4.5.0",
     "nextra-theme-docs": "^4.5.0",

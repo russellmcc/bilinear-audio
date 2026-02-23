@@ -1,4 +1,4 @@
-use conformal_vst_wrapper::{ClassID, ClassInfo, HostInfo, Info, SynthClass};
+use conformal_vst_wrapper::{ClassID, ClassInfoBuilder, HostInfo, Info, SynthClass};
 use p61_component::Component;
 
 const CID: ClassID = [
@@ -11,15 +11,16 @@ const EDIT_CONTROLLER_CID: ClassID = [
 conformal_vst_wrapper::wrap_factory!(
     &const {
         [&SynthClass {
-            info: ClassInfo {
-                name: "Poly 81",
-                cid: CID,
-                edit_controller_cid: EDIT_CONTROLLER_CID,
-                ui_initial_size: conformal_vst_wrapper::UiSize {
+            info: ClassInfoBuilder::new(
+                "Poly 81",
+                CID,
+                EDIT_CONTROLLER_CID,
+                conformal_vst_wrapper::UiSize {
                     width: 800,
                     height: 400,
                 },
-            },
+            )
+            .build(),
             factory: |_: &HostInfo| -> Component { Default::default() },
         }]
     },

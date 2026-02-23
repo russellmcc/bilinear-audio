@@ -1,5 +1,4 @@
-import { useUiStateAtom } from "@conformal/plugin";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useUiState } from "@conformal/plugin";
 import { useCallback } from "react";
 import { z } from "zod";
 import { Preset, useApplyPreset } from "./preset";
@@ -23,7 +22,7 @@ export type Mode = z.infer<typeof modeSchema>;
 const makeMode = (id: Mode["id"]): Mode => ({ id });
 
 export const useMode = (): Mode => {
-  const mode = useAtomValue(useUiStateAtom<Mode>());
+  const mode = useUiState<Mode>().value;
   return mode ?? { id: "c3p" };
 };
 
@@ -38,7 +37,7 @@ const getPresetForMode = (mode: Mode): Preset => {
 
 export const useNextMode = () => {
   const mode = useMode();
-  const setMode = useSetAtom(useUiStateAtom<Mode>());
+  const setMode = useUiState<Mode>().set;
   const applyPreset = useApplyPreset();
   const nextMode = useCallback(() => {
     const currentIndex = modeIds.indexOf(mode.id);

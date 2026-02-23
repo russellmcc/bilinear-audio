@@ -13,7 +13,7 @@ export type Props = {
   /**
    * The possible values of the knob
    */
-  values: string[];
+  values: readonly string[];
 
   /**
    * The label of the knob.
