@@ -87,7 +87,7 @@ jobs:
           DEVELOPER_ID_INSTALLER: ${{ secrets.DEVELOPER_INSTALLER_ID }}
           NOTARYTOOL_CREDENTIALS_KEYCHAIN_ITEM: ${{ secrets.NOTARYTOOL_CREDENTIALS_KEYCHAIN_ITEM }}
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
           prerelease: ${{ contains(github.ref, '-') }}
           body: "Release ${{ github.ref_name }}" # Prevent auto generation of release notes
@@ -96,6 +96,7 @@ jobs:
             target/release/Chorus-R.dmg
             target/release/Fluffyverb.dmg
             target/release/Alpha JX.dmg
+
   deploy:
     environment:
       name: github-pages
@@ -106,3 +107,28 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  release-windows:
+    permissions:
+      contents: write
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: "true"
+      - uses: ./.github/actions/bootstrap
+      - run: bun run ci
+      - run: bun run package p61 --dist
+      - run: bun run package rchorus --dist
+      - run: bun run package reverb --dist
+      - run: bun run package jx_alpha --dist
+      - name: Release
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+        with:
+          prerelease: ${{ contains(github.ref, '-') }}
+          body: "Release ${{ github.ref_name }}"
+          files: |
+            target/release/Poly 81.msi
+            target/release/Chorus-R.msi
+            target/release/Fluffyverb.msi
+            target/release/Alpha JX.msi
