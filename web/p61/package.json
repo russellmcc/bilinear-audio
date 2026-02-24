@@ -25,7 +25,6 @@
     "@types/d3-shape": "catalog:",
     "@types/eslint-plugin-tailwindcss": "^3.17.0",
     "d3-shape": "catalog:",
-    "jotai": "catalog:",
     "music-ui": "workspace:*",
     "plugin-ui": "workspace:*",
     "react": "catalog:",

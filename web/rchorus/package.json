@@ -17,8 +17,7 @@
     "music-ui": "workspace:*",
     "@conformal/plugin": "catalog:",
     "react-dom": "catalog:",
-    "react": "catalog:",
-    "jotai": "catalog:"
+    "react": "catalog:"
   },
   "peerDependencies": {
     "zod": "^4.3.6"
