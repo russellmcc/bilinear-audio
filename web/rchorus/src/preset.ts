@@ -59,7 +59,7 @@ type Setters = {
 
 const useSetter = <Param extends PresetParam>(param: Param) => {
   const t: ParamTypeOf<Param> = presetParamInfos[param].type_specific.t;
-  return useSelectSetter(t, `params/${param}`);
+  return useSelectSetter(t, param);
 };
 
 const applyMapped = <M extends Record<string, unknown>, K extends keyof M>(
