@@ -1,7 +1,3 @@
-// Temporary workaround for https://github.com/oven-sh/bun/issues/4890
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-
 import App from "./App.tsx";
 import { StrictMode, Suspense } from "react";
 import * as Client from "react-dom/client";
