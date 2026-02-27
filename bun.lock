@@ -5,7 +5,7 @@
     "": {
       "name": "poly-81",
       "devDependencies": {
-        "@conformal/scripts": "^0.11.1",
+        "@conformal/scripts": "^0.11.2",
         "@happy-dom/global-registrator": "^20.3.3",
         "@testing-library/react": "^16.3.2",
         "@testing-library/user-event": "^14.6.1",
@@ -289,11 +289,11 @@
 
     "@commander-js/extra-typings": ["@commander-js/extra-typings@14.0.0", "", { "peerDependencies": { "commander": "~14.0.0" } }, "sha512-hIn0ncNaJRLkZrxBIp5AsW/eXEHNKYQBh0aPdoUqNgD+Io3NIykQqpKFyKcuasZhicGaEZJX/JBSIkZ4e5x8Dg=="],
 
-    "@conformal/create-plugin": ["@conformal/create-plugin@0.12.0", "", { "dependencies": { "smol-toml": "^1.6.0", "zod": "^4.3.6" }, "bin": { "create-plugin": "src/cli.ts" } }, "sha512-8l7P1+0Z25sCgCV7QGqgFkz6QVUmddUU3rQoTXi2SgJ6kAqHFANzXgPI87C7Dg6tSOBZFF9P2mXrIP5XPT77SA=="],
+    "@conformal/create-plugin": ["@conformal/create-plugin@0.12.1", "", { "dependencies": { "smol-toml": "^1.6.0", "zod": "^4.3.6" }, "bin": { "create-plugin": "src/cli.ts" } }, "sha512-AoMVd/fEn+zd60121/PZvkci7H0dU6KhtVjRY6xhgV7aVfuPTRdw5ZFR+7IgwtAQqhMQsep6EeDRNl2sRCDQxw=="],
 
     "@conformal/plugin": ["@conformal/plugin@0.6.0", "", { "dependencies": { "@msgpack/msgpack": "^3.1.3", "jotai": "^2.18.0", "jotai-family": "^1.0.1", "zod": "^4.3.6" }, "peerDependencies": { "react": "^19.2.4", "react-dom": "^19.2.4" } }, "sha512-3/QzLlV7wHoqi3fvf3c4sySXgpmp+kJsLCI7TDS3Fzn3N0mgWtTIC910koDWEhHebeky56yHE7FwA4sbEMTvQA=="],
 
-    "@conformal/scripts": ["@conformal/scripts@0.11.1", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@conformal/create-plugin": "^0.12.0", "@conformal/stamp": "^0.5.0", "commander": "^14.0.3", "rcedit": "^5.0.2", "tmp-promise": "^3.0.3", "zod": "^4.3.6" }, "bin": { "conformal-scripts": "src/index.ts" } }, "sha512-FsmA+aqPdOWxGv3bQvMti0Oqrrfy4prTCrZx/dRmGFU3sSEcGlVeLUB+hIvBGn7m2JQAqzH46AGZhKYF1S0mag=="],
+    "@conformal/scripts": ["@conformal/scripts@0.11.2", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@conformal/create-plugin": "^0.12.1", "@conformal/stamp": "^0.5.0", "commander": "^14.0.3", "rcedit": "^5.0.2", "tmp-promise": "^3.0.3", "zod": "^4.3.6" }, "bin": { "conformal-scripts": "src/index.ts" } }, "sha512-GIJL844XyU4SURgHbwdjBsjDAPeIDAcaYK/HRq1NWpbKyrf/l2QBzsdLXQeNjYNtkgkB50mUH0IbPKEeobr54Q=="],
 
     "@conformal/stamp": ["@conformal/stamp@0.5.0", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@inquirer/prompts": "^8.2.1", "commander": "^14.0.3", "handlebars": "^4.7.8" } }, "sha512-spWyK7Lh46mfKvOp8+WClx8zZ1K8CfYPIPg/TjuLifFMvZfExXDF1wtCYAYFgeDNElm9YuO8fps6iDP8J8ZBYA=="],
 
