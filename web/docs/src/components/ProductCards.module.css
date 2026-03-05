@@ -1,0 +1,16 @@
+.productCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  column-gap: 60px;
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-inline: 60px;
+  margin-bottom: 60px;
+}
+
+@media (width <= 570px) {
+  .productCards {
+    padding-inline: 16px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

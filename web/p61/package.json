@@ -16,7 +16,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "package": "conformal-scripts package",
-    "validate": "conformal-scripts validate"
+    "validate": "conformal-scripts validate",
+    "dev-mode": "conformal-scripts dev-mode"
   },
   "author": "",
   "license": "ISC",

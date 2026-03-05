@@ -1,0 +1,62 @@
+---
+import { ClientRouter } from "astro:transitions";
+import "../styles/global.css";
+import Nav from "../components/Nav";
+
+type Props = {
+  title?: string;
+  frontmatter?: {
+    title?: string;
+  };
+};
+
+const { title: directTitle, frontmatter } = Astro.props;
+const title = directTitle ?? frontmatter?.title;
+const siteTitle = title ? `${title} - Bilinear Audio` : "Bilinear Audio";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{siteTitle}</title>
+    <meta
+      name="description"
+      content="Bilinear Audio: an open-source collection of audio plugins"
+    />
+    <ClientRouter />
+  </head>
+  <body
+    ><Nav />
+    <main>
+      <slot />
+    </main>
+    <script>
+      document.addEventListener("astro:page-load", () => {
+        document
+          .querySelectorAll<HTMLAnchorElement>(".download-link")
+          .forEach((el) => {
+            const isMac =
+              navigator.platform.includes("Mac") &&
+              navigator.maxTouchPoints === 0;
+            const isWin = navigator.platform.includes("Win");
+            if (isMac) el.href = el.dataset.macUrl!;
+            else if (isWin) el.href = el.dataset.winUrl!;
+            else return;
+            el.removeAttribute("hidden");
+          });
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          document
+            .querySelectorAll<HTMLVideoElement>("video[autoplay]")
+            .forEach((v) => {
+              v.pause();
+              v.removeAttribute("autoplay");
+              v.setAttribute("controls", "");
+            });
+        }
+      });
+    </script>
+  </body>
+</html>
