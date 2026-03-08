@@ -1,0 +1,11 @@
+.typeTag {
+  background-color: var(--color-neutral-light);
+  color: var(--color-bg);
+  font-family: "Inter";
+  font-size: 16px;
+  font-weight: 200;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-elevation-low);
+}

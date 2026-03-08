@@ -1,0 +1,45 @@
+---
+layout: ../../layouts/Base.astro
+title: Chorus-R
+---
+
+import ProductHero from "../../components/ProductHero";
+import ProductShowcase from "../../components/ProductShowcase";
+import ProductSection from "../../components/ProductSection";
+import DownloadCard from "../../components/DownloadCard";
+import InfoCard from "../../components/InfoCard";
+import chorusRHero from "../../assets/images/chorus_r_hero.webp";
+import { chorusR, downloadItems } from "../../data/downloads";
+
+<ProductHero
+  imageSrc={chorusRHero.src}
+  title="Chorus-R"
+  tagline="the chorus anthology"
+  downloads={chorusR}
+/>
+
+<ProductSection>
+## Many choruses, one plugin
+
+Chorus-R is a collection of chorus emulations inspired by a single Japanese company renowned for its chorus prowess.
+
+</ProductSection>
+
+<ProductShowcase
+  imageSrc={chorusRHero.src}
+  imageAlt="Chorus-R chorus interface"
+  gradientFrom="var(--color-tertiary)"
+  gradientTo="var(--color-primary-2)"
+/>
+
+<ProductSection>
+
+## A Growing Family
+
+C-3P is based on a chorus included in a polyphonic mid-budget synthesizer from 1983. Superdimensional is a true stereo chorus based on a rackmount unit from the late 70s. Who knows when the next one might arrive?
+
+</ProductSection>
+
+<DownloadCard title="All Downloads" downloads={downloadItems(chorusR)} />
+
+<InfoCard color="var(--color-secondary-2)" />

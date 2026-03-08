@@ -6,29 +6,30 @@
   "bugs": "https://github.com/russellmcc/bilinear-audio/issues",
   "license": "ISC",
   "scripts": {
-    "lint": "tsc && eslint . --max-warnings 0",
+    "lint": "astro check && tsc && eslint . --max-warnings 0",
     "check-format": "prettier -c .",
     "format": "prettier --write .",
-    "dev": "bun x next dev",
-    "build": "bun x --bun next build && bun x --bun pagefind --site .next/server/app --output-path out/_pagefind"
+    "convert-video": "bun ./scripts/convert-mov-to-mp4.ts",
+    "convert-image": "bun ./scripts/convert-image-to-webp.ts",
+    "dev": "astro dev",
+    "build": "astro build"
   },
   "dependencies": {
-    "next": "catalog:",
-    "nextra": "catalog:",
-    "nextra-theme-docs": "catalog:",
-    "react": "catalog:"
+    "astro": "catalog:",
+    "@astrojs/mdx": "catalog:",
+    "@astrojs/react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "peerDependencies": {
-    "@theguild/remark-mermaid": "*",
     "typescript": "*"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "catalog:",
-    "@next/eslint-plugin-next": "catalog:",
-    "@types/node": "^24.10.0",
+    "@astrojs/check": "catalog:",
+    "@types/node": "catalog:",
     "@types/react": "catalog:",
-    "eslint-config-custom": "workspace:*",
-    "pagefind": "catalog:"
+    "@types/react-dom": "catalog:",
+    "eslint-config-custom": "workspace:*"
   },
   "type": "module"
 }

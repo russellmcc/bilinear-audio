@@ -1,0 +1,69 @@
+---
+layout: ../../layouts/Base.astro
+title: Fluffyverb
+---
+
+import ProductHero from "../../components/ProductHero";
+import ProductShowcase from "../../components/ProductShowcase";
+import ProductSection from "../../components/ProductSection";
+import DownloadCard from "../../components/DownloadCard";
+import InfoCard from "../../components/InfoCard";
+import FeatureRow from "../../components/FeatureRow";
+import fluffyverbHero from "../../assets/images/fluffyverb_hero.webp";
+import fluffyverbUiVideo from "../../assets/images/fluffyverb-ui.mp4";
+import { fluffyverb, downloadItems } from "../../data/downloads";
+import fluffyverbFloppy from "../../assets/images/fluffyverb-floppy.webp";
+
+<ProductHero
+  imageSrc={fluffyverbHero.src}
+  title="Fluffyverb"
+  tagline="a light and airy reverb"
+  downloads={fluffyverb}
+/>
+
+<ProductSection>
+## From Somerville with Love
+
+Designed in the hometown of marshmallow fluff, a reverb that's just as sweet and delicious. Spread it on every track.
+
+</ProductSection>
+
+<ProductShowcase
+  imageSrc={fluffyverbHero.src}
+  imageAlt="Fluffyverb reverb interface"
+  gradientFrom="var(--color-secondary-2)"
+  gradientTo="var(--color-tertiary)"
+/>
+
+<FeatureRow
+  heading="A Cozy Reverb"
+  videoSrc={fluffyverbUiVideo}
+  videoPosterSrc={fluffyverbHero.src}
+  videoLabel="Preview of the Fluffyverb interface"
+>
+  Put it on your track, tweak a bit, and move on. With an immediately appealing
+  sound and a minimal control set, you won't be overwhelmed by options.
+</FeatureRow>
+
+<FeatureRow
+  heading="Almost fits on a Floppy"
+  imageSrc={fluffyverbFloppy.src}
+  imageAlt="Fluffyverb floppy disk"
+  reversed
+>
+
+Fluffyverb is available for free and takes seconds to download. Try it out and see if it sticks.
+
+</FeatureRow>
+
+<ProductSection compact>
+
+## The Secret Recipe
+
+Fluffyverb was inspired by [this blog post](https://signalsmith-audio.co.uk/writing/2021/lets-write-a-reverb/) which introduced a novel variation on the FDN (feedback delay network) approach to reverb. Fluffyverb adds some ingredients of its own to this solid foundation.
+
+</ProductSection>
+
+<DownloadCard title="All Downloads" downloads={downloadItems(fluffyverb)} />
+
+<InfoCard />

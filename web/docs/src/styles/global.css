@@ -1,0 +1,181 @@
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url("../assets/fonts/Inter-ExtraLight.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../assets/fonts/Inter-Bold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter Display";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../assets/fonts/InterDisplay-Bold.woff2") format("woff2");
+}
+
+:root {
+  --color-bg: #000;
+  --color-text: #fff;
+  --color-neutral-dark: #2b303a;
+  --color-neutral-light: #e0e1e9;
+  --color-primary: #f61ed0;
+  --color-primary-2: #8f4a82;
+  --color-primary-link: #ec5bd3;
+  --color-secondary: #fa7564;
+  --color-secondary-2: #944b41;
+  --color-tertiary: #a764fa;
+  --color-tertiary-2: #6a4794;
+
+  --shadow-color: 0deg 0% 0%;
+  --shadow-elevation-low:
+    0.5px 0.5px 0.8px hsl(var(--shadow-color) / 0.1),
+    0.8px 0.9px 1.4px -1.2px hsl(var(--shadow-color) / 0.1),
+    2px 2.1px 3.3px -2.5px hsl(var(--shadow-color) / 0.1);
+  --shadow-elevation-medium:
+    0.5px 0.5px 0.8px hsl(var(--shadow-color) / 0.1),
+    1.7px 1.8px 2.8px -0.8px hsl(var(--shadow-color) / 0.1),
+    4.1px 4.4px 6.8px -1.7px hsl(var(--shadow-color) / 0.1),
+    10px 10.6px 16.4px -2.5px hsl(var(--shadow-color) / 0.1);
+  --shadow-elevation-high:
+    0.5px 0.5px 0.8px hsl(var(--shadow-color) / 0.1),
+    2.9px 3px 4.7px -0.4px hsl(var(--shadow-color) / 0.1),
+    5.3px 5.7px 8.8px -0.7px hsl(var(--shadow-color) / 0.1),
+    8.7px 9.3px 14.3px -1.1px hsl(var(--shadow-color) / 0.1),
+    13.9px 14.8px 22.8px -1.4px hsl(var(--shadow-color) / 0.1),
+    21.7px 23.2px 35.7px -1.8px hsl(var(--shadow-color) / 0.1),
+    33px 35.2px 54.3px -2.1px hsl(var(--shadow-color) / 0.1),
+    48.7px 51.8px 80px -2.5px hsl(var(--shadow-color) / 0.1);
+}
+
+main {
+  padding-bottom: 100px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+  font-family: "Inter";
+  font-size: 24px;
+  font-weight: 200;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: "Inter";
+  line-height: 1.35;
+  min-height: 100dvh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Inter Display";
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 72px;
+  font-weight: 700;
+}
+
+p {
+  font-family: "Inter";
+  font-size: 24px;
+  margin-top: 36px;
+  font-weight: 200;
+  text-wrap: balance;
+}
+
+hgroup {
+  margin-top: 48px;
+  text-align: center;
+  padding-inline: 24px;
+}
+
+a {
+  color: inherit;
+  text-decoration-skip-ink: auto;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+.download-link[hidden] {
+  display: none;
+}
+
+@media (width <= 720px) {
+  main {
+    padding-bottom: 72px;
+  }
+
+  a {
+    font-size: 20px;
+  }
+
+  h1 {
+    font-size: 48px;
+  }
+
+  p {
+    font-size: 20px;
+    margin-top: 24px;
+  }
+
+  hgroup {
+    margin-top: 36px;
+  }
+}

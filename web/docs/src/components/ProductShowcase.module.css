@@ -1,0 +1,22 @@
+.showcase {
+  display: flex;
+  justify-content: center;
+  padding: 60px 24px;
+  margin-top: 70px;
+  margin-bottom: 70px;
+}
+
+.image {
+  width: 100%;
+  max-width: 1114px;
+  max-height: 600px;
+  object-fit: contain;
+}
+
+@media (width <= 720px) {
+  .showcase {
+    padding: 32px 16px;
+    margin-top: 48px;
+    margin-bottom: 48px;
+  }
+}

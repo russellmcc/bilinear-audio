@@ -1,0 +1,39 @@
+.section {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.section h2 {
+  font-size: 72px;
+}
+
+.compact h2 {
+  font-size: 54px;
+}
+
+.section a {
+  color: var(--color-primary-link);
+  font-weight: 700;
+}
+
+@media (width <= 820px) {
+  .section {
+    text-align: left;
+  }
+}
+
+@media (width <= 720px) {
+  .section {
+    padding: 56px 24px;
+  }
+
+  .section h2 {
+    font-size: 48px;
+  }
+
+  .compact h2 {
+    font-size: 40px;
+  }
+}

@@ -1,0 +1,73 @@
+---
+layout: ../../layouts/Base.astro
+title: Alpha JX
+---
+
+import ProductHero from "../../components/ProductHero";
+import ProductShowcase from "../../components/ProductShowcase";
+import ProductSection from "../../components/ProductSection";
+import DownloadCard from "../../components/DownloadCard";
+import InfoCard from "../../components/InfoCard";
+import alphaJXHero from "../../assets/images/alpha_jx_hero.webp";
+import FeatureRow from "../../components/FeatureRow";
+import { alphaJX, downloadItems } from "../../data/downloads";
+import alphaJXUiVideo from "../../assets/images/alpha-jx-ui.mp4";
+import rave from "../../assets/images/rave.webp";
+
+<ProductHero
+  imageSrc={alphaJXHero.src}
+  title="Alpha JX"
+  tagline="giving the past the future it deserved"
+  downloads={alphaJX}
+/>
+
+<ProductSection>
+## What If...?
+
+Alpha JX's design emerged from a simple question: what if the golden era of 1980s Japanese analog synthesis had lasted a little bit longer?
+
+</ProductSection>
+
+<ProductShowcase
+  imageSrc={alphaJXHero.src}
+  imageAlt="Alpha JX synthesizer interface"
+  gradientFrom="var(--color-tertiary-2)"
+  gradientTo="var(--color-primary-2)"
+/>
+
+<FeatureRow
+  videoSrc={alphaJXUiVideo}
+  videoLabel="Alpha JX synthesizer interface"
+  videoPosterSrc={alphaJXHero.src}
+  heading="Room to Explore"
+>
+
+Built around two DCOs with PWM, Sync, and two envelopes, Alpha JX's deep feature set gives you space to explore the best that late 80s analog technology could have provided. Recreate familiar tones or take it into stranger territory.
+
+</FeatureRow>
+
+<FeatureRow
+  heading="What The...!"
+  imageSrc={rave.src}
+  imageAlt="Warehouse rave"
+  reversed
+>
+
+With rarely seen features like sawtooth PWM and a novel bit-mod mode,
+Alpha JX is adept at the wild "hoover" rave lead sounds of the late 80s
+and early 90s. Alpha JX is also at home handling
+classic analog basses, plucks, and pads. Modern features like MPE support
+provide a level of expressivity that the 1980s never quite achieved.
+
+</FeatureRow>
+
+<ProductSection compact>
+## Preservation through Imagination
+
+Drawing on meticulous research into the engineering philosophies of a certain manufacturer who produced their last analog instrument in 1986, Alpha JX imagines a mid-range synth that could have plausibly debuted in early 1987.
+
+</ProductSection>
+
+<DownloadCard title="All Downloads" downloads={downloadItems(alphaJX)} />
+
+<InfoCard />

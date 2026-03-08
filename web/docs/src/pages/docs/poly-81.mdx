@@ -1,0 +1,77 @@
+---
+layout: ../../layouts/Base.astro
+title: Poly 81
+---
+
+import ProductHero from "../../components/ProductHero";
+import ProductShowcase from "../../components/ProductShowcase";
+import ProductSection from "../../components/ProductSection";
+import DownloadCard from "../../components/DownloadCard";
+import InfoCard from "../../components/InfoCard";
+import FeatureRow from "../../components/FeatureRow";
+import poly81Hero from "../../assets/images/poly_81_hero.webp";
+import { poly81, downloadItems } from "../../data/downloads";
+import poly81UiVideo from "../../assets/images/poly-81-ui.mp4";
+import keybed from "../../assets/images/keybed.webp";
+
+<ProductHero
+  imageSrc={poly81Hero.src}
+  title="Poly 81"
+  tagline="the budget model, for free"
+  downloads={poly81}
+/>
+
+<ProductSection>
+
+## Cheap as Chips
+
+Poly 81 is inspired by an affordable polyphonic analog synthesizer released in 1982.
+
+Many compromises were made to hit the low price point, but these limitations gave rise to a delightfully quirky design.
+
+In a world of instant gratification and abundance, why not take inspiration from the creative constraints of a leaner time?
+
+</ProductSection>
+
+<ProductShowcase
+  imageSrc={poly81Hero.src}
+  imageAlt="Poly 81 synthesizer interface"
+  gradientFrom="var(--color-tertiary-2)"
+  gradientTo="var(--color-secondary-2)"
+/>
+
+<FeatureRow
+  heading="Build from Scratch"
+  videoSrc={poly81UiVideo}
+  videoPosterSrc={poly81Hero.src}
+  videoLabel="Poly 81 synthesizer interface"
+>
+
+Make sounds that are completely your own, without menu-diving.
+Poly 81 is designed to quickly sculpt sounds from scratch, with a curated set of familiar, always-available controls.
+
+</FeatureRow>
+
+<FeatureRow
+  heading="Performance Expression"
+  imageSrc={keybed.src}
+  imageAlt="Music keybed"
+  reversed
+>
+
+In a decidedly modern twist, Poly 81 supports per-note expression,
+allowing you to control timbre and pitch of each note independently during performance. Express yourself with an MPE-capable controller or draw in curves for detailed control.
+
+</FeatureRow>
+
+<ProductSection compact>
+
+## Vibes-based modeling
+
+While not a faithful replica, Poly 81's design preserves the character and sense of fun from the original synthesizer. It's a love letter to the awkward specialness of that era of transition from analog to digital synthesizers.
+
+</ProductSection>
+
+<DownloadCard title="All Downloads" downloads={downloadItems(poly81)} />
+
+<InfoCard />

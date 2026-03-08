@@ -1,0 +1,87 @@
+---
+layout: ../layouts/Base.astro
+title: Home
+---
+
+import ProductCard from "../components/ProductCard";
+import ProductCards from "../components/ProductCards";
+import alphaJXHero from "../assets/images/alpha_jx_hero.webp";
+import fluffyverbHero from "../assets/images/fluffyverb_hero.webp";
+import chorusRHero from "../assets/images/chorus_r_hero.webp";
+import poly81Hero from "../assets/images/poly_81_hero.webp";
+import { alphaJX, fluffyverb, chorusR, poly81 } from "../data/downloads";
+
+export const base = import.meta.env.BASE_URL;
+
+<hgroup>
+
+# Transform your sound
+
+completely free audio plugins
+
+</hgroup>
+
+<ProductCards>
+  <ProductCard
+    hero={{
+      colorA: "var(--color-primary-2)",
+      colorB: "var(--color-tertiary-2)",
+      imageSrc: alphaJXHero.src,
+      imageAlt: "Alpha JX Screenshot",
+      rotateDegrees: 0,
+      newRelease: true,
+    }}
+    title="Alpha JX"
+    description="giving the past the future it deserved."
+    wide
+    type="synth"
+    downloads={alphaJX}
+    learnMoreUrl={`${base}docs/alpha-jx/`}
+  />
+  <ProductCard
+    hero={{
+      colorA: "var(--color-secondary-2)",
+      colorB: "var(--color-tertiary)",
+      imageSrc: fluffyverbHero.src,
+      imageAlt: "Fluffyverb Screenshot",
+      rotateDegrees: 30,
+    }}
+    title="Fluffyverb"
+    description="a light and airy reverb."
+    type="fx"
+    downloads={fluffyverb}
+    learnMoreUrl={`${base}docs/fluffyverb/`}
+  />
+  <ProductCard
+    hero={{
+      colorA: "var(--color-tertiary)",
+      colorB: "var(--color-primary-2)",
+      imageSrc: chorusRHero.src,
+      imageAlt: "Chorus-R Screenshot",
+      rotateDegrees: 120,
+      shiftX: 400,
+      shiftY: 200,
+    }}
+    title="Chorus-R"
+    description="the chorus anthology."
+    type="fx"
+    downloads={chorusR}
+    learnMoreUrl={`${base}docs/chorus-r/`}
+  />
+  <ProductCard
+    hero={{
+      colorA: "var(--color-tertiary-2)",
+      colorB: "var(--color-secondary-2)",
+      imageSrc: poly81Hero.src,
+      imageAlt: "Poly 81 Screenshot",
+      rotateDegrees: -30,
+      shiftX: -100,
+      shiftY: 200,
+    }}
+    title="Poly 81"
+    description="the budget model. for free."
+    type="synth"
+    downloads={poly81}
+    learnMoreUrl={`${base}docs/poly-81/`}
+  />
+</ProductCards>

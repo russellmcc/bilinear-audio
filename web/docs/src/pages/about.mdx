@@ -1,0 +1,34 @@
+---
+layout: ../layouts/Base.astro
+title: About
+---
+
+import FeatureRow from "../components/FeatureRow";
+import ProductSection from "../components/ProductSection";
+import bilinearTransform from "../assets/images/bilinear_transform.webp";
+import techLogos from "../assets/images/tech_logos.svg";
+
+<hgroup>
+  <h1>Bilinear Audio</h1>
+  <p>inspired by the classics</p>
+</hgroup>
+
+<FeatureRow heading="What's in a name?" imageSrc={bilinearTransform.src} imageAlt="Bilinear Transform">
+
+In signal processing, the bilinear transform creates a digital design from an analog prototype. Bilinear Audio creates original software instruments and effects, inspired by the most iconic designs of the past.
+
+</FeatureRow>
+
+<FeatureRow heading="Built with care" reversed imageSrc={techLogos.src} imageAlt="Tech Logos">
+
+We believe in using the best available technology to build products that are high-quality and run efficiently. We proudly use Rust, TypeScript, and the [Conformal framework](https://www.russellmcc.com/conformal/). For more on the specific techniques that went into these products, see [the Conformal App Notes](https://www.russellmcc.com/conformal/app_notes/).
+
+</FeatureRow>
+
+<ProductSection compact>
+
+## Collaborators Welcome
+
+Bilinear Audio products are open-source and built by volunteers, in the open. Get involved or contribute on [GitHub](https://github.com/russellmcc/bilinear-audio).
+
+</ProductSection>
