@@ -47,7 +47,7 @@ assert_approx_eq = "1.1.0"
 bitvec = "1.0.1"
 conformal_component = "0.5.0"
 conformal_poly = "0.6.0"
-conformal_vst_wrapper = "0.6.1"
+conformal_vst_wrapper = "0.6.2"
 criterion = "0.3"
 fxhash = "0.2.1"
 itertools = "0.13.0"
@@ -75,7 +75,3 @@ snapshots = { path = "rust/shared/snapshots" }
 
 [profile.release]
 lto = "thin"
-
-# We need to patch for https://github.com/tauri-apps/wry/issues/1675
-[patch.crates-io]
-wry = { git = "https://github.com/russellmcc/wry.git", rev = "08fd25f9e9fb2d3cd6ef4c95710b0c9f3b80e8bf" }
