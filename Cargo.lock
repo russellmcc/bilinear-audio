@@ -220,17 +220,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
-name = "clang-sys"
-version = "1.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b023947811758c97c59bf9d1c188fd619ad4718dcaa767947df1cadb14f39f4"
-dependencies = [
- "glob",
- "libc",
- "libloading",
-]
-
-[[package]]
 name = "clap"
 version = "2.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -239,15 +228,6 @@ dependencies = [
  "bitflags 1.3.2",
  "textwrap",
  "unicode-width",
-]
-
-[[package]]
-name = "com-scrape"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cd4a2b0452447ce166d01ff6f7f73454acdc89fa195a82f3c3dfca5f074ff42"
-dependencies = [
- "clang-sys",
 ]
 
 [[package]]
@@ -331,9 +311,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_ui"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32ff1e8367b33e83cf082ba7dba4562b24ba6c28a02e0c59ee3956b95dd1da0b"
+checksum = "4e0840d89ecf0707c7522b9e25a45a7f88bd32fa69b1fa0253eb1005999b341e"
 dependencies = [
  "base64",
  "conformal_component",
@@ -348,9 +328,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_vst_wrapper"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad6ad825b1810d87056275e6e013907422f4966a0d0d726ca67bc45665e5788c"
+checksum = "c259f3c267d0f9250c6ea5bbdf9aac6ba6c64e155e55238614b6adb056c2a1e3"
 dependencies = [
  "conformal_component",
  "conformal_core",
@@ -361,7 +341,7 @@ dependencies = [
  "rmp-serde",
  "serde",
  "serde_bytes",
- "vst3 0.3.0",
+ "vst3",
 ]
 
 [[package]]
@@ -1067,12 +1047,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "glob"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280"
-
-[[package]]
 name = "gobject-sys"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1573,7 +1547,7 @@ version = "0.0.0"
 dependencies = [
  "conformal_vst_wrapper",
  "jx_alpha_component",
- "vst3 0.2.0",
+ "vst3",
 ]
 
 [[package]]
@@ -1587,16 +1561,6 @@ name = "libc"
 version = "0.2.180"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bcc35a38544a891a5f7c865aca548a982ccb3b8650a5b06d0fd33a10283c56fc"
-
-[[package]]
-name = "libloading"
-version = "0.8.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7c4b02199fee7c5d21a5ae7d8cfa79a6ef5bb2fc834d6e9058e89c825efdc55"
-dependencies = [
- "cfg-if",
- "windows-link 0.2.1",
-]
 
 [[package]]
 name = "libredox"
@@ -2059,7 +2023,7 @@ version = "0.0.0"
 dependencies = [
  "conformal_vst_wrapper",
  "p61_component",
- "vst3 0.2.0",
+ "vst3",
 ]
 
 [[package]]
@@ -2496,7 +2460,7 @@ version = "0.0.0"
 dependencies = [
  "conformal_vst_wrapper",
  "rchorus_component",
- "vst3 0.2.0",
+ "vst3",
 ]
 
 [[package]]
@@ -2623,7 +2587,7 @@ version = "0.0.0"
 dependencies = [
  "conformal_vst_wrapper",
  "reverb_component",
- "vst3 0.2.0",
+ "vst3",
 ]
 
 [[package]]
@@ -3554,30 +3518,11 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "vst3"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cde7186f5d0d86facd20d4248ddaaf620e221c9523eb86fe4fb2e935b09cd2f"
-dependencies = [
- "com-scrape-types",
- "vst3-bindgen",
-]
-
-[[package]]
-name = "vst3"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e31e3fe7a6f028ded8c5a9984cf283319e6dc63572c9b71da1d4ee9d71d3b6bf"
 dependencies = [
  "com-scrape-types",
-]
-
-[[package]]
-name = "vst3-bindgen"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e11db21d4f35c24f570466200c05596a801f0dcf054b11b973c3a4fd646ede4e"
-dependencies = [
- "com-scrape",
 ]
 
 [[package]]
