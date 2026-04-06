@@ -6,7 +6,7 @@ use conformal_poly::{EventData, Voice as VoiceTrait, VoiceProcessContext};
 use dsp::{
     env::adsr,
     f32::{exp_approx, exp2_approx, rescale, rescale_clamped, rescale_points},
-    slew::{self, SlewLimiter},
+    slew::{self, OnePoleSmoother},
 };
 use itertools::izip;
 use num_derive::FromPrimitive;
@@ -18,6 +18,7 @@ mod oscillators;
 mod vcf;
 
 const KEY_FOLLOW_NOMINAL_PITCH: f32 = 60.0;
+const CONTROL_SMOOTHING_TIME_SECONDS: f32 = 0.02;
 
 #[derive(Debug, Clone)]
 pub struct SharedData<'a> {
@@ -75,9 +76,9 @@ pub struct Voice {
     env1: env::Env,
     env2: env::Env,
 
-    level_slew: SlewLimiter,
-    cutoff_slew: SlewLimiter,
-    control_slew_rate: f32,
+    level_smoother: OnePoleSmoother,
+    cutoff_smoother: OnePoleSmoother,
+    control_smoothing_coeff: f32,
 
     // Optimization opportunity: we're using a full env here but don't need all the logic.
     gate_coeffs: adsr::Coeffs,
@@ -244,9 +245,12 @@ impl VoiceTrait for Voice {
             vcf: vcf::Vcf::default(),
             env1: env::Env::default(),
             env2: env::Env::default(),
-            level_slew: SlewLimiter::default(),
-            cutoff_slew: SlewLimiter::default(),
-            control_slew_rate: slew::rate_from_time(0.1, sampling_rate) * 100.0,
+            level_smoother: OnePoleSmoother::default(),
+            cutoff_smoother: OnePoleSmoother::default(),
+            control_smoothing_coeff: slew::coeff_from_time(
+                CONTROL_SMOOTHING_TIME_SECONDS,
+                sampling_rate,
+            ),
             gate_coeffs: adsr::calc_coeffs(
                 &adsr::Params {
                     attack_time: GATE_ATTACK_TIME_SECONDS,
@@ -567,8 +571,10 @@ impl VoiceTrait for Voice {
                 }
             });
 
-            let smoothed_cutoff = self.cutoff_slew.process(vcf_cutoff, self.control_slew_rate);
-            let adjusted_vcf_cutoff = rescale(smoothed_cutoff, 0.0..=100.0, 0.0..=144.0)
+            let smoothed_raw_vcf_cutoff = self
+                .cutoff_smoother
+                .process(vcf_cutoff, self.control_smoothing_coeff);
+            let adjusted_vcf_cutoff = rescale(smoothed_raw_vcf_cutoff, 0.0..=100.0, 0.0..=144.0)
                 + rescale_points(
                     adjusted_pitch - KEY_FOLLOW_NOMINAL_PITCH,
                     0.0,
@@ -595,7 +601,8 @@ impl VoiceTrait for Voice {
             };
             let vcf_output = self.vcf.process(oscillators_output, &vcf_settings);
             let vca_volume = rescale(
-                self.level_slew.process(level, self.control_slew_rate),
+                self.level_smoother
+                    .process(level, self.control_smoothing_coeff),
                 0.0..=100.0,
                 0.0..=1.0,
             ) * get_vca_env_from_source(
@@ -622,8 +629,8 @@ impl VoiceTrait for Voice {
         self.vcf.reset();
         self.env1.reset();
         self.env2.reset();
-        self.level_slew.reset();
-        self.cutoff_slew.reset();
+        self.level_smoother.reset();
+        self.cutoff_smoother.reset();
         self.gate.reset();
     }
 }
