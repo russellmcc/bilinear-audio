@@ -47,7 +47,7 @@ assert_approx_eq = "1.1.0"
 bitvec = "1.0.1"
 conformal_component = "0.5.0"
 conformal_poly = "0.6.0"
-conformal_vst_wrapper = "0.6.2"
+conformal_vst_wrapper = "0.6.3"
 criterion = "0.3"
 fxhash = "0.2.1"
 itertools = "0.13.0"
@@ -61,7 +61,7 @@ rand_xoshiro = "0.6.0"
 realfft = "3.5.0"
 rtsan-standalone = "0.1.2"
 serde = { version = "1.0.226", features = ["derive"] }
-vst3 = "0.2.0"
+vst3 = "0.3.0"
 wavers = "1.5.1"
 # Internal crates
 component_benchmarks = { path = "rust/shared/component_benchmarks" }
