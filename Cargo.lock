@@ -328,9 +328,9 @@ dependencies = [
 
 [[package]]
 name = "conformal_vst_wrapper"
-version = "0.6.3"
+version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c259f3c267d0f9250c6ea5bbdf9aac6ba6c64e155e55238614b6adb056c2a1e3"
+checksum = "8a3eb372319c78ded3b077290f34573e86245684589b0d8afec8728c9321af0c"
 dependencies = [
  "conformal_component",
  "conformal_core",
