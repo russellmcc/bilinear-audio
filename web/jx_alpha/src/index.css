@@ -52,6 +52,14 @@ h1.title {
   outline: 0;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 html {
   overscroll-behavior: none;
 }
