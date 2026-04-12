@@ -1,7 +1,7 @@
 import { Knob as KnobModule } from "music-ui/kit";
 import KnobDisplay from "./KnobDisplay";
 import { useCallback } from "react";
-import { LABEL_MARGIN } from "./constants";
+import { LABEL_HEIGHT, LABEL_MARGIN } from "./constants";
 import useOnGrabOrRelease from "./useGrabOrRelease";
 
 export type Props = {
@@ -52,7 +52,13 @@ export type Props = {
 };
 
 const Label = ({ label }: KnobModule.LabelProps) => (
-  <div style={{ textAlign: "center", marginBottom: `${LABEL_MARGIN}px` }}>
+  <div
+    style={{
+      textAlign: "center",
+      marginBottom: `${LABEL_MARGIN}px`,
+      height: `${LABEL_HEIGHT}px`,
+    }}
+  >
     {label}
   </div>
 );

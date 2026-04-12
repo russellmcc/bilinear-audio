@@ -41,11 +41,13 @@ h1 {
   margin: 0;
   margin-bottom: 8px;
   text-align: center;
+  height: 17px;
 }
 
 h1.title {
   font-size: 11px;
   font-family: "Orbitron", sans-serif;
+  height: 14px;
 }
 
 :focus {

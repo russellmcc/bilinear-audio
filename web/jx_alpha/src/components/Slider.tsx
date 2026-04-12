@@ -2,6 +2,7 @@ import { Slider as MusicUISlider, useSlider } from "music-ui/kit";
 import { useCallback } from "react";
 import {
   BALL_SIZE,
+  LABEL_HEIGHT,
   LABEL_MARGIN,
   TRACK_LENGTH,
   TRACK_WIDTH,
@@ -192,6 +193,7 @@ const Label = ({
       style={{
         width: 0,
         marginBottom: `${LABEL_MARGIN}px`,
+        height: `${LABEL_HEIGHT}px`,
       }}
     >
       <div

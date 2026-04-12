@@ -1,6 +1,6 @@
 import { EnumKnob as EnumKnobModule } from "music-ui/kit";
 import KnobDisplay from "./KnobDisplay";
-import { LABEL_MARGIN } from "./constants";
+import { LABEL_HEIGHT, LABEL_MARGIN } from "./constants";
 import { useCallback } from "react";
 import useOnGrabOrRelease from "./useGrabOrRelease";
 
@@ -62,7 +62,13 @@ export type Props = {
 };
 
 const Label = ({ label }: EnumKnobModule.LabelProps) => (
-  <div style={{ textAlign: "center", marginBottom: `${LABEL_MARGIN}px` }}>
+  <div
+    style={{
+      textAlign: "center",
+      marginBottom: `${LABEL_MARGIN}px`,
+      height: `${LABEL_HEIGHT}px`,
+    }}
+  >
     {label}
   </div>
 );

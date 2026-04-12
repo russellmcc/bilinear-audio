@@ -1,5 +1,11 @@
 import { EnumSlider as EnumSliderModule, useEnumSlider } from "music-ui/kit";
-import { BALL_SIZE, DOT_OFFSET, DOT_SIZE, LABEL_MARGIN } from "./constants";
+import {
+  BALL_SIZE,
+  DOT_OFFSET,
+  DOT_SIZE,
+  LABEL_HEIGHT,
+  LABEL_MARGIN,
+} from "./constants";
 import SliderBall from "./SliderBall";
 import SliderTrack from "./SliderTrack";
 import useOnGrabOrRelease from "./useGrabOrRelease";
@@ -155,6 +161,7 @@ const Label = ({ label }: { label: string }) => (
   <div
     style={{
       textAlign: "right",
+      height: `${LABEL_HEIGHT}px`,
       marginBottom: `${LABEL_MARGIN}px`,
     }}
   >
