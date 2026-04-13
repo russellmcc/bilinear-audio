@@ -105,6 +105,8 @@ pub struct Effect {
     lfo: lfo::Lfo,
     rate_to_incr_scale: f32,
     channels: [DelayChannel; 2],
+    lfo_forward: Vec<f32>,
+    lfo_reverse: Vec<f32>,
 }
 
 impl Processor for Effect {
@@ -147,6 +149,8 @@ impl Effect {
                     env.max_samples_per_process_call,
                 )
             }),
+            lfo_forward: vec![0.; env.max_samples_per_process_call],
+            lfo_reverse: vec![0.; env.max_samples_per_process_call],
         }
     }
 
@@ -154,8 +158,6 @@ impl Effect {
         &mut self,
         input: &impl Buffer,
         output: &mut impl BufferMut,
-        forward: impl Iterator<Item = f32>,
-        reverse: impl Iterator<Item = f32>,
         mix: impl Iterator<Item = f32> + Clone,
         highpass_cutoff: HighpassCutoffSetting,
     ) {
@@ -164,8 +166,8 @@ impl Effect {
         dsp::iter::move_into(
             izip!(
                 input.channel(0),
-                delay_buffer.process(forward),
-                delay_buffer.process(reverse),
+                delay_buffer.process(self.lfo_forward.iter().copied()),
+                delay_buffer.process(self.lfo_reverse.iter().copied()),
                 mix
             )
             .map(|(i, l, r, m)| i + (l + r) * m * PERCENT_SCALE),
@@ -177,8 +179,6 @@ impl Effect {
         &mut self,
         input: &impl Buffer,
         output: &mut impl BufferMut,
-        forward: impl Iterator<Item = f32>,
-        reverse: impl Iterator<Item = f32>,
         mix: impl Iterator<Item = f32> + Clone,
         highpass_cutoff: HighpassCutoffSetting,
     ) {
@@ -188,13 +188,21 @@ impl Effect {
         let delay_buffer = self.channels[0].process(mixed, highpass_cutoff);
 
         dsp::iter::move_into(
-            izip!(input.channel(0), delay_buffer.process(forward), mix.clone())
-                .map(|(i, l, m)| i + l * m * PERCENT_SCALE),
+            izip!(
+                input.channel(0),
+                delay_buffer.process(self.lfo_forward.iter().copied()),
+                mix.clone()
+            )
+            .map(|(i, l, m)| i + l * m * PERCENT_SCALE),
             output.channel_mut(0),
         );
         dsp::iter::move_into(
-            izip!(input.channel(1), delay_buffer.process(reverse), mix)
-                .map(|(i, r, m)| i + r * m * PERCENT_SCALE),
+            izip!(
+                input.channel(1),
+                delay_buffer.process(self.lfo_reverse.iter().copied()),
+                mix
+            )
+            .map(|(i, r, m)| i + r * m * PERCENT_SCALE),
             output.channel_mut(1),
         );
     }
@@ -204,8 +212,6 @@ impl Effect {
         &mut self,
         input: &impl Buffer,
         output: &mut impl BufferMut,
-        forward: impl Iterator<Item = f32>,
-        reverse: impl Iterator<Item = f32>,
         mix: impl Iterator<Item = f32> + Clone,
         highpass_cutoff: HighpassCutoffSetting,
     ) {
@@ -219,8 +225,8 @@ impl Effect {
         for (il, ir, dl, dr, ol, or, m) in izip!(
             input.channel(0),
             input.channel(1),
-            processed_l.process(forward),
-            processed_r.process(reverse),
+            processed_l.process(self.lfo_forward.iter().copied()),
+            processed_r.process(self.lfo_reverse.iter().copied()),
             output_l,
             output_r,
             mix
@@ -246,13 +252,16 @@ impl EffectT for Effect {
         debug_assert_eq!(input.num_frames(), output.num_frames());
         let rate_to_incr_scale = self.rate_to_incr_scale;
         let parameters = context.parameters();
+        // We take the LFO buffers temporarily to avoid borrowing issues.
+        // These will get put back at end of function.
         let (rate, depth, bypass, highpass_cutoff, routing) = pgrab!(parameters[numeric "rate", numeric "depth", switch "bypass", enum "highpass_cutoff", enum "routing"]);
-        let lfo::Buffer { forward, reverse } = self.lfo.run(
+        self.lfo.run(
             lfo::Parameters {
                 incr: rate * rate_to_incr_scale,
                 depth,
             },
-            input.num_frames(),
+            &mut self.lfo_forward[..input.num_frames()],
+            &mut self.lfo_reverse[..input.num_frames()],
         );
         let mix = pzip!(parameters[numeric "mix"]).map(move |mix| if bypass { 0.0 } else { mix });
 
@@ -261,14 +270,14 @@ impl EffectT for Effect {
         let routing = FromPrimitive::from_u32(routing).unwrap_or(RoutingSetting::Synth);
         match input.channel_layout() {
             ChannelLayout::Mono => {
-                self.process_mono(input, output, forward, reverse, mix, highpass_cutoff);
+                self.process_mono(input, output, mix, highpass_cutoff);
             }
             ChannelLayout::Stereo => match routing {
                 RoutingSetting::Synth => {
-                    self.process_synth(input, output, forward, reverse, mix, highpass_cutoff);
+                    self.process_synth(input, output, mix, highpass_cutoff);
                 }
                 RoutingSetting::Dimension => {
-                    self.process_dimension(input, output, forward, reverse, mix, highpass_cutoff);
+                    self.process_dimension(input, output, mix, highpass_cutoff);
                 }
             },
         }

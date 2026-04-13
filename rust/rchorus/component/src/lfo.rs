@@ -16,11 +16,6 @@ pub struct Lfo {
     output: Option<f32>,
 }
 
-pub struct Buffer<F, R> {
-    pub forward: F,
-    pub reverse: R,
-}
-
 #[derive(Clone, Copy)]
 pub struct Options {
     pub min: f32,
@@ -79,26 +74,14 @@ impl Lfo {
         self.output.unwrap()
     }
 
-    pub fn run(
-        &mut self,
-        params: Parameters,
-        num_frames: usize,
-    ) -> Buffer<impl Iterator<Item = f32> + use<>, impl Iterator<Item = f32> + use<>> {
-        let mut forward_lfo = self.clone();
-        let mut reverse_lfo = self.clone();
-
-        // Note that we just separately run the LFO here and also in each
-        // returned iterator. Kinda slow, but the alternative would require
-        // memory storage to store the outputs!
-        for _ in 0..num_frames {
-            self.run_single(params);
+    pub fn run(&mut self, params: Parameters, forward: &mut [f32], reverse: &mut [f32]) {
+        debug_assert_eq!(forward.len(), reverse.len());
+        let point = self.point;
+        for (forward, reverse) in forward.iter_mut().zip(reverse.iter_mut()) {
+            let value = self.run_single(params);
+            *forward = point + value;
+            *reverse = point - value;
         }
-
-        let forward = (0..num_frames).map(move |_| forward_lfo.point + forward_lfo.run_single(params));
-
-        let reverse = (0..num_frames).map(move |_| reverse_lfo.point - reverse_lfo.run_single(params));
-
-        Buffer { forward, reverse }
     }
 
     pub fn reset(&mut self) {
@@ -114,15 +97,17 @@ mod tests {
     #[test]
     fn alias_surpressed() {
         let mut lfo = Lfo::new(Options { min: 5., max: 9. });
-
-        let Buffer { forward, reverse } = lfo.run(
+        let mut forward = [0.; 10];
+        let mut reverse = [0.; 10];
+        lfo.run(
             Parameters {
                 incr: 0.825,
-                depth: 100.
+                depth: 100.,
             },
-            10,
+            &mut forward,
+            &mut reverse,
         );
-        assert_eq!(forward.collect::<Vec<_>>(), &[5.; 10]);
-        assert_eq!(reverse.collect::<Vec<_>>(), &[9.; 10]);
+        assert_eq!(forward, [5.; 10]);
+        assert_eq!(reverse, [9.; 10]);
     }
 }
