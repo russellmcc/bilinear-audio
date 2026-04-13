@@ -43,6 +43,7 @@ enum HighpassCutoffSetting {
 enum RoutingSetting {
     Synth,
     Dimension,
+    Pedal,
 }
 
 impl DelayChannel {
@@ -154,13 +155,14 @@ impl Effect {
         }
     }
 
-    fn process_mono(
+    fn process_mono_dual(
         &mut self,
         input: &impl Buffer,
         output: &mut impl BufferMut,
         mix: impl Iterator<Item = f32> + Clone,
         highpass_cutoff: HighpassCutoffSetting,
     ) {
+        self.channels[1].reset();
         let delay_buffer =
             self.channels[0].process(input.channel(0).iter().copied(), highpass_cutoff);
         dsp::iter::move_into(
@@ -173,6 +175,55 @@ impl Effect {
             .map(|(i, l, r, m)| i + (l + r) * m * PERCENT_SCALE),
             output.channel_mut(0),
         );
+    }
+
+    fn process_mono_pedal(
+        &mut self,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
+        mix: impl Iterator<Item = f32> + Clone,
+        highpass_cutoff: HighpassCutoffSetting,
+    ) {
+        self.channels[1].reset();
+        let delay_buffer =
+            self.channels[0].process(input.channel(0).iter().copied(), highpass_cutoff);
+        dsp::iter::move_into(
+            izip!(
+                input.channel(0),
+                delay_buffer.process(self.lfo_forward.iter().copied()),
+                mix
+            )
+            .map(|(i, delayed, m)| i + delayed * m * PERCENT_SCALE),
+            output.channel_mut(0),
+        );
+    }
+
+    fn process_pedal(
+        &mut self,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
+        mix: impl Iterator<Item = f32> + Clone,
+        highpass_cutoff: HighpassCutoffSetting,
+    ) {
+        let [cl, cr] = &mut self.channels;
+        let processed_l = cl.process(input.channel(0).iter().copied(), highpass_cutoff);
+        let processed_r = cr.process(input.channel(1).iter().copied(), highpass_cutoff);
+        let mut outputs = channels_mut(output);
+        let output_l = outputs.next().unwrap();
+        let output_r = outputs.next().unwrap();
+
+        for (il, ir, dl, dr, ol, or, m) in izip!(
+            input.channel(0),
+            input.channel(1),
+            processed_l.process(self.lfo_forward.iter().copied()),
+            processed_r.process(self.lfo_forward.iter().copied()),
+            output_l,
+            output_r,
+            mix
+        ) {
+            *ol = il + dl * m * PERCENT_SCALE;
+            *or = ir + dr * m * PERCENT_SCALE;
+        }
     }
 
     fn process_synth(
@@ -269,15 +320,23 @@ impl EffectT for Effect {
             FromPrimitive::from_u32(highpass_cutoff).unwrap_or(HighpassCutoffSetting::Low);
         let routing = FromPrimitive::from_u32(routing).unwrap_or(RoutingSetting::Synth);
         match input.channel_layout() {
-            ChannelLayout::Mono => {
-                self.process_mono(input, output, mix, highpass_cutoff);
-            }
+            ChannelLayout::Mono => match routing {
+                RoutingSetting::Pedal => {
+                    self.process_mono_pedal(input, output, mix, highpass_cutoff);
+                }
+                RoutingSetting::Synth | RoutingSetting::Dimension => {
+                    self.process_mono_dual(input, output, mix, highpass_cutoff);
+                }
+            },
             ChannelLayout::Stereo => match routing {
                 RoutingSetting::Synth => {
                     self.process_synth(input, output, mix, highpass_cutoff);
                 }
                 RoutingSetting::Dimension => {
                     self.process_dimension(input, output, mix, highpass_cutoff);
+                }
+                RoutingSetting::Pedal => {
+                    self.process_pedal(input, output, mix, highpass_cutoff);
                 }
             },
         }
