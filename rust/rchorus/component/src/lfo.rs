@@ -79,28 +79,24 @@ impl Lfo {
         self.output.unwrap()
     }
 
-    pub fn run<P: IntoIterator<Item = Parameters> + Clone>(
+    pub fn run(
         &mut self,
-        params: P,
-    ) -> Buffer<impl Iterator<Item = f32> + use<P>, impl Iterator<Item = f32> + use<P>> {
+        params: Parameters,
+        num_frames: usize,
+    ) -> Buffer<impl Iterator<Item = f32> + use<>, impl Iterator<Item = f32> + use<>> {
         let mut forward_lfo = self.clone();
         let mut reverse_lfo = self.clone();
 
         // Note that we just separately run the LFO here and also in each
         // returned iterator. Kinda slow, but the alternative would require
         // memory storage to store the outputs!
-        for param in params.clone() {
-            self.run_single(param);
+        for _ in 0..num_frames {
+            self.run_single(params);
         }
 
-        let forward = params
-            .clone()
-            .into_iter()
-            .map(move |p| forward_lfo.point + forward_lfo.run_single(p));
+        let forward = (0..num_frames).map(move |_| forward_lfo.point + forward_lfo.run_single(params));
 
-        let reverse = params
-            .into_iter()
-            .map(move |p| reverse_lfo.point - reverse_lfo.run_single(p));
+        let reverse = (0..num_frames).map(move |_| reverse_lfo.point - reverse_lfo.run_single(params));
 
         Buffer { forward, reverse }
     }
@@ -119,13 +115,13 @@ mod tests {
     fn alias_surpressed() {
         let mut lfo = Lfo::new(Options { min: 5., max: 9. });
 
-        let Buffer { forward, reverse } = lfo.run(vec![
+        let Buffer { forward, reverse } = lfo.run(
             Parameters {
                 incr: 0.825,
                 depth: 100.
-            };
-            10
-        ]);
+            },
+            10,
+        );
         assert_eq!(forward.collect::<Vec<_>>(), &[5.; 10]);
         assert_eq!(reverse.collect::<Vec<_>>(), &[9.; 10]);
     }

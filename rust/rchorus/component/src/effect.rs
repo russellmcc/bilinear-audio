@@ -9,7 +9,7 @@ use conformal_component::{
     ProcessingEnvironment, Processor,
     audio::{Buffer, BufferMut, ChannelLayout},
     effect::Effect as EffectT,
-    pzip,
+    pgrab, pzip,
 };
 use dsp::iir::dc_blocker::DcBlocker;
 use itertools::izip;
@@ -246,27 +246,19 @@ impl EffectT for Effect {
         debug_assert_eq!(input.num_frames(), output.num_frames());
         let rate_to_incr_scale = self.rate_to_incr_scale;
         let parameters = context.parameters();
+        let (rate, depth, bypass, highpass_cutoff, routing) = pgrab!(parameters[numeric "rate", numeric "depth", switch "bypass", enum "highpass_cutoff", enum "routing"]);
         let lfo::Buffer { forward, reverse } = self.lfo.run(
-            pzip!(parameters[numeric "rate", numeric "depth"])
-                .take(input.num_frames())
-                .map(move |(rate, depth)| lfo::Parameters {
-                    incr: rate * rate_to_incr_scale,
-                    depth,
-                }),
+            lfo::Parameters {
+                incr: rate * rate_to_incr_scale,
+                depth,
+            },
+            input.num_frames(),
         );
-        let mix = pzip!(parameters[numeric "mix", switch "bypass"])
-            .map(|(mix, bypass)| if bypass { 0.0 } else { mix });
+        let mix = pzip!(parameters[numeric "mix"]).map(move |mix| if bypass { 0.0 } else { mix });
 
-        // we only update the highpass cutoff per-buffer
-        let (highpass_cutoff, routing) = pzip!(parameters[enum "highpass_cutoff", enum "routing"])
-            .map(|(highpass_cutoff, routing)| {
-                (
-                    FromPrimitive::from_u32(highpass_cutoff).unwrap(),
-                    FromPrimitive::from_u32(routing).unwrap(),
-                )
-            })
-            .next()
-            .unwrap_or((HighpassCutoffSetting::Low, RoutingSetting::Synth));
+        let highpass_cutoff =
+            FromPrimitive::from_u32(highpass_cutoff).unwrap_or(HighpassCutoffSetting::Low);
+        let routing = FromPrimitive::from_u32(routing).unwrap_or(RoutingSetting::Synth);
         match input.channel_layout() {
             ChannelLayout::Mono => {
                 self.process_mono(input, output, forward, reverse, mix, highpass_cutoff);
