@@ -3,9 +3,11 @@ enum State {
     #[default]
     Off,
     Attack(f32),
+    RetriggerAttack(f32),
     Decay(f32),
     ToSustain(f32),
     Sustain(f32),
+    EarlyRelease(f32),
     Release(f32),
 }
 
@@ -35,10 +37,12 @@ pub struct Params {
 pub struct Coeffs {
     attack_rate: Rate,
     attack_target: f32,
+    retrigger_attack_rate: Rate,
     decay_rate: Rate,
     decay_target: f32,
     to_sustain_rate: Rate,
     sustain: f32,
+    early_release_rate: Rate,
     release_rate: Rate,
 }
 
@@ -55,6 +59,7 @@ pub fn calc_coeffs(params: &Params, sampling_rate: f32) -> Coeffs {
     Coeffs {
         attack_rate: calc_rate(params.attack_time, sampling_rate, params.attack_target),
         attack_target: params.attack_target,
+        retrigger_attack_rate: calc_rate(params.attack_time, sampling_rate, 1.0),
         decay_rate: calc_rate(
             params.decay_time,
             sampling_rate,
@@ -67,6 +72,7 @@ pub fn calc_coeffs(params: &Params, sampling_rate: f32) -> Coeffs {
             params.sustain - params.decay_target,
         ),
         sustain: params.sustain,
+        early_release_rate: calc_rate(params.release_time, sampling_rate, -1.0),
         release_rate: calc_rate(params.release_time, sampling_rate, -params.sustain),
     }
 }
@@ -84,10 +90,12 @@ impl Env {
         self.state = match self.state {
             State::Off => State::Attack(0.0),
             State::Attack(value)
+            | State::RetriggerAttack(value)
             | State::Decay(value)
             | State::ToSustain(value)
             | State::Sustain(value)
-            | State::Release(value) => State::Attack(value),
+            | State::EarlyRelease(value)
+            | State::Release(value) => State::RetriggerAttack(value),
         };
     }
 
@@ -95,10 +103,11 @@ impl Env {
         self.state = match self.state {
             State::Off => State::Off,
             State::Attack(value)
+            | State::RetriggerAttack(value)
             | State::Decay(value)
             | State::ToSustain(value)
-            | State::Sustain(value)
-            | State::Release(value) => State::Release(value),
+            | State::EarlyRelease(value) => State::EarlyRelease(value),
+            State::Sustain(value) | State::Release(value) => State::Release(value),
         };
     }
 
@@ -139,6 +148,13 @@ impl Env {
                 State::Attack,
                 State::Decay,
             ),
+            State::RetriggerAttack(value) => approach_target(
+                value,
+                coeffs.attack_target,
+                coeffs.retrigger_attack_rate,
+                State::RetriggerAttack,
+                State::Decay,
+            ),
             State::Decay(value) => approach_target(
                 value,
                 coeffs.decay_target,
@@ -154,6 +170,13 @@ impl Env {
                 State::Sustain,
             ),
             State::Sustain(_) => (coeffs.sustain, State::Sustain(coeffs.sustain)),
+            State::EarlyRelease(value) => approach_target(
+                value,
+                0.0,
+                coeffs.early_release_rate,
+                State::EarlyRelease,
+                |_| State::Off,
+            ),
             State::Release(value) => {
                 approach_target(value, 0.0, coeffs.release_rate, State::Release, |_| {
                     State::Off
@@ -233,6 +256,73 @@ mod tests {
         }
         assert_approx_eq!(env.process(&coeffs), 0.0);
         assert!(env.quiescent());
+    }
+
+    #[test]
+    fn release_reaches_zero_with_zero_sustain_before_sustain_phase() {
+        let mut env: Env = Default::default();
+        let coeffs: Coeffs = calc_coeffs(
+            &Params {
+                attack_time: 0.5,
+                attack_target: 1.0,
+                decay_time: 0.5,
+                decay_target: 0.5,
+                to_sustain_time: 0.5,
+                sustain: 0.0,
+                release_time: 0.1,
+            },
+            48000.0,
+        );
+        env.on();
+        for _ in 0..2400 {
+            env.process(&coeffs);
+        }
+        env.off();
+        for _ in 0..4800 {
+            env.process(&coeffs);
+        }
+        assert_approx_eq!(env.process(&coeffs), 0.0);
+        assert!(env.quiescent());
+    }
+
+    #[test]
+    fn retrigger_attack_reaches_zero_target_from_nonzero_level() {
+        let mut env: Env = Default::default();
+        let initial_coeffs: Coeffs = calc_coeffs(
+            &Params {
+                attack_time: 0.5,
+                attack_target: 1.0,
+                decay_time: 0.5,
+                decay_target: 0.5,
+                to_sustain_time: 0.5,
+                sustain: 0.25,
+                release_time: 0.1,
+            },
+            48000.0,
+        );
+        env.on();
+        for _ in 0..2400 {
+            env.process(&initial_coeffs);
+        }
+
+        let retrigger_coeffs: Coeffs = calc_coeffs(
+            &Params {
+                attack_time: 0.1,
+                attack_target: 0.0,
+                decay_time: 0.5,
+                decay_target: 0.0,
+                to_sustain_time: 0.5,
+                sustain: 0.0,
+                release_time: 0.1,
+            },
+            48000.0,
+        );
+        env.on();
+        for _ in 0..4800 {
+            env.process(&retrigger_coeffs);
+        }
+
+        assert_approx_eq!(env.process(&retrigger_coeffs), 0.0);
     }
 
     #[test]
