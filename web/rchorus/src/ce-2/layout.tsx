@@ -1,5 +1,6 @@
 import Button from "../components/button";
 import Slider from "../components/slider";
+import Knob from "./knob";
 
 const Layout = () => (
   <div
@@ -51,6 +52,24 @@ const Layout = () => (
         background: "var(--panel-color-ce-2)",
       }}
     />
+    <div
+      style={{
+        position: "absolute",
+        left: "64px",
+        top: "24px",
+      }}
+    >
+      <Knob label="RATE" param="rate" />
+    </div>
+    <div
+      style={{
+        position: "absolute",
+        left: "236px",
+        top: "24px",
+      }}
+    >
+      <Knob label="DEPTH" param="depth" />
+    </div>
     <div style={{ color: "var(--text-color)" }}>
       <Slider highlightColor={"var(--highlight-color-ce-2)"} />
     </div>
