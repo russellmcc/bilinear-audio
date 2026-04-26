@@ -43,3 +43,7 @@ button {
   cursor: inherit;
   padding: 0px;
 }
+
+:focus {
+  outline: 0;
+}
