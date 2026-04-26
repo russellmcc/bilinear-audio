@@ -2,6 +2,10 @@ import Button from "../components/button";
 import Slider from "../components/slider";
 import Knob from "./knob";
 
+const CE2_RATE_RANGE = [0.3, 3.5] as const;
+const CE2_DEPTH_RANGE = [0, (3.3 / (5.35 - 1.66)) * 100] as const;
+const KNOB_DEFAULT = 50;
+
 const Layout = () => (
   <div
     style={{
@@ -59,7 +63,12 @@ const Layout = () => (
         top: "24px",
       }}
     >
-      <Knob label="RATE" param="rate" />
+      <Knob
+        label="RATE"
+        param="rate"
+        range={CE2_RATE_RANGE}
+        defaultValue={KNOB_DEFAULT}
+      />
     </div>
     <div
       style={{
@@ -68,7 +77,12 @@ const Layout = () => (
         top: "24px",
       }}
     >
-      <Knob label="DEPTH" param="depth" />
+      <Knob
+        label="DEPTH"
+        param="depth"
+        range={CE2_DEPTH_RANGE}
+        defaultValue={KNOB_DEFAULT}
+      />
     </div>
     <div style={{ color: "var(--text-color)" }}>
       <Slider highlightColor={"var(--highlight-color-ce-2)"} />

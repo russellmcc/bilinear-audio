@@ -86,17 +86,24 @@ const Label = ({ label }: KnobKit.LabelProps) => (
   </div>
 );
 
+type Range = readonly [number, number];
+
 type Props = {
   label: string;
   param: string;
+  range: Range;
+  defaultValue: number;
 };
 
-const Knob = ({ label, param }: Props) => {
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
+const Knob = ({ label, param, range, defaultValue }: Props) => {
   const { value, set, grab, release, info } = useNumericParam(param);
-  const [min, max] = info.valid_range;
+  const [min, max] = range;
 
   const scaleToPercent = useCallback(
-    (value: number) => rescale(value, min, max, 0, 100),
+    (value: number) => rescale(clamp(value, min, max), min, max, 0, 100),
     [min, max],
   );
   const scaleFromPercent = useCallback(
@@ -127,7 +134,7 @@ const Knob = ({ label, param }: Props) => {
       onGrabOrRelease={onGrabOrRelease}
       label={label}
       accessibilityLabel={info.title}
-      defaultValue={scaleToPercent(info.default)}
+      defaultValue={defaultValue}
       Display={Display}
       Label={Label}
     />
