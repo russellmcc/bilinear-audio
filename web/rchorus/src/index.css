@@ -16,9 +16,12 @@
 
 :root {
   --bg-color-c3p: #1a1423;
+  --bg-color-ce-2: #00a6ed;
   --text-color: #d6dbd2;
   --highlight-color-c3p: #c52184;
+  --highlight-color-ce-2: #00a6ed;
   --highlight-color-super-dimension: #d45113;
+  --panel-color-ce-2: #191923;
 }
 
 body {
@@ -39,4 +42,8 @@ button {
   border: none;
   cursor: inherit;
   padding: 0px;
+}
+
+:focus {
+  outline: 0;
 }
