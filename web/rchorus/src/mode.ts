@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Preset, useApplyPreset } from "./preset";
 import c3pPreset from "./c3p/preset";
 import superDimensionPreset from "./super-dimension/preset";
+import ce2Preset from "./ce-2/preset";
 
 const c3pSchema = z.object({
   id: z.literal("c3p"),
@@ -13,7 +14,11 @@ const superDimensionSchema = z.object({
   id: z.literal("super-dimension"),
 });
 
-export const modeSchema = z.union([c3pSchema, superDimensionSchema]);
+const ce2Schema = z.object({
+  id: z.literal("ce-2"),
+});
+
+export const modeSchema = z.union([c3pSchema, superDimensionSchema, ce2Schema]);
 
 const modeIds = modeSchema.options.map((option) => option.shape.id.value);
 
@@ -32,6 +37,8 @@ const getPresetForMode = (mode: Mode): Preset => {
       return c3pPreset;
     case "super-dimension":
       return superDimensionPreset;
+    case "ce-2":
+      return ce2Preset;
   }
 };
 

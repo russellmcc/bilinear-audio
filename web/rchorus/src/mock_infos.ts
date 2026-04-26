@@ -48,7 +48,7 @@ export const typedInfos = {
     type_specific: {
       t: "enum" as const,
       default: "Synth",
-      values: ["Synth", "Dimension"],
+      values: ["Synth", "Dimension", "Pedal"],
     } as const,
   } as const,
 } as const;
