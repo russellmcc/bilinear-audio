@@ -44,6 +44,7 @@ enum RoutingSetting {
     Synth,
     Dimension,
     Pedal,
+    Jazz,
 }
 
 impl DelayChannel {
@@ -226,6 +227,35 @@ impl Effect {
         }
     }
 
+    fn process_jazz(
+        &mut self,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
+        mix: impl Iterator<Item = f32> + Clone,
+        highpass_cutoff: HighpassCutoffSetting,
+    ) {
+        let mixed = izip!(input.channel(0), input.channel(1)).map(|(l, r)| (l + r) * 0.5);
+        self.channels[1].reset();
+
+        let delay_buffer = self.channels[0].process(mixed, highpass_cutoff);
+        let mut outputs = channels_mut(output);
+        let output_l = outputs.next().unwrap();
+        let output_r = outputs.next().unwrap();
+
+        for (il, ir, delayed, ol, or, m) in izip!(
+            input.channel(0),
+            input.channel(1),
+            delay_buffer.process(self.lfo_forward.iter().copied()),
+            output_l,
+            output_r,
+            mix
+        ) {
+            let wet = delayed * m * PERCENT_SCALE;
+            *ol = il + wet;
+            *or = ir - wet;
+        }
+    }
+
     fn process_synth(
         &mut self,
         input: &impl Buffer,
@@ -321,7 +351,7 @@ impl EffectT for Effect {
         let routing = FromPrimitive::from_u32(routing).unwrap_or(RoutingSetting::Synth);
         match input.channel_layout() {
             ChannelLayout::Mono => match routing {
-                RoutingSetting::Pedal => {
+                RoutingSetting::Pedal | RoutingSetting::Jazz => {
                     self.process_mono_pedal(input, output, mix, highpass_cutoff);
                 }
                 RoutingSetting::Synth | RoutingSetting::Dimension => {
@@ -338,7 +368,83 @@ impl EffectT for Effect {
                 RoutingSetting::Pedal => {
                     self.process_pedal(input, output, mix, highpass_cutoff);
                 }
+                RoutingSetting::Jazz => {
+                    self.process_jazz(input, output, mix, highpass_cutoff);
+                }
             },
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use super::*;
+    use conformal_component::{
+        audio::BufferData,
+        parameters::{
+            BufferStates, ConstantBufferStates, InternalValue, StatesMap, override_defaults,
+        },
+    };
+
+    struct TestProcessContext<P> {
+        parameters: P,
+    }
+
+    impl<P: BufferStates> ProcessContext for TestProcessContext<&P> {
+        fn parameters(&self) -> &impl BufferStates {
+            self.parameters
+        }
+    }
+
+    fn params_for_routing(routing: RoutingSetting) -> ConstantBufferStates<StatesMap> {
+        let overrides = HashMap::from([("routing", InternalValue::Enum(routing as u32))]);
+        let component = crate::Component {};
+        let infos = conformal_component::Component::parameter_infos(&component);
+        ConstantBufferStates::new(StatesMap::from(override_defaults(
+            infos.iter().map(Into::into),
+            &overrides,
+        )))
+    }
+
+    #[test]
+    fn jazz_routing_puts_wet_signal_in_side_channel() {
+        let num_frames = 1024;
+        let sampling_rate = 48000.0;
+        let left = dsp::test_utils::sine(num_frames, 440.0 / sampling_rate);
+        let right = dsp::test_utils::sine(num_frames, 660.0 / sampling_rate);
+        let mut input = BufferData::new(ChannelLayout::Stereo, num_frames);
+        dsp::iter::move_into(left.iter().copied(), input.channel_mut(0));
+        dsp::iter::move_into(right.iter().map(|x| x * 0.5), input.channel_mut(1));
+
+        let mut output = BufferData::new(ChannelLayout::Stereo, num_frames);
+        let mut effect = Effect::new(&ProcessingEnvironment {
+            sampling_rate,
+            max_samples_per_process_call: num_frames,
+            channel_layout: ChannelLayout::Stereo,
+            processing_mode: conformal_component::ProcessingMode::Realtime,
+        });
+        effect.set_processing(true);
+        let params = params_for_routing(RoutingSetting::Jazz);
+        effect.process(
+            &TestProcessContext {
+                parameters: &params,
+            },
+            &input,
+            &mut output,
+        );
+
+        let mut max_side_delta = 0.0f32;
+        for (il, ir, ol, or) in izip!(
+            input.channel(0),
+            input.channel(1),
+            output.channel(0),
+            output.channel(1)
+        ) {
+            assert!(((ol + or) - (il + ir)).abs() < 1e-5);
+            max_side_delta = max_side_delta.max(((ol - or) - (il - ir)).abs());
+        }
+        assert!(max_side_delta > 1e-3);
     }
 }
