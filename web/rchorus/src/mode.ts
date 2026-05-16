@@ -5,6 +5,8 @@ import { Preset, useApplyPreset } from "./preset";
 import c3pPreset from "./c3p/preset";
 import superDimensionPreset from "./super-dimension/preset";
 import ce2Preset from "./ce-2/preset";
+import jazz120Preset from "./jazz-120/preset";
+import { JAZZ_VIBRATO_DEPTH, JAZZ_VIBRATO_RATE } from "./jazz-120/constants";
 
 const c3pSchema = z.object({
   id: z.literal("c3p"),
@@ -18,17 +20,75 @@ const ce2Schema = z.object({
   id: z.literal("ce-2"),
 });
 
-export const modeSchema = z.union([c3pSchema, superDimensionSchema, ce2Schema]);
+const jazz120Schema = z.object({
+  id: z.literal("jazz-120"),
+  chorusMode: z.enum(["vibrato", "chorus"]),
+  lastRate: z.number(),
+  lastDepth: z.number(),
+});
+
+export const modeSchema = z.union([
+  c3pSchema,
+  superDimensionSchema,
+  ce2Schema,
+  jazz120Schema,
+]);
+
+export const defaultJazz120Mode: Jazz120Mode = {
+  chorusMode: "vibrato",
+  lastRate: JAZZ_VIBRATO_RATE,
+  lastDepth: JAZZ_VIBRATO_DEPTH,
+};
 
 const modeIds = modeSchema.options.map((option) => option.shape.id.value);
 
 export type Mode = z.infer<typeof modeSchema>;
 
-const makeMode = (id: Mode["id"]): Mode => ({ id });
+export type Jazz120Mode = Omit<z.infer<typeof jazz120Schema>, "id">;
 
-export const useMode = (): Mode => {
-  const mode = useUiState<Mode>().value;
-  return mode ?? { id: "c3p" };
+const makeMode = (id: Mode["id"]): Mode => {
+  switch (id) {
+    case "c3p":
+    case "super-dimension":
+    case "ce-2":
+      return { id };
+    case "jazz-120":
+      return {
+        id,
+        chorusMode: "vibrato",
+        lastRate: JAZZ_VIBRATO_RATE,
+        lastDepth: JAZZ_VIBRATO_DEPTH,
+      };
+  }
+};
+
+export const useMode = (): {
+  mode: Mode;
+  setMode: (mode: Mode) => void;
+  jazz120Mode: Jazz120Mode;
+  setJazz120Mode: (mode: Jazz120Mode) => void;
+} => {
+  const { value, set } = useUiState<Mode>();
+  const jazz120Mode = value?.id === "jazz-120" ? value : defaultJazz120Mode;
+  const id = value?.id;
+  const setJazz120Mode = useCallback(
+    (mode: Jazz120Mode) => {
+      if (id !== "jazz-120") {
+        return;
+      }
+      set({
+        id,
+        ...mode,
+      });
+    },
+    [id, set],
+  );
+  return {
+    mode: value ?? { id: "c3p" },
+    setMode: set,
+    jazz120Mode,
+    setJazz120Mode,
+  };
 };
 
 const getPresetForMode = (mode: Mode): Preset => {
@@ -39,12 +99,13 @@ const getPresetForMode = (mode: Mode): Preset => {
       return superDimensionPreset;
     case "ce-2":
       return ce2Preset;
+    case "jazz-120":
+      return jazz120Preset;
   }
 };
 
 export const useNextMode = () => {
-  const mode = useMode();
-  const setMode = useUiState<Mode>().set;
+  const { mode, setMode } = useMode();
   const applyPreset = useApplyPreset();
   const nextMode = useCallback(() => {
     const currentIndex = modeIds.indexOf(mode.id);

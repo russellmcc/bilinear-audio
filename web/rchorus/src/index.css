@@ -17,11 +17,15 @@
 :root {
   --bg-color-c3p: #1a1423;
   --bg-color-ce-2: #00a6ed;
+  --bg-color-jazz-120: #0b0a0a;
   --text-color: #d6dbd2;
   --highlight-color-c3p: #c52184;
   --highlight-color-ce-2: #00a6ed;
+  --highlight-color-jazz-120: #a9690e;
   --highlight-color-super-dimension: #d45113;
   --panel-color-ce-2: #191923;
+  --panel-color-jazz-120: #a9690e;
+  --frame-color-jazz-120: #829191;
 }
 
 body {
@@ -31,7 +35,6 @@ body {
   line-height: 21px;
   user-select: none;
   -webkit-user-select: none;
-  cursor: default;
   margin: 0px;
 }
 
@@ -40,7 +43,6 @@ button {
   color: inherit;
   background: none;
   border: none;
-  cursor: inherit;
   padding: 0px;
 }
 
