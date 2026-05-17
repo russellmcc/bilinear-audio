@@ -6,25 +6,20 @@ import {
 import { typedInfos } from "./mock_infos";
 import { useCallback, useMemo } from "react";
 
-const presetParams = [
-  "rate",
-  "depth",
-  "mix",
-  "highpass_cutoff",
-  "routing",
-] as const;
+type PresetParamInfos = Pick<
+  typeof typedInfos,
+  | "rate"
+  | "rate_2"
+  | "rate_3"
+  | "rate_4"
+  | "depth"
+  | "ens_2_depth"
+  | "mix"
+  | "highpass_cutoff"
+  | "routing"
+>;
 
-type PresetParam = (typeof presetParams)[number];
-
-const presetParamInfos: {
-  [K in PresetParam]: (typeof typedInfos)[K];
-} = {
-  rate: typedInfos.rate,
-  depth: typedInfos.depth,
-  mix: typedInfos.mix,
-  highpass_cutoff: typedInfos.highpass_cutoff,
-  routing: typedInfos.routing,
-} as const;
+type PresetParam = keyof PresetParamInfos;
 
 const paramHooks = {
   numeric: useNumericParam,
@@ -43,72 +38,81 @@ const useSelectSetter = <T extends ParamType>(
 ): SetterForParamType<T> => paramHooks[t](key).set;
 
 type ParamTypeOf<K extends PresetParam> =
-  (typeof presetParamInfos)[K]["type_specific"]["t"];
+  PresetParamInfos[K]["type_specific"]["t"];
 
 type ValueOf<K extends PresetParam> = Parameters<
   SetterForParamType<ParamTypeOf<K>>
 >[0];
 
 export type Preset = {
-  [Parameter in PresetParam]: ValueOf<Parameter>;
-};
-
-type Setters = {
-  [Param in PresetParam]: SetterForParamType<ParamTypeOf<Param>>;
-};
-
-const useSetter = <Param extends PresetParam>(param: Param) => {
-  const t: ParamTypeOf<Param> = presetParamInfos[param].type_specific.t;
-  return useSelectSetter(t, param);
-};
-
-const applyMapped = <M extends Record<string, unknown>, K extends keyof M>(
-  keys: readonly K[],
-  map: M,
-  setters: { [P in K]: (v: M[P]) => void },
-) => {
-  keys.forEach((k) => {
-    setters[k](map[k]);
-  });
+  rate: ValueOf<"rate">;
+  depth: ValueOf<"depth">;
+  mix: ValueOf<"mix">;
+  highpass_cutoff: ValueOf<"highpass_cutoff">;
+  routing: ValueOf<"routing">;
+  rate_2?: ValueOf<"rate_2">;
+  rate_3?: ValueOf<"rate_3">;
+  rate_4?: ValueOf<"rate_4">;
+  ens_2_depth?: ValueOf<"ens_2_depth">;
 };
 
 export const useApplyPreset = () => {
-  const rate = useSetter("rate");
-  const depth = useSetter("depth");
-  const mix = useSetter("mix");
-  const highpass_cutoff = useSetter("highpass_cutoff");
-  const routing = useSetter("routing");
-  const setters: Setters = useMemo(
+  const rate = useSelectSetter("numeric", "rate");
+  const rate_2 = useSelectSetter("numeric", "rate_2");
+  const rate_3 = useSelectSetter("numeric", "rate_3");
+  const rate_4 = useSelectSetter("numeric", "rate_4");
+  const depth = useSelectSetter("numeric", "depth");
+  const ens_2_depth = useSelectSetter("numeric", "ens_2_depth");
+  const mix = useSelectSetter("numeric", "mix");
+  const highpass_cutoff = useSelectSetter("enum", "highpass_cutoff");
+  const routing = useSelectSetter("enum", "routing");
+  const setters = useMemo(
     () => ({
       rate,
+      rate_2,
+      rate_3,
+      rate_4,
       depth,
+      ens_2_depth,
       mix,
       highpass_cutoff,
       routing,
     }),
-    [depth, highpass_cutoff, mix, rate, routing],
+    [
+      depth,
+      ens_2_depth,
+      highpass_cutoff,
+      mix,
+      rate,
+      rate_2,
+      rate_3,
+      rate_4,
+      routing,
+    ],
   );
 
   const applyPreset = useCallback(
     (preset: Preset) => {
-      applyMapped(presetParams, preset, setters);
+      setters.rate(preset.rate);
+      setters.depth(preset.depth);
+      setters.mix(preset.mix);
+      setters.highpass_cutoff(preset.highpass_cutoff);
+      setters.routing(preset.routing);
+      if (preset.rate_2 !== undefined) {
+        setters.rate_2(preset.rate_2);
+      }
+      if (preset.rate_3 !== undefined) {
+        setters.rate_3(preset.rate_3);
+      }
+      if (preset.rate_4 !== undefined) {
+        setters.rate_4(preset.rate_4);
+      }
+      if (preset.ens_2_depth !== undefined) {
+        setters.ens_2_depth(preset.ens_2_depth);
+      }
     },
     [setters],
   );
 
   return applyPreset;
-};
-
-export const applyPreset = (_preset: Preset) => {
-  presetParams.forEach((key) => {
-    const paramInfo = presetParamInfos[key];
-    switch (paramInfo.type_specific.t) {
-      case "numeric":
-        break;
-      case "enum":
-        break;
-      default:
-        paramInfo.type_specific satisfies never;
-    }
-  });
 };

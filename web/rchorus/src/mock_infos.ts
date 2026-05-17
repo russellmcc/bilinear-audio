@@ -22,7 +22,25 @@ export const typedInfos = {
     type_specific: {
       t: "numeric" as const,
       default: 0.35,
-      valid_range: [0.08, 10.1] as [number, number],
+      valid_range: [0.08, 10.1] satisfies [number, number],
+      units: "hz",
+    } as const,
+  } as const,
+  rate_3: {
+    title: "Rate 3",
+    type_specific: {
+      t: "numeric" as const,
+      default: 0.35,
+      valid_range: [0.08, 10.1] satisfies [number, number],
+      units: "hz",
+    } as const,
+  } as const,
+  rate_4: {
+    title: "Rate 4",
+    type_specific: {
+      t: "numeric" as const,
+      default: 0.35,
+      valid_range: [0.08, 10.1] satisfies [number, number],
       units: "hz",
     } as const,
   } as const,
@@ -32,6 +50,15 @@ export const typedInfos = {
       t: "numeric" as const,
       default: 100,
       valid_range: [0, 100] as [number, number],
+      units: "%",
+    } as const,
+  } as const,
+  ens_2_depth: {
+    title: "Ens 2 Depth",
+    type_specific: {
+      t: "numeric" as const,
+      default: 100,
+      valid_range: [0, 100] satisfies [number, number],
       units: "%",
     } as const,
   } as const,
@@ -57,7 +84,7 @@ export const typedInfos = {
     type_specific: {
       t: "enum" as const,
       default: "Synth",
-      values: ["Synth", "Dimension", "Pedal", "Jazz", "Ens 1"],
+      values: ["Synth", "Dimension", "Pedal", "Jazz", "Ens 1", "Ens 2"],
     } as const,
   } as const,
 } as const;
