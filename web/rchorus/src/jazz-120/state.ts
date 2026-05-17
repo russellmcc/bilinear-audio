@@ -70,14 +70,14 @@ export const useJazzChorusState = ({ mode, setMode }: Props) => {
     controlsActive: mode.chorusMode === "vibrato",
     setChorusMode,
     rate: {
-      value: rate,
+      value: mode.chorusMode === "vibrato" ? rate : mode.lastRate,
       set: setRate,
       grab: grabRate,
       release: releaseRate,
       info: rateInfo,
     },
     depth: {
-      value: depth,
+      value: mode.chorusMode === "vibrato" ? depth : mode.lastDepth,
       set: setDepth,
       grab: grabDepth,
       release: releaseDepth,
