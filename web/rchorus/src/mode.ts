@@ -9,6 +9,8 @@ import ce2Preset from "./ce-2/preset";
 import jazz120Preset from "./jazz-120/preset";
 import { JAZZ_VIBRATO_DEPTH, JAZZ_VIBRATO_RATE } from "./jazz-120/constants";
 import ju60Preset from "./ju-60/preset";
+import rs79Preset from "./rs-79/preset";
+import { RS_79_DEFAULT_ENSEMBLE_MODE } from "./rs-79/constants";
 
 const c3pSchema = z.object({
   id: z.literal("c3p"),
@@ -34,12 +36,18 @@ const ju60Schema = z.object({
   buttonMode: z.enum(["I", "II", "III"]),
 });
 
+const rs79Schema = z.object({
+  id: z.literal("rs-79"),
+  ensembleMode: z.enum(["I", "II"]),
+});
+
 export const modeSchema = z.union([
   c3pSchema,
   superDimensionSchema,
   ce2Schema,
   jazz120Schema,
   ju60Schema,
+  rs79Schema,
 ]);
 
 export const defaultJazz120Mode: Jazz120Mode = {
@@ -52,12 +60,17 @@ export const defaultJu60Mode: Ju60Mode = {
   buttonMode: "I",
 };
 
+export const defaultRs79Mode: Rs79Mode = {
+  ensembleMode: RS_79_DEFAULT_ENSEMBLE_MODE,
+};
+
 const modeIds = modeSchema.options.map((option) => option.shape.id.value);
 
 export type Mode = z.infer<typeof modeSchema>;
 
 export type Jazz120Mode = Omit<z.infer<typeof jazz120Schema>, "id">;
 export type Ju60Mode = Omit<z.infer<typeof ju60Schema>, "id">;
+export type Rs79Mode = Omit<z.infer<typeof rs79Schema>, "id">;
 
 const makeMode = (id: Mode["id"]): Mode => {
   switch (id) {
@@ -77,6 +90,11 @@ const makeMode = (id: Mode["id"]): Mode => {
         id,
         ...defaultJu60Mode,
       };
+    case "rs-79":
+      return {
+        id,
+        ...defaultRs79Mode,
+      };
   }
 };
 
@@ -87,10 +105,13 @@ export const useMode = (): {
   setJazz120Mode: (mode: Jazz120Mode) => void;
   ju60Mode: Ju60Mode;
   setJu60Mode: (mode: Ju60Mode) => void;
+  rs79Mode: Rs79Mode;
+  setRs79Mode: (mode: Rs79Mode) => void;
 } => {
   const { value, set } = useUiState<Mode>();
   const jazz120Mode = value?.id === "jazz-120" ? value : defaultJazz120Mode;
   const ju60Mode = value?.id === "ju-60" ? value : defaultJu60Mode;
+  const rs79Mode = value?.id === "rs-79" ? value : defaultRs79Mode;
   const id = value?.id;
   const setJazz120Mode = useCallback(
     (mode: Jazz120Mode) => {
@@ -116,6 +137,18 @@ export const useMode = (): {
     },
     [id, set],
   );
+  const setRs79Mode = useCallback(
+    (mode: Rs79Mode) => {
+      if (id !== "rs-79") {
+        return;
+      }
+      set({
+        id,
+        ...mode,
+      });
+    },
+    [id, set],
+  );
   return {
     mode: value ?? { id: "c3p" },
     setMode: set,
@@ -123,6 +156,8 @@ export const useMode = (): {
     setJazz120Mode,
     ju60Mode,
     setJu60Mode,
+    rs79Mode,
+    setRs79Mode,
   };
 };
 
@@ -138,6 +173,8 @@ const getPresetForMode = (mode: Mode): Preset => {
       return jazz120Preset;
     case "ju-60":
       return ju60Preset;
+    case "rs-79":
+      return rs79Preset;
   }
 };
 

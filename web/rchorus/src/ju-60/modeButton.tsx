@@ -78,7 +78,7 @@ const ModeButton = ({
         style={{
           fontSize: "36px",
           lineHeight: "36px",
-          color: "#ffffff",
+          color: "var(--text-color)",
         }}
       >
         {mode}

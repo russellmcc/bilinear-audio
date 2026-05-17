@@ -66,7 +66,7 @@ const Layout = (props: LayoutProps) => {
           top: "25px",
           fontSize: "32px",
           lineHeight: "32px",
-          color: "#ffffff",
+          color: "var(--text-color)",
           letterSpacing: "0.5px",
         }}
       >

@@ -2,7 +2,7 @@ use conformal_component::parameters::{self, InfoRef};
 use conformal_component::parameters::{Flags, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentT, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 6] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 10] = [
     InfoRef {
         title: "Rate",
         short_title: "Rate",
@@ -15,9 +15,53 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 6] = [
         },
     },
     InfoRef {
+        title: "Rate 2",
+        short_title: "Rate 2",
+        unique_id: "rate_2",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.35,
+            valid_range: 0.08..=10.1,
+            units: Some("hz"),
+        },
+    },
+    InfoRef {
+        title: "Rate 3",
+        short_title: "Rate 3",
+        unique_id: "rate_3",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.35,
+            valid_range: 0.08..=10.1,
+            units: Some("hz"),
+        },
+    },
+    InfoRef {
+        title: "Rate 4",
+        short_title: "Rate 4",
+        unique_id: "rate_4",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.35,
+            valid_range: 0.08..=10.1,
+            units: Some("hz"),
+        },
+    },
+    InfoRef {
         title: "Depth",
         short_title: "Depth",
         unique_id: "depth",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 100.,
+            valid_range: 0f32..=100.,
+            units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Ens 2 Depth",
+        short_title: "Ens2 Depth",
+        unique_id: "ens_2_depth",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 100.,
@@ -60,7 +104,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 6] = [
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
-            values: &["Synth", "Dimension", "Pedal", "Jazz"],
+            values: &["Synth", "Dimension", "Pedal", "Jazz", "Ens 1", "Ens 2"],
         },
     },
 ];
