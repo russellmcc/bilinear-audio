@@ -2,11 +2,22 @@ use conformal_component::parameters::{self, InfoRef};
 use conformal_component::parameters::{Flags, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentT, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 6] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 7] = [
     InfoRef {
         title: "Rate",
         short_title: "Rate",
         unique_id: "rate",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: 0.35,
+            valid_range: 0.08..=10.1,
+            units: Some("hz"),
+        },
+    },
+    InfoRef {
+        title: "Rate 2",
+        short_title: "Rate 2",
+        unique_id: "rate_2",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 0.35,
@@ -60,7 +71,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 6] = [
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
-            values: &["Synth", "Dimension", "Pedal", "Jazz"],
+            values: &["Synth", "Dimension", "Pedal", "Jazz", "Ens 1"],
         },
     },
 ];
