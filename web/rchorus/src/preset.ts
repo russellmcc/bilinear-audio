@@ -13,7 +13,7 @@ type PresetParamInfos = Pick<
   | "rate_3"
   | "rate_4"
   | "depth"
-  | "ens_2_depth"
+  | "ens_depth"
   | "mix"
   | "highpass_cutoff"
   | "routing"
@@ -53,7 +53,7 @@ export type Preset = {
   rate_2?: ValueOf<"rate_2">;
   rate_3?: ValueOf<"rate_3">;
   rate_4?: ValueOf<"rate_4">;
-  ens_2_depth?: ValueOf<"ens_2_depth">;
+  ens_depth?: ValueOf<"ens_depth">;
 };
 
 export const useApplyPreset = () => {
@@ -62,7 +62,7 @@ export const useApplyPreset = () => {
   const rate_3 = useSelectSetter("numeric", "rate_3");
   const rate_4 = useSelectSetter("numeric", "rate_4");
   const depth = useSelectSetter("numeric", "depth");
-  const ens_2_depth = useSelectSetter("numeric", "ens_2_depth");
+  const ens_depth = useSelectSetter("numeric", "ens_depth");
   const mix = useSelectSetter("numeric", "mix");
   const highpass_cutoff = useSelectSetter("enum", "highpass_cutoff");
   const routing = useSelectSetter("enum", "routing");
@@ -73,14 +73,14 @@ export const useApplyPreset = () => {
       rate_3,
       rate_4,
       depth,
-      ens_2_depth,
+      ens_depth,
       mix,
       highpass_cutoff,
       routing,
     }),
     [
       depth,
-      ens_2_depth,
+      ens_depth,
       highpass_cutoff,
       mix,
       rate,
@@ -107,8 +107,8 @@ export const useApplyPreset = () => {
       if (preset.rate_4 !== undefined) {
         setters.rate_4(preset.rate_4);
       }
-      if (preset.ens_2_depth !== undefined) {
-        setters.ens_2_depth(preset.ens_2_depth);
+      if (preset.ens_depth !== undefined) {
+        setters.ens_depth(preset.ens_depth);
       }
     },
     [setters],

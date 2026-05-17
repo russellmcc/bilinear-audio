@@ -53,8 +53,8 @@ export const typedInfos = {
       units: "%",
     } as const,
   } as const,
-  ens_2_depth: {
-    title: "Ens 2 Depth",
+  ens_depth: {
+    title: "Ens Depth",
     type_specific: {
       t: "numeric" as const,
       default: 100,
@@ -84,7 +84,7 @@ export const typedInfos = {
     type_specific: {
       t: "enum" as const,
       default: "Synth",
-      values: ["Synth", "Dimension", "Pedal", "Jazz", "Ens 1", "Ens 2"],
+      values: ["Synth", "Dimension", "Pedal", "Jazz", "Ens"],
     } as const,
   } as const,
 } as const;

@@ -14,7 +14,7 @@ export const useRs79State = ({ mode, setMode }: Props) => {
   const { set: setRate3Param } = useNumericParam("rate_3");
   const { set: setRate4Param } = useNumericParam("rate_4");
   const { set: setDepthParam } = useNumericParam("depth");
-  const { set: setEns2DepthParam } = useNumericParam("ens_2_depth");
+  const { set: setEnsDepthParam } = useNumericParam("ens_depth");
   const { set: setRoutingParam } = useEnumParam("routing");
 
   const setEnsembleMode = useCallback(
@@ -31,12 +31,12 @@ export const useRs79State = ({ mode, setMode }: Props) => {
       setRate3Param(preset.rate_3);
       setRate4Param(preset.rate_4);
       setDepthParam(preset.depth);
-      setEns2DepthParam(preset.ens_2_depth);
+      setEnsDepthParam(preset.ens_depth);
     },
     [
       mode,
       setDepthParam,
-      setEns2DepthParam,
+      setEnsDepthParam,
       setMode,
       setRate2Param,
       setRate3Param,

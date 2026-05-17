@@ -45,8 +45,7 @@ enum RoutingSetting {
     Dimension,
     Pedal,
     Jazz,
-    Ens1,
-    Ens2,
+    Ens,
 }
 
 impl DelayChannel {
@@ -342,34 +341,7 @@ impl Effect {
         }
     }
 
-    fn process_mono_ens1(
-        &mut self,
-        input: &impl Buffer,
-        output: &mut impl BufferMut,
-        mix: impl Iterator<Item = f32> + Clone,
-        highpass_cutoff: HighpassCutoffSetting,
-    ) {
-        let [c0, c1, c2, c3] = &mut self.channels;
-        let processed_0 = c0.process(input.channel(0).iter().copied(), highpass_cutoff);
-        let processed_1 = c1.process(input.channel(0).iter().copied(), highpass_cutoff);
-        let processed_2 = c2.process(input.channel(0).iter().copied(), highpass_cutoff);
-        let processed_3 = c3.process(input.channel(0).iter().copied(), highpass_cutoff);
-
-        dsp::iter::move_into(
-            izip!(
-                input.channel(0),
-                processed_0.process(self.lfo_forward[0].iter().copied()),
-                processed_1.process(self.lfo_reverse[0].iter().copied()),
-                processed_2.process(self.lfo_forward[1].iter().copied()),
-                processed_3.process(self.lfo_reverse[1].iter().copied()),
-                mix
-            )
-            .map(|(i, d0, d1, d2, d3, m)| i + (d0 + d1 + d2 + d3) * m * PERCENT_SCALE),
-            output.channel_mut(0),
-        );
-    }
-
-    fn process_mono_ens2(
+    fn process_mono_ens(
         &mut self,
         input: &impl Buffer,
         output: &mut impl BufferMut,
@@ -419,49 +391,7 @@ impl Effect {
         );
     }
 
-    fn process_ens1(
-        &mut self,
-        input: &impl Buffer,
-        output: &mut impl BufferMut,
-        mix: impl Iterator<Item = f32> + Clone,
-        highpass_cutoff: HighpassCutoffSetting,
-    ) {
-        for (mixed, l, r) in izip!(
-            &mut self.mixed[..input.num_frames()],
-            input.channel(0),
-            input.channel(1)
-        ) {
-            *mixed = (l + r) * 0.5;
-        }
-        let mixed = &self.mixed[..input.num_frames()];
-
-        let [c0, c1, c2, c3] = &mut self.channels;
-        let processed_0 = c0.process(mixed.iter().copied(), highpass_cutoff);
-        let processed_1 = c1.process(mixed.iter().copied(), highpass_cutoff);
-        let processed_2 = c2.process(mixed.iter().copied(), highpass_cutoff);
-        let processed_3 = c3.process(mixed.iter().copied(), highpass_cutoff);
-        let mut outputs = channels_mut(output);
-        let output_l = outputs.next().unwrap();
-        let output_r = outputs.next().unwrap();
-
-        for (il, ir, dl0, dl1, dr0, dr1, ol, or, m) in izip!(
-            input.channel(0),
-            input.channel(1),
-            processed_0.process(self.lfo_forward[0].iter().copied()),
-            processed_1.process(self.lfo_reverse[0].iter().copied()),
-            processed_2.process(self.lfo_forward[1].iter().copied()),
-            processed_3.process(self.lfo_reverse[1].iter().copied()),
-            output_l,
-            output_r,
-            mix
-        ) {
-            let wet_scale = m * PERCENT_SCALE;
-            *ol = il + (dl0 + dl1) * wet_scale;
-            *or = ir + (dr0 + dr1) * wet_scale;
-        }
-    }
-
-    fn process_ens2(
+    fn process_ens(
         &mut self,
         input: &impl Buffer,
         output: &mut impl BufferMut,
@@ -542,7 +472,8 @@ impl EffectT for Effect {
         debug_assert_eq!(input.num_frames(), output.num_frames());
         let rate_to_incr_scale = self.rate_to_incr_scale;
         let parameters = context.parameters();
-        let (rate, rate_2, rate_3, rate_4, depth, ens_2_depth, bypass, highpass_cutoff, routing) = pgrab!(parameters[numeric "rate", numeric "rate_2", numeric "rate_3", numeric "rate_4", numeric "depth", numeric "ens_2_depth", switch "bypass", enum "highpass_cutoff", enum "routing"]);
+        let (rate, rate_2, rate_3, rate_4, depth, ens_depth, bypass, highpass_cutoff, routing) = pgrab!(parameters[numeric "rate", numeric "rate_2", numeric "rate_3", numeric "rate_4", numeric "depth", numeric "ens_depth", switch "bypass", enum "highpass_cutoff", enum "routing"]);
+        let routing = FromPrimitive::from_u32(routing).unwrap_or(RoutingSetting::Synth);
         self.lfo[0].run(
             lfo::Parameters {
                 incr: rate * rate_to_incr_scale,
@@ -551,36 +482,37 @@ impl EffectT for Effect {
             &mut self.lfo_forward[0][..input.num_frames()],
             &mut self.lfo_reverse[0][..input.num_frames()],
         );
-        self.lfo[1].run(
-            lfo::Parameters {
-                incr: rate_2 * rate_to_incr_scale,
-                depth,
-            },
-            &mut self.lfo_forward[1][..input.num_frames()],
-            &mut self.lfo_reverse[1][..input.num_frames()],
-        );
-        self.lfo[2].run(
-            lfo::Parameters {
-                incr: rate_3 * rate_to_incr_scale,
-                depth,
-            },
-            &mut self.lfo_forward[2][..input.num_frames()],
-            &mut self.lfo_reverse[2][..input.num_frames()],
-        );
-        self.lfo[3].run(
-            lfo::Parameters {
-                incr: rate_4 * rate_to_incr_scale,
-                depth,
-            },
-            &mut self.lfo_forward[3][..input.num_frames()],
-            &mut self.lfo_reverse[3][..input.num_frames()],
-        );
+        if routing == RoutingSetting::Ens {
+            self.lfo[1].run(
+                lfo::Parameters {
+                    incr: rate_2 * rate_to_incr_scale,
+                    depth,
+                },
+                &mut self.lfo_forward[1][..input.num_frames()],
+                &mut self.lfo_reverse[1][..input.num_frames()],
+            );
+            self.lfo[2].run(
+                lfo::Parameters {
+                    incr: rate_3 * rate_to_incr_scale,
+                    depth,
+                },
+                &mut self.lfo_forward[2][..input.num_frames()],
+                &mut self.lfo_reverse[2][..input.num_frames()],
+            );
+            self.lfo[3].run(
+                lfo::Parameters {
+                    incr: rate_4 * rate_to_incr_scale,
+                    depth,
+                },
+                &mut self.lfo_forward[3][..input.num_frames()],
+                &mut self.lfo_reverse[3][..input.num_frames()],
+            );
+        }
         let mix = pzip!(parameters[numeric "mix"]).map(move |mix| if bypass { 0.0 } else { mix });
-        let extra_depth_scale = ens_2_depth * PERCENT_SCALE;
+        let extra_depth_scale = ens_depth * PERCENT_SCALE;
 
         let highpass_cutoff =
             FromPrimitive::from_u32(highpass_cutoff).unwrap_or(HighpassCutoffSetting::Low);
-        let routing = FromPrimitive::from_u32(routing).unwrap_or(RoutingSetting::Synth);
         match input.channel_layout() {
             ChannelLayout::Mono => match routing {
                 RoutingSetting::Pedal | RoutingSetting::Jazz => {
@@ -589,11 +521,8 @@ impl EffectT for Effect {
                 RoutingSetting::Synth | RoutingSetting::Dimension => {
                     self.process_mono_dual(input, output, mix, highpass_cutoff);
                 }
-                RoutingSetting::Ens1 => {
-                    self.process_mono_ens1(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::Ens2 => {
-                    self.process_mono_ens2(input, output, mix, highpass_cutoff, extra_depth_scale);
+                RoutingSetting::Ens => {
+                    self.process_mono_ens(input, output, mix, highpass_cutoff, extra_depth_scale);
                 }
             },
             ChannelLayout::Stereo => match routing {
@@ -609,11 +538,8 @@ impl EffectT for Effect {
                 RoutingSetting::Jazz => {
                     self.process_jazz(input, output, mix, highpass_cutoff);
                 }
-                RoutingSetting::Ens1 => {
-                    self.process_ens1(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::Ens2 => {
-                    self.process_ens2(input, output, mix, highpass_cutoff, extra_depth_scale);
+                RoutingSetting::Ens => {
+                    self.process_ens(input, output, mix, highpass_cutoff, extra_depth_scale);
                 }
             },
         }
@@ -724,13 +650,15 @@ mod tests {
     }
 
     #[test]
-    fn ens1_second_rate_controls_right_channel_lfo() {
+    fn ens_zero_extra_depth_second_rate_controls_right_channel_lfo() {
         let slow_params = params_for_overrides([
-            ("routing", InternalValue::Enum(RoutingSetting::Ens1 as u32)),
+            ("routing", InternalValue::Enum(RoutingSetting::Ens as u32)),
+            ("ens_depth", InternalValue::Numeric(0.0)),
             ("rate_2", InternalValue::Numeric(0.35)),
         ]);
         let fast_params = params_for_overrides([
-            ("routing", InternalValue::Enum(RoutingSetting::Ens1 as u32)),
+            ("routing", InternalValue::Enum(RoutingSetting::Ens as u32)),
+            ("ens_depth", InternalValue::Numeric(0.0)),
             ("rate_2", InternalValue::Numeric(2.1)),
         ]);
 
@@ -753,22 +681,22 @@ mod tests {
     }
 
     #[test]
-    fn ens2_extra_rates_are_scaled_by_extra_depth() {
+    fn ens_extra_rates_are_scaled_by_extra_depth() {
         let depth_0_slow_params = params_for_overrides([
-            ("routing", InternalValue::Enum(RoutingSetting::Ens2 as u32)),
-            ("ens_2_depth", InternalValue::Numeric(0.0)),
+            ("routing", InternalValue::Enum(RoutingSetting::Ens as u32)),
+            ("ens_depth", InternalValue::Numeric(0.0)),
             ("rate_3", InternalValue::Numeric(0.35)),
             ("rate_4", InternalValue::Numeric(0.35)),
         ]);
         let depth_0_fast_params = params_for_overrides([
-            ("routing", InternalValue::Enum(RoutingSetting::Ens2 as u32)),
-            ("ens_2_depth", InternalValue::Numeric(0.0)),
+            ("routing", InternalValue::Enum(RoutingSetting::Ens as u32)),
+            ("ens_depth", InternalValue::Numeric(0.0)),
             ("rate_3", InternalValue::Numeric(2.1)),
             ("rate_4", InternalValue::Numeric(2.1)),
         ]);
         let depth_100_fast_params = params_for_overrides([
-            ("routing", InternalValue::Enum(RoutingSetting::Ens2 as u32)),
-            ("ens_2_depth", InternalValue::Numeric(100.0)),
+            ("routing", InternalValue::Enum(RoutingSetting::Ens as u32)),
+            ("ens_depth", InternalValue::Numeric(100.0)),
             ("rate_3", InternalValue::Numeric(2.1)),
             ("rate_4", InternalValue::Numeric(2.1)),
         ]);

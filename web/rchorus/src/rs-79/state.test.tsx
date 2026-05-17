@@ -14,14 +14,14 @@ const useRs79Harness = () => {
   const rate3 = useNumericParam("rate_3");
   const rate4 = useNumericParam("rate_4");
   const depth = useNumericParam("depth");
-  const ens2Depth = useNumericParam("ens_2_depth");
+  const ensDepth = useNumericParam("ens_depth");
   const routing = useEnumParam("routing");
 
   const rs79 = useRs79State({
     mode: mode.rs79Mode,
     setMode: mode.setRs79Mode,
   });
-  return { mode, rate, rate2, rate3, rate4, depth, ens2Depth, routing, rs79 };
+  return { mode, rate, rate2, rate3, rate4, depth, ensDepth, routing, rs79 };
 };
 
 const useRs79CycleHarness = () => {
@@ -32,7 +32,7 @@ const useRs79CycleHarness = () => {
   const rate3 = useNumericParam("rate_3");
   const rate4 = useNumericParam("rate_4");
   const depth = useNumericParam("depth");
-  const ens2Depth = useNumericParam("ens_2_depth");
+  const ensDepth = useNumericParam("ens_depth");
   const routing = useEnumParam("routing");
 
   return {
@@ -43,7 +43,7 @@ const useRs79CycleHarness = () => {
     rate3,
     rate4,
     depth,
-    ens2Depth,
+    ensDepth,
     routing,
   };
 };
@@ -77,7 +77,7 @@ describe("useRs79State", () => {
     expect(result.current.rate3.value).toBe(preset.rate_3);
     expect(result.current.rate4.value).toBe(preset.rate_4);
     expect(result.current.depth.value).toBe(preset.depth);
-    expect(result.current.ens2Depth.value).toBe(preset.ens_2_depth);
+    expect(result.current.ensDepth.value).toBe(preset.ens_depth);
   });
 
   test("mode carousel enters RS-79 on ensemble I", () => {
@@ -110,6 +110,6 @@ describe("useRs79State", () => {
     expect(result.current.rate3.value).toBe(preset.rate_3);
     expect(result.current.rate4.value).toBe(preset.rate_4);
     expect(result.current.depth.value).toBe(preset.depth);
-    expect(result.current.ens2Depth.value).toBe(preset.ens_2_depth);
+    expect(result.current.ensDepth.value).toBe(preset.ens_depth);
   });
 });

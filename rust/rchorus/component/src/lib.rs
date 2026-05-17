@@ -59,9 +59,9 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 10] = [
         },
     },
     InfoRef {
-        title: "Ens 2 Depth",
-        short_title: "Ens2 Depth",
-        unique_id: "ens_2_depth",
+        title: "Ens Depth",
+        short_title: "Ens Depth",
+        unique_id: "ens_depth",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Numeric {
             default: 100.,
@@ -104,7 +104,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 10] = [
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
-            values: &["Synth", "Dimension", "Pedal", "Jazz", "Ens 1", "Ens 2"],
+            values: &["Synth", "Dimension", "Pedal", "Jazz", "Ens"],
         },
     },
 ];
