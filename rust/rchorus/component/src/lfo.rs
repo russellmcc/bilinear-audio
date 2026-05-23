@@ -13,7 +13,7 @@ pub struct Lfo {
     alpha: f32,
 
     phase: f32,
-    output: Option<f32>,
+    output: [Option<f32>; 3],
 }
 
 #[derive(Clone, Copy)]
@@ -48,30 +48,44 @@ impl Lfo {
             point,
             scale: (max - min) / 100. * 2.,
             alpha,
-            output: None,
+            output: [None; 3],
             phase: 0.,
         }
     }
 
-    fn run_single(&mut self, Parameters { incr, depth }: Parameters) -> f32 {
-        let instant = depth
-            * self.scale
-            * (if self.phase > 0.5 {
-                1. - self.phase
-            } else {
-                self.phase
-            } - 0.25);
+    pub fn center_delay(&self) -> f32 {
+        self.point
+    }
+
+    fn instant(scale: f32, phase: f32, depth: f32) -> f32 {
+        depth * scale * (if phase > 0.5 { 1. - phase } else { phase } - 0.25)
+    }
+
+    fn advance_phase(phase: &mut f32, incr: f32) {
         if incr < 0.5 {
-            self.phase += incr;
-            if self.phase > 1. {
-                self.phase -= 1.;
+            *phase += incr;
+            if *phase > 1. {
+                *phase -= 1.;
             }
         }
-        self.output = match self.output {
-            Some(output) => Some(output + self.alpha * (instant - output)),
+    }
+
+    fn wrap_phase(phase: f32) -> f32 {
+        if phase > 1. { phase - 1. } else { phase }
+    }
+
+    fn smooth(alpha: f32, output: &mut Option<f32>, instant: f32) -> f32 {
+        *output = match *output {
+            Some(output) => Some(output + alpha * (instant - output)),
             None => Some(instant),
         };
-        self.output.unwrap()
+        (*output).unwrap()
+    }
+
+    fn run_single(&mut self, Parameters { incr, depth }: Parameters) -> f32 {
+        let instant = Self::instant(self.scale, self.phase, depth);
+        Self::advance_phase(&mut self.phase, incr);
+        Self::smooth(self.alpha, &mut self.output[0], instant)
     }
 
     pub fn run(&mut self, params: Parameters, forward: &mut [f32], reverse: &mut [f32]) {
@@ -84,9 +98,42 @@ impl Lfo {
         }
     }
 
+    pub fn run_three_phase_modulation(
+        &mut self,
+        Parameters { incr, depth }: Parameters,
+        [phase_0, phase_120, phase_240]: [&mut [f32]; 3],
+    ) {
+        debug_assert_eq!(phase_0.len(), phase_120.len());
+        debug_assert_eq!(phase_0.len(), phase_240.len());
+
+        let [output_0, output_120, output_240] = &mut self.output;
+        for ((phase_0, phase_120), phase_240) in phase_0
+            .iter_mut()
+            .zip(phase_120.iter_mut())
+            .zip(phase_240.iter_mut())
+        {
+            *phase_0 = Self::smooth(
+                self.alpha,
+                output_0,
+                Self::instant(self.scale, self.phase, depth),
+            );
+            *phase_120 = Self::smooth(
+                self.alpha,
+                output_120,
+                Self::instant(self.scale, Self::wrap_phase(self.phase + 1. / 3.), depth),
+            );
+            *phase_240 = Self::smooth(
+                self.alpha,
+                output_240,
+                Self::instant(self.scale, Self::wrap_phase(self.phase + 2. / 3.), depth),
+            );
+            Self::advance_phase(&mut self.phase, incr);
+        }
+    }
+
     pub fn reset(&mut self) {
         self.phase = 0.;
-        self.output = None;
+        self.output = [None; 3];
     }
 }
 

@@ -1,35 +1,31 @@
 import { useEnumParam, useNumericParam } from "@conformal/plugin";
 import { useCallback } from "react";
-import type { Rs79Mode } from "../mode";
-import { RS_79_PRESETS, type Rs79EnsembleMode } from "./constants";
+import type { StringMode } from "../mode";
+import { STRING_PRESETS, type StringEnsembleMode } from "./constants";
 
 export type Props = {
-  mode: Rs79Mode;
-  setMode: (mode: Rs79Mode) => void;
+  mode: StringMode;
+  setMode: (mode: StringMode) => void;
 };
 
-export const useRs79State = ({ mode, setMode }: Props) => {
+export const useStringState = ({ mode, setMode }: Props) => {
   const { set: setRateParam } = useNumericParam("rate");
   const { set: setRate2Param } = useNumericParam("rate_2");
-  const { set: setRate3Param } = useNumericParam("rate_3");
-  const { set: setRate4Param } = useNumericParam("rate_4");
   const { set: setDepthParam } = useNumericParam("depth");
   const { set: setEnsDepthParam } = useNumericParam("ens_depth");
   const { set: setRoutingParam } = useEnumParam("routing");
 
   const setEnsembleMode = useCallback(
-    (ensembleMode: Rs79EnsembleMode) => {
+    (ensembleMode: StringEnsembleMode) => {
       if (ensembleMode === mode.ensembleMode) {
         return;
       }
 
-      const preset = RS_79_PRESETS[ensembleMode];
+      const preset = STRING_PRESETS[ensembleMode];
       setMode({ ...mode, ensembleMode });
       setRoutingParam(preset.routing);
       setRateParam(preset.rate);
       setRate2Param(preset.rate_2);
-      setRate3Param(preset.rate_3);
-      setRate4Param(preset.rate_4);
       setDepthParam(preset.depth);
       setEnsDepthParam(preset.ens_depth);
     },
@@ -39,8 +35,6 @@ export const useRs79State = ({ mode, setMode }: Props) => {
       setEnsDepthParam,
       setMode,
       setRate2Param,
-      setRate3Param,
-      setRate4Param,
       setRateParam,
       setRoutingParam,
     ],

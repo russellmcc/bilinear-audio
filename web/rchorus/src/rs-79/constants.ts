@@ -16,32 +16,24 @@ const RS_79_FIXED_PARAMS = {
   rate_3: 4.7,
   rate_4: 5.9,
   depth: 80,
-  ens_2_depth: 20,
-} satisfies Pick<
-  Preset,
-  "rate" | "rate_2" | "rate_3" | "rate_4" | "depth" | "ens_2_depth"
->;
+} satisfies Pick<Preset, "rate" | "rate_2" | "rate_3" | "rate_4" | "depth">;
 
 export const RS_79_PRESETS = {
   I: {
     ...RS_79_FIXED_PARAMS,
-    routing: "Ens 1",
+    ens_depth: 0,
+    routing: "Ens",
   },
   II: {
     ...RS_79_FIXED_PARAMS,
-    routing: "Ens 2",
+    ens_depth: 20,
+    routing: "Ens",
   },
 } satisfies Record<
   Rs79EnsembleMode,
   Pick<
     Preset,
-    | "routing"
-    | "rate"
-    | "rate_2"
-    | "rate_3"
-    | "rate_4"
-    | "depth"
-    | "ens_2_depth"
+    "routing" | "rate" | "rate_2" | "rate_3" | "rate_4" | "depth" | "ens_depth"
   >
 >;
 

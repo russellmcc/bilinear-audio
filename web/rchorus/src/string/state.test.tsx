@@ -3,34 +3,30 @@ import { act, renderHook } from "@testing-library/react";
 import { useEnumParam, useNumericParam } from "@conformal/plugin";
 import { RootProviders } from "../Root";
 import type { Mode } from "../mode";
-import { defaultRs79Mode, useMode, useNextMode } from "../mode";
-import { RS_79_PRESETS } from "./constants";
-import { useRs79State } from "./state";
+import { defaultStringMode, useMode, useNextMode } from "../mode";
+import { STRING_PRESETS } from "./constants";
+import { useStringState } from "./state";
 
-const useRs79Harness = () => {
+const useStringHarness = () => {
   const mode = useMode();
   const rate = useNumericParam("rate");
   const rate2 = useNumericParam("rate_2");
-  const rate3 = useNumericParam("rate_3");
-  const rate4 = useNumericParam("rate_4");
   const depth = useNumericParam("depth");
   const ensDepth = useNumericParam("ens_depth");
   const routing = useEnumParam("routing");
 
-  const rs79 = useRs79State({
-    mode: mode.rs79Mode,
-    setMode: mode.setRs79Mode,
+  const string = useStringState({
+    mode: mode.stringMode,
+    setMode: mode.setStringMode,
   });
-  return { mode, rate, rate2, rate3, rate4, depth, ensDepth, routing, rs79 };
+  return { mode, rate, rate2, depth, ensDepth, routing, string };
 };
 
-const useRs79CycleHarness = () => {
+const useStringCycleHarness = () => {
   const mode = useMode();
   const nextMode = useNextMode();
   const rate = useNumericParam("rate");
   const rate2 = useNumericParam("rate_2");
-  const rate3 = useNumericParam("rate_3");
-  const rate4 = useNumericParam("rate_4");
   const depth = useNumericParam("depth");
   const ensDepth = useNumericParam("ens_depth");
   const routing = useEnumParam("routing");
@@ -40,75 +36,72 @@ const useRs79CycleHarness = () => {
     nextMode,
     rate,
     rate2,
-    rate3,
-    rate4,
     depth,
     ensDepth,
     routing,
   };
 };
 
-const getRs79Mode = (mode: Mode | undefined) => {
-  if (mode?.id !== "rs-79") {
-    throw new Error("Expected RS-79 mode");
+const getStringMode = (mode: Mode | undefined) => {
+  if (mode?.id !== "string") {
+    throw new Error("Expected string mode");
   }
   return mode;
 };
 
-describe("useRs79State", () => {
+describe("useStringState", () => {
   test("ensemble modes update params and ui state", () => {
-    const { result } = renderHook(useRs79Harness, {
+    const { result } = renderHook(useStringHarness, {
       wrapper: RootProviders,
     });
 
     act(() => {
-      result.current.mode.setMode({ id: "rs-79", ...defaultRs79Mode });
+      result.current.mode.setMode({ id: "string", ...defaultStringMode });
     });
     act(() => {
-      result.current.rs79.setEnsembleMode("II");
+      result.current.string.setEnsembleMode("I");
     });
 
-    const mode = getRs79Mode(result.current.mode.mode);
-    const preset = RS_79_PRESETS.II;
-    expect(mode.ensembleMode).toBe("II");
-    expect(result.current.routing.value).toBe(preset.routing);
-    expect(result.current.rate.value).toBe(preset.rate);
-    expect(result.current.rate2.value).toBe(preset.rate_2);
-    expect(result.current.rate3.value).toBe(preset.rate_3);
-    expect(result.current.rate4.value).toBe(preset.rate_4);
-    expect(result.current.depth.value).toBe(preset.depth);
-    expect(result.current.ensDepth.value).toBe(preset.ens_depth);
-  });
-
-  test("mode carousel enters RS-79 on ensemble I", () => {
-    const { result } = renderHook(useRs79CycleHarness, {
-      wrapper: RootProviders,
-    });
-
-    act(() => {
-      result.current.nextMode();
-    });
-    act(() => {
-      result.current.nextMode();
-    });
-    act(() => {
-      result.current.nextMode();
-    });
-    act(() => {
-      result.current.nextMode();
-    });
-    act(() => {
-      result.current.nextMode();
-    });
-
-    const mode = getRs79Mode(result.current.mode.mode);
-    const preset = RS_79_PRESETS.I;
+    const mode = getStringMode(result.current.mode.mode);
+    const preset = STRING_PRESETS.I;
     expect(mode.ensembleMode).toBe("I");
     expect(result.current.routing.value).toBe(preset.routing);
     expect(result.current.rate.value).toBe(preset.rate);
     expect(result.current.rate2.value).toBe(preset.rate_2);
-    expect(result.current.rate3.value).toBe(preset.rate_3);
-    expect(result.current.rate4.value).toBe(preset.rate_4);
+    expect(result.current.depth.value).toBe(preset.depth);
+    expect(result.current.ensDepth.value).toBe(preset.ens_depth);
+  });
+
+  test("mode carousel enters string on ensemble II", () => {
+    const { result } = renderHook(useStringCycleHarness, {
+      wrapper: RootProviders,
+    });
+
+    act(() => {
+      result.current.nextMode();
+    });
+    act(() => {
+      result.current.nextMode();
+    });
+    act(() => {
+      result.current.nextMode();
+    });
+    act(() => {
+      result.current.nextMode();
+    });
+    act(() => {
+      result.current.nextMode();
+    });
+    act(() => {
+      result.current.nextMode();
+    });
+
+    const mode = getStringMode(result.current.mode.mode);
+    const preset = STRING_PRESETS.II;
+    expect(mode.ensembleMode).toBe("II");
+    expect(result.current.routing.value).toBe(preset.routing);
+    expect(result.current.rate.value).toBe(preset.rate);
+    expect(result.current.rate2.value).toBe(preset.rate_2);
     expect(result.current.depth.value).toBe(preset.depth);
     expect(result.current.ensDepth.value).toBe(preset.ens_depth);
   });
