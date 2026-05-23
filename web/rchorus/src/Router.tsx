@@ -5,6 +5,7 @@ import Ce2Layout from "./ce-2/layout";
 import Jazz120Layout from "./jazz-120/layout";
 import Ju60Layout from "./ju-60/layout";
 import Rs79Layout from "./rs-79/layout";
+import StringLayout from "./string/layout";
 const Router = () => {
   const {
     mode,
@@ -14,6 +15,8 @@ const Router = () => {
     setJu60Mode,
     rs79Mode,
     setRs79Mode,
+    stringMode,
+    setStringMode,
   } = useMode();
   switch (mode.id) {
     case "c3p":
@@ -28,6 +31,8 @@ const Router = () => {
       return <Ju60Layout mode={ju60Mode} setMode={setJu60Mode} />;
     case "rs-79":
       return <Rs79Layout mode={rs79Mode} setMode={setRs79Mode} />;
+    case "string":
+      return <StringLayout mode={stringMode} setMode={setStringMode} />;
   }
 };
 

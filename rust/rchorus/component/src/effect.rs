@@ -46,6 +46,7 @@ enum RoutingSetting {
     Pedal,
     Jazz,
     Ens,
+    String,
 }
 
 impl DelayChannel {
@@ -455,6 +456,123 @@ impl Effect {
             *or = ir + (dr0 + dr1) * wet_scale;
         }
     }
+
+    fn run_string_lfos(
+        &mut self,
+        num_frames: usize,
+        rate: f32,
+        rate_2: f32,
+        depth: f32,
+        extra_depth_scale: f32,
+    ) {
+        let center_delay = self.lfo[0].center_delay();
+        let delay_floor = self.delay_floor;
+        let delay_ceiling = self.delay_ceiling;
+        let rate_to_incr_scale = self.rate_to_incr_scale;
+
+        let [lfo_0, lfo_1, ..] = &mut self.lfo;
+        let [forward_0, forward_1, forward_2, ..] = &mut self.lfo_forward;
+        let [reverse_0, reverse_1, reverse_2, ..] = &mut self.lfo_reverse;
+
+        let delay_0 = &mut forward_0[..num_frames];
+        let delay_120 = &mut reverse_0[..num_frames];
+        let delay_240 = &mut forward_1[..num_frames];
+        let extra_0 = &mut reverse_1[..num_frames];
+        let extra_120 = &mut forward_2[..num_frames];
+        let extra_240 = &mut reverse_2[..num_frames];
+
+        lfo_0.run_three_phase_modulation(
+            lfo::Parameters {
+                incr: rate * rate_to_incr_scale,
+                depth,
+            },
+            [&mut delay_0[..], &mut delay_120[..], &mut delay_240[..]],
+        );
+        lfo_1.run_three_phase_modulation(
+            lfo::Parameters {
+                incr: rate_2 * rate_to_incr_scale,
+                depth: depth * extra_depth_scale,
+            },
+            [&mut extra_0[..], &mut extra_120[..], &mut extra_240[..]],
+        );
+
+        for (delay, extra) in delay_0.iter_mut().zip(extra_0.iter().copied()) {
+            *delay = (center_delay + *delay + extra).clamp(delay_floor, delay_ceiling);
+        }
+        for (delay, extra) in delay_120.iter_mut().zip(extra_120.iter().copied()) {
+            *delay = (center_delay + *delay + extra).clamp(delay_floor, delay_ceiling);
+        }
+        for (delay, extra) in delay_240.iter_mut().zip(extra_240.iter().copied()) {
+            *delay = (center_delay + *delay + extra).clamp(delay_floor, delay_ceiling);
+        }
+    }
+
+    fn process_mono_string(
+        &mut self,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
+        mix: impl Iterator<Item = f32> + Clone,
+        highpass_cutoff: HighpassCutoffSetting,
+    ) {
+        self.reset_unused_channels(3);
+        let [c0, c1, c2, ..] = &mut self.channels;
+        let processed_0 = c0.process(input.channel(0).iter().copied(), highpass_cutoff);
+        let processed_1 = c1.process(input.channel(0).iter().copied(), highpass_cutoff);
+        let processed_2 = c2.process(input.channel(0).iter().copied(), highpass_cutoff);
+
+        dsp::iter::move_into(
+            izip!(
+                input.channel(0),
+                processed_0.process(self.lfo_forward[0].iter().copied()),
+                processed_1.process(self.lfo_reverse[0].iter().copied()),
+                processed_2.process(self.lfo_forward[1].iter().copied()),
+                mix
+            )
+            .map(|(i, d0, d1, d2, m)| i + (d0 + d1 + d2) * m * PERCENT_SCALE),
+            output.channel_mut(0),
+        );
+    }
+
+    fn process_string(
+        &mut self,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
+        mix: impl Iterator<Item = f32> + Clone,
+        highpass_cutoff: HighpassCutoffSetting,
+    ) {
+        for (mixed, l, r) in izip!(
+            &mut self.mixed[..input.num_frames()],
+            input.channel(0),
+            input.channel(1)
+        ) {
+            *mixed = (l + r) * 0.5;
+        }
+        self.reset_unused_channels(3);
+        let mixed = &self.mixed[..input.num_frames()];
+
+        let [c0, c1, c2, ..] = &mut self.channels;
+        let processed_0 = c0.process(mixed.iter().copied(), highpass_cutoff);
+        let processed_1 = c1.process(mixed.iter().copied(), highpass_cutoff);
+        let processed_2 = c2.process(mixed.iter().copied(), highpass_cutoff);
+        let mut outputs = channels_mut(output);
+        let output_l = outputs.next().unwrap();
+        let output_r = outputs.next().unwrap();
+
+        for (il, ir, d0, d1, d2, ol, or, m) in izip!(
+            input.channel(0),
+            input.channel(1),
+            processed_0.process(self.lfo_forward[0].iter().copied()),
+            processed_1.process(self.lfo_reverse[0].iter().copied()),
+            processed_2.process(self.lfo_forward[1].iter().copied()),
+            output_l,
+            output_r,
+            mix
+        ) {
+            let wet = (d0 + d1 + d2) * m * PERCENT_SCALE;
+            *ol = il + wet;
+            *or = ir - wet;
+        }
+    }
 }
 
 impl EffectT for Effect {
@@ -474,42 +592,46 @@ impl EffectT for Effect {
         let parameters = context.parameters();
         let (rate, rate_2, rate_3, rate_4, depth, ens_depth, bypass, highpass_cutoff, routing) = pgrab!(parameters[numeric "rate", numeric "rate_2", numeric "rate_3", numeric "rate_4", numeric "depth", numeric "ens_depth", switch "bypass", enum "highpass_cutoff", enum "routing"]);
         let routing = FromPrimitive::from_u32(routing).unwrap_or(RoutingSetting::Synth);
-        self.lfo[0].run(
-            lfo::Parameters {
-                incr: rate * rate_to_incr_scale,
-                depth,
-            },
-            &mut self.lfo_forward[0][..input.num_frames()],
-            &mut self.lfo_reverse[0][..input.num_frames()],
-        );
-        if routing == RoutingSetting::Ens {
-            self.lfo[1].run(
-                lfo::Parameters {
-                    incr: rate_2 * rate_to_incr_scale,
-                    depth,
-                },
-                &mut self.lfo_forward[1][..input.num_frames()],
-                &mut self.lfo_reverse[1][..input.num_frames()],
-            );
-            self.lfo[2].run(
-                lfo::Parameters {
-                    incr: rate_3 * rate_to_incr_scale,
-                    depth,
-                },
-                &mut self.lfo_forward[2][..input.num_frames()],
-                &mut self.lfo_reverse[2][..input.num_frames()],
-            );
-            self.lfo[3].run(
-                lfo::Parameters {
-                    incr: rate_4 * rate_to_incr_scale,
-                    depth,
-                },
-                &mut self.lfo_forward[3][..input.num_frames()],
-                &mut self.lfo_reverse[3][..input.num_frames()],
-            );
-        }
         let mix = pzip!(parameters[numeric "mix"]).map(move |mix| if bypass { 0.0 } else { mix });
         let extra_depth_scale = ens_depth * PERCENT_SCALE;
+        if routing == RoutingSetting::String {
+            self.run_string_lfos(input.num_frames(), rate, rate_2, depth, extra_depth_scale);
+        } else {
+            self.lfo[0].run(
+                lfo::Parameters {
+                    incr: rate * rate_to_incr_scale,
+                    depth,
+                },
+                &mut self.lfo_forward[0][..input.num_frames()],
+                &mut self.lfo_reverse[0][..input.num_frames()],
+            );
+            if routing == RoutingSetting::Ens {
+                self.lfo[1].run(
+                    lfo::Parameters {
+                        incr: rate_2 * rate_to_incr_scale,
+                        depth,
+                    },
+                    &mut self.lfo_forward[1][..input.num_frames()],
+                    &mut self.lfo_reverse[1][..input.num_frames()],
+                );
+                self.lfo[2].run(
+                    lfo::Parameters {
+                        incr: rate_3 * rate_to_incr_scale,
+                        depth,
+                    },
+                    &mut self.lfo_forward[2][..input.num_frames()],
+                    &mut self.lfo_reverse[2][..input.num_frames()],
+                );
+                self.lfo[3].run(
+                    lfo::Parameters {
+                        incr: rate_4 * rate_to_incr_scale,
+                        depth,
+                    },
+                    &mut self.lfo_forward[3][..input.num_frames()],
+                    &mut self.lfo_reverse[3][..input.num_frames()],
+                );
+            }
+        }
 
         let highpass_cutoff =
             FromPrimitive::from_u32(highpass_cutoff).unwrap_or(HighpassCutoffSetting::Low);
@@ -523,6 +645,9 @@ impl EffectT for Effect {
                 }
                 RoutingSetting::Ens => {
                     self.process_mono_ens(input, output, mix, highpass_cutoff, extra_depth_scale);
+                }
+                RoutingSetting::String => {
+                    self.process_mono_string(input, output, mix, highpass_cutoff);
                 }
             },
             ChannelLayout::Stereo => match routing {
@@ -540,6 +665,9 @@ impl EffectT for Effect {
                 }
                 RoutingSetting::Ens => {
                     self.process_ens(input, output, mix, highpass_cutoff, extra_depth_scale);
+                }
+                RoutingSetting::String => {
+                    self.process_string(input, output, mix, highpass_cutoff);
                 }
             },
         }
@@ -650,6 +778,46 @@ mod tests {
     }
 
     #[test]
+    fn string_routing_puts_wet_signal_in_side_channel() {
+        let num_frames = 1024;
+        let sampling_rate = 48000.0;
+        let left = dsp::test_utils::sine(num_frames, 440.0 / sampling_rate);
+        let right = dsp::test_utils::sine(num_frames, 660.0 / sampling_rate);
+        let mut input = BufferData::new(ChannelLayout::Stereo, num_frames);
+        dsp::iter::move_into(left.iter().copied(), input.channel_mut(0));
+        dsp::iter::move_into(right.iter().map(|x| x * 0.5), input.channel_mut(1));
+
+        let mut output = BufferData::new(ChannelLayout::Stereo, num_frames);
+        let mut effect = Effect::new(&ProcessingEnvironment {
+            sampling_rate,
+            max_samples_per_process_call: num_frames,
+            channel_layout: ChannelLayout::Stereo,
+            processing_mode: conformal_component::ProcessingMode::Realtime,
+        });
+        effect.set_processing(true);
+        let params = params_for_routing(RoutingSetting::String);
+        effect.process(
+            &TestProcessContext {
+                parameters: &params,
+            },
+            &input,
+            &mut output,
+        );
+
+        let mut max_side_delta = 0.0f32;
+        for (il, ir, ol, or) in izip!(
+            input.channel(0),
+            input.channel(1),
+            output.channel(0),
+            output.channel(1)
+        ) {
+            assert!(((ol + or) - (il + ir)).abs() < 1e-5);
+            max_side_delta = max_side_delta.max(((ol - or) - (il - ir)).abs());
+        }
+        assert!(max_side_delta > 1e-3);
+    }
+
+    #[test]
     fn ens_zero_extra_depth_second_rate_controls_right_channel_lfo() {
         let slow_params = params_for_overrides([
             ("routing", InternalValue::Enum(RoutingSetting::Ens as u32)),
@@ -699,6 +867,52 @@ mod tests {
             ("ens_depth", InternalValue::Numeric(100.0)),
             ("rate_3", InternalValue::Numeric(2.1)),
             ("rate_4", InternalValue::Numeric(2.1)),
+        ]);
+
+        let (_, depth_0_slow) = process_stereo(&depth_0_slow_params);
+        let (_, depth_0_fast) = process_stereo(&depth_0_fast_params);
+        let (_, depth_100_fast) = process_stereo(&depth_100_fast_params);
+
+        let mut max_depth_0_delta = 0.0f32;
+        let mut max_depth_100_delta = 0.0f32;
+        for (depth_0_slow_l, depth_0_fast_l, depth_100_fast_l) in izip!(
+            depth_0_slow.channel(0),
+            depth_0_fast.channel(0),
+            depth_100_fast.channel(0)
+        ) {
+            max_depth_0_delta = max_depth_0_delta.max((depth_0_slow_l - depth_0_fast_l).abs());
+            max_depth_100_delta =
+                max_depth_100_delta.max((depth_0_fast_l - depth_100_fast_l).abs());
+        }
+        assert!(max_depth_0_delta < 1e-6);
+        assert!(max_depth_100_delta > 1e-3);
+    }
+
+    #[test]
+    fn string_second_rate_is_scaled_by_extra_depth() {
+        let depth_0_slow_params = params_for_overrides([
+            (
+                "routing",
+                InternalValue::Enum(RoutingSetting::String as u32),
+            ),
+            ("ens_depth", InternalValue::Numeric(0.0)),
+            ("rate_2", InternalValue::Numeric(0.35)),
+        ]);
+        let depth_0_fast_params = params_for_overrides([
+            (
+                "routing",
+                InternalValue::Enum(RoutingSetting::String as u32),
+            ),
+            ("ens_depth", InternalValue::Numeric(0.0)),
+            ("rate_2", InternalValue::Numeric(2.1)),
+        ]);
+        let depth_100_fast_params = params_for_overrides([
+            (
+                "routing",
+                InternalValue::Enum(RoutingSetting::String as u32),
+            ),
+            ("ens_depth", InternalValue::Numeric(100.0)),
+            ("rate_2", InternalValue::Numeric(2.1)),
         ]);
 
         let (_, depth_0_slow) = process_stereo(&depth_0_slow_params);

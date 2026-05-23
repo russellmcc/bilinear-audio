@@ -104,7 +104,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 10] = [
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
-            values: &["Synth", "Dimension", "Pedal", "Jazz", "Ens"],
+            values: &["Synth", "Dimension", "Pedal", "Jazz", "Ens", "String"],
         },
     },
 ];
