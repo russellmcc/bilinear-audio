@@ -59,12 +59,12 @@ describe("useStringState", () => {
       result.current.mode.setMode({ id: "string", ...defaultStringMode });
     });
     act(() => {
-      result.current.string.setEnsembleMode("II");
+      result.current.string.setEnsembleMode("I");
     });
 
     const mode = getStringMode(result.current.mode.mode);
-    const preset = STRING_PRESETS.II;
-    expect(mode.ensembleMode).toBe("II");
+    const preset = STRING_PRESETS.I;
+    expect(mode.ensembleMode).toBe("I");
     expect(result.current.routing.value).toBe(preset.routing);
     expect(result.current.rate.value).toBe(preset.rate);
     expect(result.current.rate2.value).toBe(preset.rate_2);
@@ -72,7 +72,7 @@ describe("useStringState", () => {
     expect(result.current.ensDepth.value).toBe(preset.ens_depth);
   });
 
-  test("mode carousel enters string on ensemble I", () => {
+  test("mode carousel enters string on ensemble II", () => {
     const { result } = renderHook(useStringCycleHarness, {
       wrapper: RootProviders,
     });
@@ -97,8 +97,8 @@ describe("useStringState", () => {
     });
 
     const mode = getStringMode(result.current.mode.mode);
-    const preset = STRING_PRESETS.I;
-    expect(mode.ensembleMode).toBe("I");
+    const preset = STRING_PRESETS.II;
+    expect(mode.ensembleMode).toBe("II");
     expect(result.current.routing.value).toBe(preset.routing);
     expect(result.current.rate.value).toBe(preset.rate);
     expect(result.current.rate2.value).toBe(preset.rate_2);

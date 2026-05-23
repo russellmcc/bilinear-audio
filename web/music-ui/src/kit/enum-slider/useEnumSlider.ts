@@ -29,6 +29,8 @@ export type Props = {
   defaultValue?: number;
   selectIndex: (index: number) => void;
   onGrabOrRelease?: (grabbed: boolean) => void;
+  /** Higher values make the drag stickier around each detent. */
+  rubberBandExponent?: number;
 };
 
 export type Output<Container extends Element, Ball extends Element> = {
@@ -53,6 +55,7 @@ export const useEnumSlider = <Container extends Element, Ball extends Element>({
   count,
   selectIndex,
   onGrabOrRelease,
+  rubberBandExponent = 3,
 }: Props): Output<Container, Ball> => {
   const indexToBottom = useCallback(
     (index: number, count: number) =>
@@ -190,12 +193,20 @@ export const useEnumSlider = <Container extends Element, Ball extends Element>({
       const scale = lineSpacing / 2;
       const springDistance = (unwarped - center) / scale;
       const x =
-        Math.pow(Math.abs(springDistance), 3) *
+        Math.pow(Math.abs(springDistance), rubberBandExponent) *
         (springDistance > 0 ? 1 : -1) *
         scale;
       return center + x;
     },
-    [ballMargin, ballSize, bottomToIndex, count, indexToBottom, lineSpacing],
+    [
+      ballMargin,
+      ballSize,
+      bottomToIndex,
+      count,
+      indexToBottom,
+      lineSpacing,
+      rubberBandExponent,
+    ],
   );
 
   const onDoubleClick = useCallback(

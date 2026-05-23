@@ -24,6 +24,8 @@ const SLIDER_TOP = TRACK_TOP;
 const SLIDER_HEIGHT = BOTTOM_TICK_CENTER + HANDLE_HEIGHT / 2 - SLIDER_TOP;
 const HANDLE_TRAVEL = BOTTOM_TICK_CENTER - TOP_TICK_CENTER;
 const LABEL_HEIGHT = 21;
+const TOP_LABEL_TOP = TOP_TICK_CENTER - LABEL_HEIGHT / 2;
+const BOTTOM_LABEL_TOP = BOTTOM_TICK_CENTER - LABEL_HEIGHT / 2;
 
 export type EnsembleSliderProps = {
   value: StringEnsembleMode;
@@ -47,6 +49,7 @@ const EnsembleSliderControl = ({
     count,
     selectIndex,
     onGrabOrRelease,
+    rubberBandExponent: 1.5,
   });
 
   return (
@@ -104,7 +107,7 @@ const EnsembleSliderValueLabel = ({
       style={{
         position: "absolute",
         left: "0px",
-        top: isModeI ? "17px" : "136px",
+        top: `${isModeI ? TOP_LABEL_TOP : BOTTOM_LABEL_TOP}px`,
         width: `${PANEL_WIDTH}px`,
         height: `${LABEL_HEIGHT}px`,
         color: "var(--text-color)",
