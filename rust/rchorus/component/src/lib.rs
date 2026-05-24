@@ -104,7 +104,15 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 10] = [
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,
-            values: &["Synth", "Dimension", "Pedal", "Jazz", "Ens", "String"],
+            values: &[
+                "Synth",
+                "Dimension",
+                "Pedal",
+                "Jazz",
+                "Ens",
+                "String",
+                "MonoEns",
+            ],
         },
     },
 ];
@@ -187,5 +195,57 @@ mod tests {
             48000,
             generate_basic_snapshot(&Component {}, &test_sig, &HashMap::new())
         );
+    }
+
+    #[test]
+    #[cfg_attr(miri, ignore)]
+    fn routing_snapshots() {
+        let test_sig: Vec<_> = dsp::test_utils::linear_sine_sweep(48000, 48000., 10., 20000.)
+            .iter()
+            .map(|x| x * 1. / 16.)
+            .collect();
+        let routing_cases = [
+            ("synth", 0),
+            ("dimension", 1),
+            ("pedal", 2),
+            ("jazz", 3),
+            ("ens", 4),
+            ("string", 5),
+            ("mono_ens", 6),
+        ];
+
+        for (name, routing) in routing_cases {
+            let params = HashMap::from([
+                (
+                    "routing",
+                    conformal_component::parameters::InternalValue::Enum(routing),
+                ),
+                (
+                    "rate",
+                    conformal_component::parameters::InternalValue::Numeric(0.35),
+                ),
+                (
+                    "rate_2",
+                    conformal_component::parameters::InternalValue::Numeric(0.7),
+                ),
+                (
+                    "rate_3",
+                    conformal_component::parameters::InternalValue::Numeric(1.1),
+                ),
+                (
+                    "rate_4",
+                    conformal_component::parameters::InternalValue::Numeric(1.7),
+                ),
+                (
+                    "ens_depth",
+                    conformal_component::parameters::InternalValue::Numeric(50.0),
+                ),
+            ]);
+            assert_snapshot!(
+                &format!("routing/{name}"),
+                48000,
+                generate_basic_snapshot(&Component {}, &test_sig, &params)
+            );
+        }
     }
 }
