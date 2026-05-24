@@ -494,14 +494,11 @@ impl Effect {
         highpass_cutoff: HighpassCutoffSetting,
         extra_depth_scale: f32,
     ) {
-        Self::fill_mono_from_stereo(input, &mut self.mixed[..input.num_frames()]);
-        let mixed = &self.mixed[..input.num_frames()];
-
         let [c0, c1, c2, c3] = &mut self.channels;
-        let processed_0 = c0.process(mixed.iter().copied(), highpass_cutoff);
-        let processed_1 = c1.process(mixed.iter().copied(), highpass_cutoff);
-        let processed_2 = c2.process(mixed.iter().copied(), highpass_cutoff);
-        let processed_3 = c3.process(mixed.iter().copied(), highpass_cutoff);
+        let processed_0 = c0.process(input.channel(0).iter().copied(), highpass_cutoff);
+        let processed_1 = c1.process(input.channel(1).iter().copied(), highpass_cutoff);
+        let processed_2 = c2.process(input.channel(1).iter().copied(), highpass_cutoff);
+        let processed_3 = c3.process(input.channel(0).iter().copied(), highpass_cutoff);
         let delay_floor = self.delay_floor;
         let delay_ceiling = self.delay_ceiling;
         let mut outputs = channels_mut(output);
@@ -913,6 +910,45 @@ mod tests {
             max_side_delta = max_side_delta.max(((ol - or) - (il - ir)).abs());
         }
         assert!(max_side_delta > 1e-3);
+    }
+
+    #[test]
+    fn ens_stereo_routing_does_not_sum_inputs_before_delay_lines() {
+        let num_frames = 4096;
+        let sampling_rate = 48000.0;
+        let left = dsp::test_utils::sine(num_frames, 440.0 / sampling_rate);
+        let mut input = BufferData::new(ChannelLayout::Stereo, num_frames);
+        dsp::iter::move_into(left.iter().copied(), input.channel_mut(0));
+        dsp::iter::move_into(left.iter().map(|x| -x), input.channel_mut(1));
+
+        let mut output = BufferData::new(ChannelLayout::Stereo, num_frames);
+        let mut effect = Effect::new(&ProcessingEnvironment {
+            sampling_rate,
+            max_samples_per_process_call: num_frames,
+            channel_layout: ChannelLayout::Stereo,
+            processing_mode: conformal_component::ProcessingMode::Realtime,
+        });
+        effect.set_processing(true);
+        let params = params_for_routing(RoutingSetting::Ens);
+        effect.process(
+            &TestProcessContext {
+                parameters: &params,
+            },
+            &input,
+            &mut output,
+        );
+
+        let mut max_wet_delta = 0.0f32;
+        for (il, ir, ol, or) in izip!(
+            input.channel(0),
+            input.channel(1),
+            output.channel(0),
+            output.channel(1)
+        ) {
+            max_wet_delta = max_wet_delta.max((ol - il).abs());
+            max_wet_delta = max_wet_delta.max((or - ir).abs());
+        }
+        assert!(max_wet_delta > 1e-3);
     }
 
     #[test]
