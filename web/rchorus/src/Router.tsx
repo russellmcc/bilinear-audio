@@ -6,6 +6,7 @@ import Jazz120Layout from "./jazz-120/layout";
 import Ju60Layout from "./ju-60/layout";
 import Rs79Layout from "./rs-79/layout";
 import StringLayout from "./string/layout";
+import Rs101Layout from "./rs-101/layout";
 const Router = () => {
   const {
     mode,
@@ -33,6 +34,8 @@ const Router = () => {
       return <Rs79Layout mode={rs79Mode} setMode={setRs79Mode} />;
     case "string":
       return <StringLayout mode={stringMode} setMode={setStringMode} />;
+    case "rs-101":
+      return <Rs101Layout />;
   }
 };
 

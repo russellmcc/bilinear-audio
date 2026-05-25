@@ -13,6 +13,7 @@ import rs79Preset from "./rs-79/preset";
 import { RS_79_DEFAULT_ENSEMBLE_MODE } from "./rs-79/constants";
 import stringPreset from "./string/preset";
 import { STRING_DEFAULT_ENSEMBLE_MODE } from "./string/constants";
+import rs101Preset from "./rs-101/preset";
 
 const c3pSchema = z.object({
   id: z.literal("c3p"),
@@ -48,6 +49,10 @@ const stringSchema = z.object({
   ensembleMode: z.enum(["I", "II"]),
 });
 
+const rs101Schema = z.object({
+  id: z.literal("rs-101"),
+});
+
 export const modeSchema = z.union([
   c3pSchema,
   superDimensionSchema,
@@ -56,6 +61,7 @@ export const modeSchema = z.union([
   ju60Schema,
   rs79Schema,
   stringSchema,
+  rs101Schema,
 ]);
 
 export const defaultJazz120Mode: Jazz120Mode = {
@@ -90,6 +96,7 @@ const makeMode = (id: Mode["id"]): Mode => {
     case "c3p":
     case "super-dimension":
     case "ce-2":
+    case "rs-101":
       return { id };
     case "jazz-120":
       return {
@@ -212,6 +219,8 @@ const getPresetForMode = (mode: Mode): Preset => {
       return rs79Preset;
     case "string":
       return stringPreset;
+    case "rs-101":
+      return rs101Preset;
   }
 };
 
