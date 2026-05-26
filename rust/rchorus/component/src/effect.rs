@@ -27,7 +27,8 @@ struct DelayChannel {
     detector: PeakLevelDetector,
 }
 
-const DIMENSION_PAD: f32 = 0.3;
+#[cfg(test)]
+const DIMENSION_SAME_SIDE_PAD_DB: f32 = -7.5;
 const DIMENSION_CUTOFF: f32 = 80.0;
 
 #[derive(Debug, Clone, Copy, PartialEq, FromPrimitive)]
@@ -109,6 +110,13 @@ impl DelayChannel {
 
 const NUM_LFOS: usize = 4;
 const NUM_DELAY_CHANNELS: usize = 4;
+const SUM_2_SCALE: f32 = 0.707_106_77;
+const SUM_3_SCALE: f32 = 0.577_350_26;
+const SUM_4_SCALE: f32 = 0.5;
+
+fn dimension_same_side_gain(pad_db: f32) -> f32 {
+    SUM_2_SCALE * 10.0f32.powf(pad_db / 20.0)
+}
 
 pub struct Effect {
     lfo: [lfo::Lfo; NUM_LFOS],
@@ -274,7 +282,7 @@ impl Effect {
                 delay_buffer.process(self.lfo_reverse[0].iter().copied()),
                 mix
             )
-            .map(|(i, l, r, m)| i + (l + r) * m * PERCENT_SCALE),
+            .map(|(i, l, r, m)| i + (l + r) * SUM_2_SCALE * m * PERCENT_SCALE),
             output.channel_mut(0),
         );
     }
@@ -390,6 +398,7 @@ impl Effect {
         input: &impl Buffer,
         output: &mut impl BufferMut,
         mix: impl Iterator<Item = f32> + Clone,
+        dimension_same_side_gain: f32,
         highpass_cutoff: HighpassCutoffSetting,
     ) {
         self.reset_unused_channels(2);
@@ -409,8 +418,9 @@ impl Effect {
             output_r,
             mix
         ) {
-            *ol = (dl * DIMENSION_PAD + dr * (1.0 - DIMENSION_PAD)) * m * PERCENT_SCALE + il;
-            *or = (dr * DIMENSION_PAD + dl * (1.0 - DIMENSION_PAD)) * m * PERCENT_SCALE + ir;
+            let wet_scale = m * PERCENT_SCALE;
+            *ol = (dl * dimension_same_side_gain + dr * SUM_2_SCALE) * wet_scale + il;
+            *or = (dr * dimension_same_side_gain + dl * SUM_2_SCALE) * wet_scale + ir;
         }
     }
 
@@ -459,7 +469,9 @@ impl Effect {
                 ),
                 mix
             )
-            .map(|(i, d0, d1, d2, d3, m)| i + (d0 + d1 + d2 + d3) * m * PERCENT_SCALE),
+            .map(|(i, d0, d1, d2, d3, m)| {
+                i + (d0 + d1 + d2 + d3) * SUM_4_SCALE * m * PERCENT_SCALE
+            }),
             output.channel_mut(0),
         );
     }
@@ -486,7 +498,9 @@ impl Effect {
                 processed_3.process(self.lfo_forward[3].iter().copied()),
                 mix
             )
-            .map(|(i, d0, d1, d2, d3, m)| i + (d0 + d1 + d2 + d3) * m * PERCENT_SCALE),
+            .map(|(i, d0, d1, d2, d3, m)| {
+                i + (d0 + d1 + d2 + d3) * SUM_4_SCALE * m * PERCENT_SCALE
+            }),
             output.channel_mut(0),
         );
     }
@@ -542,8 +556,8 @@ impl Effect {
             mix
         ) {
             let wet_scale = m * PERCENT_SCALE;
-            *ol = il + (dl0 + dl1) * wet_scale;
-            *or = ir + (dr0 + dr1) * wet_scale;
+            *ol = il + (dl0 + dl1) * SUM_2_SCALE * wet_scale;
+            *or = ir + (dr0 + dr1) * SUM_2_SCALE * wet_scale;
         }
     }
 
@@ -573,7 +587,7 @@ impl Effect {
                 processed_3.process(self.lfo_forward[3].iter().copied()),
                 mix
             )
-            .map(|(d0, d1, d2, d3, m)| (d0 + d1 + d2 + d3) * m * PERCENT_SCALE),
+            .map(|(d0, d1, d2, d3, m)| (d0 + d1 + d2 + d3) * SUM_4_SCALE * m * PERCENT_SCALE),
         );
     }
 
@@ -608,7 +622,7 @@ impl Effect {
                 processed_r.process(self.lfo_forward[1].iter().copied()),
                 mix
             )
-            .map(|(i, l, r, m)| i + (l + r) * m * PERCENT_SCALE),
+            .map(|(i, l, r, m)| i + (l + r) * SUM_2_SCALE * m * PERCENT_SCALE),
             output.channel_mut(0),
         );
     }
@@ -726,7 +740,7 @@ impl Effect {
                 processed_2.process(self.lfo_forward[1].iter().copied()),
                 mix
             )
-            .map(|(i, d0, d1, d2, m)| i + (d0 + d1 + d2) * m * PERCENT_SCALE),
+            .map(|(i, d0, d1, d2, m)| i + (d0 + d1 + d2) * SUM_3_SCALE * m * PERCENT_SCALE),
             output.channel_mut(0),
         );
     }
@@ -756,7 +770,7 @@ impl Effect {
                 processed_2.process(self.lfo_forward[1].iter().copied()),
                 mix
             )
-            .map(|(d0, d1, d2, m)| (d0 + d1 + d2) * m * PERCENT_SCALE),
+            .map(|(d0, d1, d2, m)| (d0 + d1 + d2) * SUM_3_SCALE * m * PERCENT_SCALE),
         );
     }
 }
@@ -775,7 +789,18 @@ impl EffectT for Effect {
         debug_assert_eq!(input.channel_layout(), output.channel_layout());
         debug_assert_eq!(input.num_frames(), output.num_frames());
         let parameters = context.parameters();
-        let (rate, rate_2, rate_3, rate_4, depth, ens_depth, bypass, highpass_cutoff, routing) = pgrab!(parameters[numeric "rate", numeric "rate_2", numeric "rate_3", numeric "rate_4", numeric "depth", numeric "ens_depth", switch "bypass", enum "highpass_cutoff", enum "routing"]);
+        let (
+            rate,
+            rate_2,
+            rate_3,
+            rate_4,
+            depth,
+            ens_depth,
+            bypass,
+            highpass_cutoff,
+            routing,
+            dimension_same_side_pad,
+        ) = pgrab!(parameters[numeric "rate", numeric "rate_2", numeric "rate_3", numeric "rate_4", numeric "depth", numeric "ens_depth", switch "bypass", enum "highpass_cutoff", enum "routing", numeric "dimension_same_side_pad"]);
         let routing = FromPrimitive::from_u32(routing).unwrap_or(RoutingSetting::Synth);
         let mix = pzip!(parameters[numeric "mix"]).map(move |mix| if bypass { 0.0 } else { mix });
         let extra_depth_scale = ens_depth * PERCENT_SCALE;
@@ -815,7 +840,15 @@ impl EffectT for Effect {
                     self.process_synth(input, output, mix, highpass_cutoff);
                 }
                 RoutingSetting::Dimension => {
-                    self.process_dimension(input, output, mix, highpass_cutoff);
+                    let dimension_same_side_gain =
+                        dimension_same_side_gain(dimension_same_side_pad);
+                    self.process_dimension(
+                        input,
+                        output,
+                        mix,
+                        dimension_same_side_gain,
+                        highpass_cutoff,
+                    );
                 }
                 RoutingSetting::Pedal => {
                     self.process_pedal(input, output, mix, highpass_cutoff);
@@ -901,6 +934,13 @@ mod tests {
             &mut output,
         );
         (input, output)
+    }
+
+    #[test]
+    fn dimension_same_side_pad_db_maps_to_gain() {
+        assert!((dimension_same_side_gain(-20.0) - 0.070_710_674).abs() < 1e-6);
+        assert!((dimension_same_side_gain(DIMENSION_SAME_SIDE_PAD_DB) - 0.298_184_04).abs() < 1e-6);
+        assert!((dimension_same_side_gain(0.0) - SUM_2_SCALE).abs() < 1e-6);
     }
 
     #[test]
