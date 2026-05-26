@@ -17,6 +17,7 @@ type PresetParamInfos = Pick<
   | "mix"
   | "highpass_cutoff"
   | "routing"
+  | "dimension_same_side_pad"
 >;
 
 type PresetParam = keyof PresetParamInfos;
@@ -54,6 +55,7 @@ export type Preset = {
   rate_3?: ValueOf<"rate_3">;
   rate_4?: ValueOf<"rate_4">;
   ens_depth?: ValueOf<"ens_depth">;
+  dimension_same_side_pad?: ValueOf<"dimension_same_side_pad">;
 };
 
 export const useApplyPreset = () => {
@@ -66,6 +68,10 @@ export const useApplyPreset = () => {
   const mix = useSelectSetter("numeric", "mix");
   const highpass_cutoff = useSelectSetter("enum", "highpass_cutoff");
   const routing = useSelectSetter("enum", "routing");
+  const dimension_same_side_pad = useSelectSetter(
+    "numeric",
+    "dimension_same_side_pad",
+  );
   const setters = useMemo(
     () => ({
       rate,
@@ -77,9 +83,11 @@ export const useApplyPreset = () => {
       mix,
       highpass_cutoff,
       routing,
+      dimension_same_side_pad,
     }),
     [
       depth,
+      dimension_same_side_pad,
       ens_depth,
       highpass_cutoff,
       mix,
@@ -109,6 +117,9 @@ export const useApplyPreset = () => {
       }
       if (preset.ens_depth !== undefined) {
         setters.ens_depth(preset.ens_depth);
+      }
+      if (preset.dimension_same_side_pad !== undefined) {
+        setters.dimension_same_side_pad(preset.dimension_same_side_pad);
       }
     },
     [setters],

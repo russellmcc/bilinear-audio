@@ -2,7 +2,10 @@ use conformal_component::parameters::{self, InfoRef};
 use conformal_component::parameters::{Flags, TypeSpecificInfoRef};
 use conformal_component::{Component as ComponentT, ProcessingEnvironment};
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 10] = [
+const DIMENSION_SAME_SIDE_PAD_DB: f32 = -7.5;
+const DIMENSION_SAME_SIDE_MIN_PAD_DB: f32 = -20.0;
+
+const PARAMETERS: [InfoRef<'static, &'static str>; 11] = [
     InfoRef {
         title: "Rate",
         short_title: "Rate",
@@ -114,6 +117,17 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 10] = [
                 "MonoEns",
                 "Vocoder",
             ],
+        },
+    },
+    InfoRef {
+        title: "Dimension Same-Side Pad",
+        short_title: "Dim Same",
+        unique_id: "dimension_same_side_pad",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: DIMENSION_SAME_SIDE_PAD_DB,
+            valid_range: DIMENSION_SAME_SIDE_MIN_PAD_DB..=0.0,
+            units: Some("db"),
         },
     },
 ];

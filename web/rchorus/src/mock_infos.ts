@@ -96,6 +96,15 @@ export const typedInfos = {
       ],
     } as const,
   } as const,
+  dimension_same_side_pad: {
+    title: "Dimension Same-Side Pad",
+    type_specific: {
+      t: "numeric" as const,
+      default: -7.5,
+      valid_range: [-20, 0] satisfies [number, number],
+      units: "db",
+    } as const,
+  } as const,
 } as const;
 
 const infos = new Map<string, Info>(
