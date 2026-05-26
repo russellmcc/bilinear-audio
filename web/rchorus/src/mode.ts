@@ -14,6 +14,12 @@ import { RS_79_DEFAULT_ENSEMBLE_MODE } from "./rs-79/constants";
 import stringPreset from "./string/preset";
 import { STRING_DEFAULT_ENSEMBLE_MODE } from "./string/constants";
 import rs101Preset from "./rs-101/preset";
+import ensemblePlusPreset from "./ensemble-plus/preset";
+import {
+  ENSEMBLE_PLUS_DEFAULT_MODE,
+  HUMAN_VOICE_DEFAULT_ENS_DEPTH,
+  HUMAN_VOICE_DEFAULT_RATE,
+} from "./ensemble-plus/constants";
 
 const c3pSchema = z.object({
   id: z.literal("c3p"),
@@ -53,6 +59,13 @@ const rs101Schema = z.object({
   id: z.literal("rs-101"),
 });
 
+const ensemblePlusSchema = z.object({
+  id: z.literal("ensemble-plus"),
+  voiceMode: z.enum(["humanVoice", "strings"]),
+  lastRate: z.number(),
+  lastEnsDepth: z.number(),
+});
+
 export const modeSchema = z.union([
   c3pSchema,
   superDimensionSchema,
@@ -62,6 +75,7 @@ export const modeSchema = z.union([
   rs79Schema,
   stringSchema,
   rs101Schema,
+  ensemblePlusSchema,
 ]);
 
 export const defaultJazz120Mode: Jazz120Mode = {
@@ -82,6 +96,12 @@ export const defaultStringMode: StringMode = {
   ensembleMode: STRING_DEFAULT_ENSEMBLE_MODE,
 };
 
+export const defaultEnsemblePlusMode: EnsemblePlusMode = {
+  voiceMode: ENSEMBLE_PLUS_DEFAULT_MODE,
+  lastRate: HUMAN_VOICE_DEFAULT_RATE,
+  lastEnsDepth: HUMAN_VOICE_DEFAULT_ENS_DEPTH,
+};
+
 const modeIds = modeSchema.options.map((option) => option.shape.id.value);
 
 export type Mode = z.infer<typeof modeSchema>;
@@ -90,6 +110,7 @@ export type Jazz120Mode = Omit<z.infer<typeof jazz120Schema>, "id">;
 export type Ju60Mode = Omit<z.infer<typeof ju60Schema>, "id">;
 export type Rs79Mode = Omit<z.infer<typeof rs79Schema>, "id">;
 export type StringMode = Omit<z.infer<typeof stringSchema>, "id">;
+export type EnsemblePlusMode = Omit<z.infer<typeof ensemblePlusSchema>, "id">;
 
 const makeMode = (id: Mode["id"]): Mode => {
   switch (id) {
@@ -98,6 +119,11 @@ const makeMode = (id: Mode["id"]): Mode => {
     case "ce-2":
     case "rs-101":
       return { id };
+    case "ensemble-plus":
+      return {
+        id,
+        ...defaultEnsemblePlusMode,
+      };
     case "jazz-120":
       return {
         id,
@@ -134,12 +160,16 @@ export const useMode = (): {
   setRs79Mode: (mode: Rs79Mode) => void;
   stringMode: StringMode;
   setStringMode: (mode: StringMode) => void;
+  ensemblePlusMode: EnsemblePlusMode;
+  setEnsemblePlusMode: (mode: EnsemblePlusMode) => void;
 } => {
   const { value, set } = useUiState<Mode>();
   const jazz120Mode = value?.id === "jazz-120" ? value : defaultJazz120Mode;
   const ju60Mode = value?.id === "ju-60" ? value : defaultJu60Mode;
   const rs79Mode = value?.id === "rs-79" ? value : defaultRs79Mode;
   const stringMode = value?.id === "string" ? value : defaultStringMode;
+  const ensemblePlusMode =
+    value?.id === "ensemble-plus" ? value : defaultEnsemblePlusMode;
   const id = value?.id;
   const setJazz120Mode = useCallback(
     (mode: Jazz120Mode) => {
@@ -189,6 +219,18 @@ export const useMode = (): {
     },
     [id, set],
   );
+  const setEnsemblePlusMode = useCallback(
+    (mode: EnsemblePlusMode) => {
+      if (id !== "ensemble-plus") {
+        return;
+      }
+      set({
+        id,
+        ...mode,
+      });
+    },
+    [id, set],
+  );
   return {
     mode: value ?? { id: "c3p" },
     setMode: set,
@@ -200,6 +242,8 @@ export const useMode = (): {
     setRs79Mode,
     stringMode,
     setStringMode,
+    ensemblePlusMode,
+    setEnsemblePlusMode,
   };
 };
 
@@ -221,6 +265,8 @@ const getPresetForMode = (mode: Mode): Preset => {
       return stringPreset;
     case "rs-101":
       return rs101Preset;
+    case "ensemble-plus":
+      return ensemblePlusPreset;
   }
 };
 

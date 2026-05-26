@@ -7,6 +7,7 @@ import Ju60Layout from "./ju-60/layout";
 import Rs79Layout from "./rs-79/layout";
 import StringLayout from "./string/layout";
 import Rs101Layout from "./rs-101/layout";
+import EnsemblePlusLayout from "./ensemble-plus/layout";
 const Router = () => {
   const {
     mode,
@@ -18,6 +19,8 @@ const Router = () => {
     setRs79Mode,
     stringMode,
     setStringMode,
+    ensemblePlusMode,
+    setEnsemblePlusMode,
   } = useMode();
   switch (mode.id) {
     case "c3p":
@@ -36,6 +39,13 @@ const Router = () => {
       return <StringLayout mode={stringMode} setMode={setStringMode} />;
     case "rs-101":
       return <Rs101Layout />;
+    case "ensemble-plus":
+      return (
+        <EnsemblePlusLayout
+          mode={ensemblePlusMode}
+          setMode={setEnsemblePlusMode}
+        />
+      );
   }
 };
 

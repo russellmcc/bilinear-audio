@@ -48,6 +48,7 @@ enum RoutingSetting {
     Ens,
     String,
     MonoEns,
+    Vocoder,
 }
 
 impl DelayChannel {
@@ -241,6 +242,10 @@ impl Effect {
     ) {
         if routing == RoutingSetting::String {
             self.run_string_lfos(num_frames, rates[0], rates[1], depth, extra_depth_scale);
+        } else if routing == RoutingSetting::Vocoder {
+            self.run_lfo(0, num_frames, rates[0], depth);
+            self.run_lfo(1, num_frames, rates[1], depth);
+            self.run_lfo(2, num_frames, rates[2], depth * extra_depth_scale);
         } else {
             self.run_lfo(0, num_frames, rates[0], depth);
             if matches!(routing, RoutingSetting::Ens | RoutingSetting::MonoEns) {
@@ -572,6 +577,84 @@ impl Effect {
         );
     }
 
+    fn process_mono_vocoder(
+        &mut self,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
+        mix: impl Iterator<Item = f32> + Clone,
+        highpass_cutoff: HighpassCutoffSetting,
+    ) {
+        self.reset_unused_channels(3);
+        let num_frames = input.num_frames();
+        let vibrato = &mut self.mixed[..num_frames];
+        let [c_left, c_right, c_vibrato, ..] = &mut self.channels;
+
+        {
+            let vibrato_buffer =
+                c_vibrato.process(input.channel(0).iter().copied(), highpass_cutoff);
+            dsp::iter::move_into(
+                vibrato_buffer.process(self.lfo_forward[2].iter().copied()),
+                &mut vibrato[..],
+            );
+        }
+
+        let processed_l = c_left.process(vibrato.iter().copied(), highpass_cutoff);
+        let processed_r = c_right.process(vibrato.iter().copied(), highpass_cutoff);
+
+        dsp::iter::move_into(
+            izip!(
+                input.channel(0),
+                processed_l.process(self.lfo_forward[0].iter().copied()),
+                processed_r.process(self.lfo_forward[1].iter().copied()),
+                mix
+            )
+            .map(|(i, l, r, m)| i + (l + r) * m * PERCENT_SCALE),
+            output.channel_mut(0),
+        );
+    }
+
+    fn process_vocoder(
+        &mut self,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
+        mix: impl Iterator<Item = f32> + Clone,
+        highpass_cutoff: HighpassCutoffSetting,
+    ) {
+        self.reset_unused_channels(3);
+        let num_frames = input.num_frames();
+        let vibrato = &mut self.mixed[..num_frames];
+        let [c_left, c_right, c_vibrato, ..] = &mut self.channels;
+
+        {
+            let mono = izip!(input.channel(0), input.channel(1)).map(|(l, r)| (l + r) * 0.5);
+            let vibrato_buffer = c_vibrato.process(mono, highpass_cutoff);
+            dsp::iter::move_into(
+                vibrato_buffer.process(self.lfo_forward[2].iter().copied()),
+                &mut vibrato[..],
+            );
+        }
+
+        let processed_l = c_left.process(vibrato.iter().copied(), highpass_cutoff);
+        let processed_r = c_right.process(vibrato.iter().copied(), highpass_cutoff);
+        let mut outputs = channels_mut(output);
+        let output_l = outputs.next().unwrap();
+        let output_r = outputs.next().unwrap();
+
+        for (il, ir, dl, dr, ol, or, m) in izip!(
+            input.channel(0),
+            input.channel(1),
+            processed_l.process(self.lfo_forward[0].iter().copied()),
+            processed_r.process(self.lfo_forward[1].iter().copied()),
+            output_l,
+            output_r,
+            mix
+        ) {
+            let wet_scale = m * PERCENT_SCALE;
+            *ol = il + dl * wet_scale;
+            *or = ir + dr * wet_scale;
+        }
+    }
+
     fn run_string_lfos(
         &mut self,
         num_frames: usize,
@@ -723,6 +806,9 @@ impl EffectT for Effect {
                 RoutingSetting::String => {
                     self.process_mono_string(input, output, mix, highpass_cutoff);
                 }
+                RoutingSetting::Vocoder => {
+                    self.process_mono_vocoder(input, output, mix, highpass_cutoff);
+                }
             },
             ChannelLayout::Stereo => match routing {
                 RoutingSetting::Synth => {
@@ -745,6 +831,9 @@ impl EffectT for Effect {
                 }
                 RoutingSetting::String => {
                     self.process_string(input, output, mix, highpass_cutoff);
+                }
+                RoutingSetting::Vocoder => {
+                    self.process_vocoder(input, output, mix, highpass_cutoff);
                 }
             },
         }
@@ -949,6 +1038,102 @@ mod tests {
             max_wet_delta = max_wet_delta.max((or - ir).abs());
         }
         assert!(max_wet_delta > 1e-3);
+    }
+
+    #[test]
+    fn vocoder_routing_sums_inputs_before_delay_lines() {
+        let num_frames = 4096;
+        let sampling_rate = 48000.0;
+        let left = dsp::test_utils::sine(num_frames, 440.0 / sampling_rate);
+        let mut input = BufferData::new(ChannelLayout::Stereo, num_frames);
+        dsp::iter::move_into(left.iter().copied(), input.channel_mut(0));
+        dsp::iter::move_into(left.iter().map(|x| -x), input.channel_mut(1));
+
+        let mut output = BufferData::new(ChannelLayout::Stereo, num_frames);
+        let mut effect = Effect::new(&ProcessingEnvironment {
+            sampling_rate,
+            max_samples_per_process_call: num_frames,
+            channel_layout: ChannelLayout::Stereo,
+            processing_mode: conformal_component::ProcessingMode::Realtime,
+        });
+        effect.set_processing(true);
+        let params = params_for_routing(RoutingSetting::Vocoder);
+        effect.process(
+            &TestProcessContext {
+                parameters: &params,
+            },
+            &input,
+            &mut output,
+        );
+
+        let mut max_wet_delta = 0.0f32;
+        for (il, ir, ol, or) in izip!(
+            input.channel(0),
+            input.channel(1),
+            output.channel(0),
+            output.channel(1)
+        ) {
+            max_wet_delta = max_wet_delta.max((ol - il).abs());
+            max_wet_delta = max_wet_delta.max((or - ir).abs());
+        }
+        assert!(max_wet_delta < 1e-5, "{max_wet_delta}");
+    }
+
+    #[test]
+    fn vocoder_vibrato_depth_is_scaled_by_ens_depth() {
+        let depth_0_slow_params = params_for_overrides([
+            (
+                "routing",
+                InternalValue::Enum(RoutingSetting::Vocoder as u32),
+            ),
+            ("ens_depth", InternalValue::Numeric(0.0)),
+            ("rate_3", InternalValue::Numeric(0.35)),
+        ]);
+        let depth_0_fast_params = params_for_overrides([
+            (
+                "routing",
+                InternalValue::Enum(RoutingSetting::Vocoder as u32),
+            ),
+            ("ens_depth", InternalValue::Numeric(0.0)),
+            ("rate_3", InternalValue::Numeric(2.1)),
+        ]);
+        let depth_100_slow_params = params_for_overrides([
+            (
+                "routing",
+                InternalValue::Enum(RoutingSetting::Vocoder as u32),
+            ),
+            ("ens_depth", InternalValue::Numeric(100.0)),
+            ("rate_3", InternalValue::Numeric(0.35)),
+        ]);
+        let depth_100_fast_params = params_for_overrides([
+            (
+                "routing",
+                InternalValue::Enum(RoutingSetting::Vocoder as u32),
+            ),
+            ("ens_depth", InternalValue::Numeric(100.0)),
+            ("rate_3", InternalValue::Numeric(2.1)),
+        ]);
+
+        let (_, depth_0_slow) = process_stereo(&depth_0_slow_params);
+        let (_, depth_0_fast) = process_stereo(&depth_0_fast_params);
+        let (_, depth_100_slow) = process_stereo(&depth_100_slow_params);
+        let (_, depth_100_fast) = process_stereo(&depth_100_fast_params);
+
+        let mut max_depth_0_delta = 0.0f32;
+        let mut max_depth_100_delta = 0.0f32;
+        for (depth_0_slow_l, depth_0_fast_l, depth_100_slow_l, depth_100_fast_l) in izip!(
+            depth_0_slow.channel(0),
+            depth_0_fast.channel(0),
+            depth_100_slow.channel(0),
+            depth_100_fast.channel(0)
+        ) {
+            max_depth_0_delta = max_depth_0_delta.max((depth_0_slow_l - depth_0_fast_l).abs());
+            max_depth_100_delta =
+                max_depth_100_delta.max((depth_100_slow_l - depth_100_fast_l).abs());
+        }
+
+        assert!(max_depth_0_delta < 1e-6);
+        assert!(max_depth_100_delta > 1e-3);
     }
 
     #[test]
