@@ -66,6 +66,7 @@ const SliderDisplay = ({
         height: `${SLIDER_TOUCH_HEIGHT}px`,
         pointerEvents: active ? "auto" : "none",
         touchAction: "none",
+        cursor: "default",
       }}
     >
       <div
@@ -167,6 +168,7 @@ const HumanVoiceSlider = ({
         width: `${SLIDER_WIDTH}px`,
         height: "143px",
         overflow: "visible",
+        cursor: "default",
       }}
     >
       <MusicUISlider.Slider

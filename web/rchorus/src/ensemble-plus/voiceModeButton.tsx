@@ -122,20 +122,19 @@ const VoiceModeButton = ({ mode, active, onSelect }: VoiceModeButtonProps) => {
             transition: "height 200ms ease",
           }}
         />
+        <span
+          style={{
+            position: "absolute",
+            left: "20px",
+            top: "27px",
+            width: "16px",
+            height: "16px",
+            borderRadius: "16px",
+            background: active ? "#f83235" : "#1a0001",
+            transition: "background 200ms ease",
+          }}
+        />
       </span>
-      <span
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          left: "20px",
-          top: "27px",
-          width: "16px",
-          height: "16px",
-          borderRadius: "16px",
-          background: active ? "#f83235" : "#1a0001",
-          transition: "background 200ms ease",
-        }}
-      />
     </button>
   );
 };
