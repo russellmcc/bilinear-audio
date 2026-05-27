@@ -116,6 +116,7 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 11] = [
                 "String",
                 "MonoEns",
                 "Vocoder",
+                "Vocoder2",
             ],
         },
     },
@@ -228,6 +229,7 @@ mod tests {
             ("string", 5),
             ("mono_ens", 6),
             ("vocoder", 7),
+            ("vocoder_2", 8),
         ];
 
         for (name, routing) in routing_cases {

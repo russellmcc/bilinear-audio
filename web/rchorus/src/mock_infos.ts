@@ -93,6 +93,7 @@ export const typedInfos = {
         "String",
         "MonoEns",
         "Vocoder",
+        "Vocoder2",
       ],
     } as const,
   } as const,
