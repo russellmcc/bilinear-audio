@@ -8,6 +8,7 @@ import Rs79Layout from "./rs-79/layout";
 import StringLayout from "./string/layout";
 import Rs101Layout from "./rs-101/layout";
 import EnsemblePlusLayout from "./ensemble-plus/layout";
+import Svc350Layout from "./svc-350/layout";
 const Router = () => {
   const {
     mode,
@@ -46,6 +47,8 @@ const Router = () => {
           setMode={setEnsemblePlusMode}
         />
       );
+    case "svc-350":
+      return <Svc350Layout />;
   }
 };
 

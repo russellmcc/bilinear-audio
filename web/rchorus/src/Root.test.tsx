@@ -33,4 +33,14 @@ describe("main", () => {
       ).toBeDefined();
     });
   });
+
+  test("mode carousel reaches SVC-350", async () => {
+    render(<Root />);
+    for (let i = 0; i < 9; i += 1) {
+      fireEvent.click(screen.getByRole("button", { name: "Next mode" }));
+    }
+    await waitFor(() => {
+      expect(screen.getByRole("img", { name: "SCC-350" })).toBeDefined();
+    });
+  });
 });

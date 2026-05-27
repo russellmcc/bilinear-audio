@@ -15,6 +15,7 @@ import stringPreset from "./string/preset";
 import { STRING_DEFAULT_ENSEMBLE_MODE } from "./string/constants";
 import rs101Preset from "./rs-101/preset";
 import ensemblePlusPreset from "./ensemble-plus/preset";
+import svc350Preset from "./svc-350/preset";
 import {
   ENSEMBLE_PLUS_DEFAULT_MODE,
   HUMAN_VOICE_DEFAULT_ENS_DEPTH,
@@ -66,6 +67,10 @@ const ensemblePlusSchema = z.object({
   lastEnsDepth: z.number(),
 });
 
+const svc350Schema = z.object({
+  id: z.literal("svc-350"),
+});
+
 export const modeSchema = z.union([
   c3pSchema,
   superDimensionSchema,
@@ -76,6 +81,7 @@ export const modeSchema = z.union([
   stringSchema,
   rs101Schema,
   ensemblePlusSchema,
+  svc350Schema,
 ]);
 
 export const defaultJazz120Mode: Jazz120Mode = {
@@ -118,6 +124,7 @@ const makeMode = (id: Mode["id"]): Mode => {
     case "super-dimension":
     case "ce-2":
     case "rs-101":
+    case "svc-350":
       return { id };
     case "ensemble-plus":
       return {
@@ -267,6 +274,8 @@ const getPresetForMode = (mode: Mode): Preset => {
       return rs101Preset;
     case "ensemble-plus":
       return ensemblePlusPreset;
+    case "svc-350":
+      return svc350Preset;
   }
 };
 
