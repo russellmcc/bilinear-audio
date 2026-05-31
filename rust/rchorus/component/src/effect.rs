@@ -110,7 +110,7 @@ impl DelayChannel {
 }
 
 const NUM_LFOS: usize = 4;
-const NUM_DELAY_CHANNELS: usize = 4;
+const NUM_DELAY_CHANNELS: usize = 5;
 const SUM_2_SCALE: f32 = 0.707_106_77;
 const SUM_3_SCALE: f32 = 0.577_350_26;
 const SUM_4_SCALE: f32 = 0.5;
@@ -436,7 +436,7 @@ impl Effect {
         highpass_cutoff: HighpassCutoffSetting,
         extra_depth_scale: f32,
     ) {
-        let [c0, c1, c2, c3] = &mut self.channels;
+        let [c0, c1, c2, c3, ..] = &mut self.channels;
         let processed_0 = c0.process(input.channel(0).iter().copied(), highpass_cutoff);
         let processed_1 = c1.process(input.channel(0).iter().copied(), highpass_cutoff);
         let processed_2 = c2.process(input.channel(0).iter().copied(), highpass_cutoff);
@@ -487,7 +487,7 @@ impl Effect {
         mix: impl Iterator<Item = f32> + Clone,
         highpass_cutoff: HighpassCutoffSetting,
     ) {
-        let [c0, c1, c2, c3] = &mut self.channels;
+        let [c0, c1, c2, c3, ..] = &mut self.channels;
         let processed_0 = c0.process(input.channel(0).iter().copied(), highpass_cutoff);
         let processed_1 = c1.process(input.channel(0).iter().copied(), highpass_cutoff);
         let processed_2 = c2.process(input.channel(0).iter().copied(), highpass_cutoff);
@@ -517,7 +517,7 @@ impl Effect {
         highpass_cutoff: HighpassCutoffSetting,
         extra_depth_scale: f32,
     ) {
-        let [c0, c1, c2, c3] = &mut self.channels;
+        let [c0, c1, c2, c3, ..] = &mut self.channels;
         let processed_0 = c0.process(input.channel(0).iter().copied(), highpass_cutoff);
         let processed_1 = c1.process(input.channel(1).iter().copied(), highpass_cutoff);
         let processed_2 = c2.process(input.channel(1).iter().copied(), highpass_cutoff);
@@ -575,7 +575,7 @@ impl Effect {
         Self::fill_mono_from_stereo(input, &mut self.mixed[..input.num_frames()]);
         let mixed = &self.mixed[..input.num_frames()];
 
-        let [c0, c1, c2, c3] = &mut self.channels;
+        let [c0, c1, c2, c3, ..] = &mut self.channels;
         let processed_0 = c0.process(mixed.iter().copied(), highpass_cutoff);
         let processed_1 = c1.process(mixed.iter().copied(), highpass_cutoff);
         let processed_2 = c2.process(mixed.iter().copied(), highpass_cutoff);
@@ -602,31 +602,37 @@ impl Effect {
         mix: impl Iterator<Item = f32> + Clone,
         highpass_cutoff: HighpassCutoffSetting,
     ) {
-        self.reset_unused_channels(3);
         let num_frames = input.num_frames();
-        let vibrato = &mut self.mixed[..num_frames];
-        let [c_left, c_right, c_vibrato, ..] = &mut self.channels;
+        let v_mid = &mut self.mixed[..num_frames];
+        let [c0, c1, c2, c3, c4] = &mut self.channels;
 
         {
-            let vibrato_buffer =
-                c_vibrato.process(input.channel(0).iter().copied(), highpass_cutoff);
+            let vibrato_buffer = c4.process(input.channel(0).iter().copied(), highpass_cutoff);
             dsp::iter::move_into(
                 vibrato_buffer.process(self.lfo_forward[2].iter().copied()),
-                &mut vibrato[..],
+                &mut v_mid[..],
             );
         }
 
-        let processed_l = c_left.process(vibrato.iter().copied(), highpass_cutoff);
-        let processed_r = c_right.process(vibrato.iter().copied(), highpass_cutoff);
+        let processed_0 = c0.process(input.channel(0).iter().copied(), highpass_cutoff);
+        let processed_1 = c1.process(v_mid.iter().copied(), highpass_cutoff);
+        let processed_2 = c2.process(v_mid.iter().copied(), highpass_cutoff);
+        let processed_3 = c3.process(input.channel(0).iter().copied(), highpass_cutoff);
 
         dsp::iter::move_into(
             izip!(
                 input.channel(0),
-                processed_l.process(self.lfo_forward[0].iter().copied()),
-                processed_r.process(self.lfo_forward[1].iter().copied()),
+                processed_0.process(self.lfo_forward[0].iter().copied()),
+                processed_1.process(self.lfo_reverse[0].iter().copied()),
+                processed_2.process(self.lfo_forward[1].iter().copied()),
+                processed_3.process(self.lfo_reverse[1].iter().copied()),
                 mix
             )
-            .map(|(i, l, r, m)| i + (l + r) * SUM_2_SCALE * m * PERCENT_SCALE),
+            .map(|(i, d0, d1, d2, d3, m)| {
+                let l1 = (d0 + d1) * SUM_2_SCALE;
+                let r1 = (d2 + d3) * SUM_2_SCALE;
+                i + (l1 + r1) * SUM_2_SCALE * m * PERCENT_SCALE
+            }),
             output.channel_mut(0),
         );
     }
@@ -638,39 +644,71 @@ impl Effect {
         mix: impl Iterator<Item = f32> + Clone,
         highpass_cutoff: HighpassCutoffSetting,
     ) {
-        self.reset_unused_channels(3);
         let num_frames = input.num_frames();
-        let vibrato = &mut self.mixed[..num_frames];
-        let [c_left, c_right, c_vibrato, ..] = &mut self.channels;
+        let v_mid = &mut self.mixed[..num_frames];
+        let [c0, c1, c2, c3, c4] = &mut self.channels;
 
         {
             let mono = izip!(input.channel(0), input.channel(1)).map(|(l, r)| (l + r) * 0.5);
-            let vibrato_buffer = c_vibrato.process(mono, highpass_cutoff);
+            let vibrato_buffer = c4.process(mono, highpass_cutoff);
             dsp::iter::move_into(
                 vibrato_buffer.process(self.lfo_forward[2].iter().copied()),
-                &mut vibrato[..],
+                &mut v_mid[..],
             );
         }
 
-        let processed_l = c_left.process(vibrato.iter().copied(), highpass_cutoff);
-        let processed_r = c_right.process(vibrato.iter().copied(), highpass_cutoff);
+        let processed_0 = c0.process(
+            izip!(input.channel(0), input.channel(1)).map(|(l, r)| (l + r) * 0.5),
+            highpass_cutoff,
+        );
+        let processed_1 = c1.process(v_mid.iter().copied(), highpass_cutoff);
+        let processed_2 = c2.process(v_mid.iter().copied(), highpass_cutoff);
+        let processed_3 = c3.process(
+            izip!(input.channel(0), input.channel(1)).map(|(l, r)| (l + r) * 0.5),
+            highpass_cutoff,
+        );
         let mut outputs = channels_mut(output);
         let output_l = outputs.next().unwrap();
         let output_r = outputs.next().unwrap();
 
-        for (il, ir, dl, dr, ol, or, m) in izip!(
+        for (il, ir, l_mid, l_v_mid, r_v_mid, r_mid, ol, or, m) in izip!(
             input.channel(0),
             input.channel(1),
-            processed_l.process(self.lfo_forward[0].iter().copied()),
-            processed_r.process(self.lfo_forward[1].iter().copied()),
+            processed_0.process(self.lfo_forward[0].iter().copied()),
+            processed_1.process(self.lfo_reverse[0].iter().copied()),
+            processed_2.process(self.lfo_forward[1].iter().copied()),
+            processed_3.process(self.lfo_reverse[1].iter().copied()),
             output_l,
             output_r,
             mix
         ) {
             let wet_scale = m * PERCENT_SCALE;
-            *ol = il + dl * wet_scale;
-            *or = ir + dr * wet_scale;
+            let l1 = (l_mid + l_v_mid) * SUM_2_SCALE;
+            let r1 = (r_v_mid + r_mid) * SUM_2_SCALE;
+            *ol = il + l1 * wet_scale;
+            *or = ir + r1 * wet_scale;
         }
+    }
+
+    fn vocoder2_full_delay(
+        lfo_1: f32,
+        lfo_2: f32,
+        center_delay: f32,
+        delay_floor: f32,
+        delay_ceiling: f32,
+    ) -> f32 {
+        (lfo_1 + lfo_2 - center_delay).clamp(delay_floor, delay_ceiling)
+    }
+
+    fn vocoder2_half_delay(
+        lfo_1: f32,
+        lfo_2: f32,
+        center_delay: f32,
+        delay_floor: f32,
+        delay_ceiling: f32,
+    ) -> f32 {
+        (Self::vocoder2_full_delay(lfo_1, lfo_2, center_delay, delay_floor, delay_ceiling) * 0.5)
+            .clamp(delay_floor, delay_ceiling)
     }
 
     fn process_mono_vocoder2(
@@ -698,23 +736,60 @@ impl Effect {
                         self.lfo_forward[0].iter().copied(),
                         self.lfo_forward[1].iter().copied()
                     )
-                    .map(move |(lfo_1, lfo_2)| {
-                        (lfo_1 + lfo_2 - center_delay).clamp(delay_floor, delay_ceiling)
-                    })
+                    .map(move |(lfo_1, lfo_2)| Self::vocoder2_half_delay(
+                        lfo_1,
+                        lfo_2,
+                        center_delay,
+                        delay_floor,
+                        delay_ceiling
+                    ))
+                ),
+                processed_forward.process(
+                    izip!(
+                        self.lfo_forward[0].iter().copied(),
+                        self.lfo_forward[1].iter().copied()
+                    )
+                    .map(move |(lfo_1, lfo_2)| Self::vocoder2_full_delay(
+                        lfo_1,
+                        lfo_2,
+                        center_delay,
+                        delay_floor,
+                        delay_ceiling
+                    ))
                 ),
                 processed_reverse.process(
                     izip!(
                         self.lfo_reverse[0].iter().copied(),
                         self.lfo_reverse[1].iter().copied()
                     )
-                    .map(move |(lfo_1, lfo_2)| {
-                        (lfo_1 + lfo_2 - center_delay).clamp(delay_floor, delay_ceiling)
-                    })
+                    .map(move |(lfo_1, lfo_2)| Self::vocoder2_half_delay(
+                        lfo_1,
+                        lfo_2,
+                        center_delay,
+                        delay_floor,
+                        delay_ceiling
+                    ))
+                ),
+                processed_reverse.process(
+                    izip!(
+                        self.lfo_reverse[0].iter().copied(),
+                        self.lfo_reverse[1].iter().copied()
+                    )
+                    .map(move |(lfo_1, lfo_2)| Self::vocoder2_full_delay(
+                        lfo_1,
+                        lfo_2,
+                        center_delay,
+                        delay_floor,
+                        delay_ceiling
+                    ))
                 ),
                 mix
             )
-            .map(|(i, forward, reverse, m)| {
-                i + (forward - reverse) * SUM_2_SCALE * m * PERCENT_SCALE
+            .map(|(i, forward_50, forward_100, reverse_50, reverse_100, m)| {
+                let wet_l = (forward_50 + reverse_100) * SUM_2_SCALE;
+                let wet_r = (forward_100 + reverse_50) * SUM_2_SCALE;
+                let wet_mid = (wet_l + wet_r) * SUM_2_SCALE;
+                i + wet_mid * m * PERCENT_SCALE
             }),
             output.channel_mut(0),
         );
@@ -741,7 +816,7 @@ impl Effect {
         let output_l = outputs.next().unwrap();
         let output_r = outputs.next().unwrap();
 
-        for (il, ir, forward, reverse, ol, or, m) in izip!(
+        for (il, ir, forward_50, forward_100, reverse_50, reverse_100, ol, or, m) in izip!(
             input.channel(0),
             input.channel(1),
             processed_forward.process(
@@ -749,26 +824,62 @@ impl Effect {
                     self.lfo_forward[0].iter().copied(),
                     self.lfo_forward[1].iter().copied()
                 )
-                .map(move |(lfo_1, lfo_2)| {
-                    (lfo_1 + lfo_2 - center_delay).clamp(delay_floor, delay_ceiling)
-                })
+                .map(move |(lfo_1, lfo_2)| Self::vocoder2_half_delay(
+                    lfo_1,
+                    lfo_2,
+                    center_delay,
+                    delay_floor,
+                    delay_ceiling
+                ))
+            ),
+            processed_forward.process(
+                izip!(
+                    self.lfo_forward[0].iter().copied(),
+                    self.lfo_forward[1].iter().copied()
+                )
+                .map(move |(lfo_1, lfo_2)| Self::vocoder2_full_delay(
+                    lfo_1,
+                    lfo_2,
+                    center_delay,
+                    delay_floor,
+                    delay_ceiling
+                ))
             ),
             processed_reverse.process(
                 izip!(
                     self.lfo_reverse[0].iter().copied(),
                     self.lfo_reverse[1].iter().copied()
                 )
-                .map(move |(lfo_1, lfo_2)| {
-                    (lfo_1 + lfo_2 - center_delay).clamp(delay_floor, delay_ceiling)
-                })
+                .map(move |(lfo_1, lfo_2)| Self::vocoder2_half_delay(
+                    lfo_1,
+                    lfo_2,
+                    center_delay,
+                    delay_floor,
+                    delay_ceiling
+                ))
+            ),
+            processed_reverse.process(
+                izip!(
+                    self.lfo_reverse[0].iter().copied(),
+                    self.lfo_reverse[1].iter().copied()
+                )
+                .map(move |(lfo_1, lfo_2)| Self::vocoder2_full_delay(
+                    lfo_1,
+                    lfo_2,
+                    center_delay,
+                    delay_floor,
+                    delay_ceiling
+                ))
             ),
             output_l,
             output_r,
             mix
         ) {
-            let wet = (forward - reverse) * SUM_2_SCALE * m * PERCENT_SCALE;
-            *ol = il + wet;
-            *or = ir - wet;
+            let wet_scale = m * PERCENT_SCALE;
+            let wet_l = (forward_50 + reverse_100) * SUM_2_SCALE;
+            let wet_r = (forward_100 + reverse_50) * SUM_2_SCALE;
+            *ol = il + wet_l * wet_scale;
+            *or = ir + wet_r * wet_scale;
         }
     }
 
@@ -1229,6 +1340,35 @@ mod tests {
     }
 
     #[test]
+    fn vocoder_routing_preserves_original_channels_at_full_mix() {
+        let num_frames = 1024;
+        let sampling_rate = 48000.0;
+        let mut input = BufferData::new(ChannelLayout::Stereo, num_frames);
+        input.channel_mut(0)[0] = 1.0;
+        input.channel_mut(1)[0] = 0.25;
+
+        let mut output = BufferData::new(ChannelLayout::Stereo, num_frames);
+        let mut effect = Effect::new(&ProcessingEnvironment {
+            sampling_rate,
+            max_samples_per_process_call: num_frames,
+            channel_layout: ChannelLayout::Stereo,
+            processing_mode: conformal_component::ProcessingMode::Realtime,
+        });
+        effect.set_processing(true);
+        let params = params_for_routing(RoutingSetting::Vocoder);
+        effect.process(
+            &TestProcessContext {
+                parameters: &params,
+            },
+            &input,
+            &mut output,
+        );
+
+        assert!((output.channel(0)[0] - 1.0).abs() < 1e-6);
+        assert!((output.channel(1)[0] - 0.25).abs() < 1e-6);
+    }
+
+    #[test]
     fn vocoder2_routing_sums_inputs_before_delay_lines() {
         let num_frames = 4096;
         let sampling_rate = 48000.0;
@@ -1268,21 +1408,32 @@ mod tests {
     }
 
     #[test]
-    fn vocoder2_routing_puts_forward_reverse_difference_in_side_channel() {
-        let params = params_for_routing(RoutingSetting::Vocoder2);
-        let (input, output) = process_stereo(&params);
+    fn vocoder2_routing_preserves_original_channels_at_full_mix() {
+        let num_frames = 1024;
+        let sampling_rate = 48000.0;
+        let mut input = BufferData::new(ChannelLayout::Stereo, num_frames);
+        input.channel_mut(0)[0] = 1.0;
+        input.channel_mut(1)[0] = 0.25;
 
-        let mut max_side_delta = 0.0f32;
-        for (il, ir, ol, or) in izip!(
-            input.channel(0),
-            input.channel(1),
-            output.channel(0),
-            output.channel(1)
-        ) {
-            assert!(((ol + or) - (il + ir)).abs() < 1e-5);
-            max_side_delta = max_side_delta.max(((ol - or) - (il - ir)).abs());
-        }
-        assert!(max_side_delta > 1e-3);
+        let mut output = BufferData::new(ChannelLayout::Stereo, num_frames);
+        let mut effect = Effect::new(&ProcessingEnvironment {
+            sampling_rate,
+            max_samples_per_process_call: num_frames,
+            channel_layout: ChannelLayout::Stereo,
+            processing_mode: conformal_component::ProcessingMode::Realtime,
+        });
+        effect.set_processing(true);
+        let params = params_for_routing(RoutingSetting::Vocoder2);
+        effect.process(
+            &TestProcessContext {
+                parameters: &params,
+            },
+            &input,
+            &mut output,
+        );
+
+        assert!((output.channel(0)[0] - 1.0).abs() < 1e-6);
+        assert!((output.channel(1)[0] - 0.25).abs() < 1e-6);
     }
 
     #[test]
