@@ -122,6 +122,8 @@ fn dimension_same_side_gain(pad_db: f32) -> f32 {
 pub struct Effect {
     lfo: [lfo::Lfo; NUM_LFOS],
     rate_to_incr_scale: f32,
+    min_delay: f32,
+    max_delay: f32,
     delay_floor: f32,
     delay_ceiling: f32,
     channels: [DelayChannel; NUM_DELAY_CHANNELS],
@@ -161,13 +163,10 @@ impl Effect {
         let max_delay_for_buffer = max_delay + (max_delay - min_delay) * 0.5;
         let max_delay_for_buffer_samples = cast::<f32, usize>(max_delay_for_buffer.ceil()).unwrap();
         Effect {
-            lfo: array::from_fn(|_| {
-                lfo::Lfo::new(lfo::Options {
-                    min: min_delay,
-                    max: max_delay,
-                })
-            }),
+            lfo: array::from_fn(|_| lfo::Lfo::new()),
             rate_to_incr_scale: 1. / env.sampling_rate,
+            min_delay,
+            max_delay,
             delay_floor: f32::from(LOOKAROUND),
             delay_ceiling: cast::<usize, f32>(max_delay_for_buffer_samples).unwrap(),
             channels: array::from_fn(|_| {
@@ -182,6 +181,14 @@ impl Effect {
             lfo_reverse: array::from_fn(|_| vec![0.; env.max_samples_per_process_call]),
             mixed: vec![0.; env.max_samples_per_process_call],
         }
+    }
+
+    fn delay_range(&self, depth: f32) -> lfo::DelayRange {
+        lfo::DelayRange::new(lfo::Options {
+            min: self.min_delay,
+            max: self.max_delay,
+            depth,
+        })
     }
 
     fn reset_unused_channels(&mut self, used_channels: usize) {
@@ -213,11 +220,17 @@ impl Effect {
         }
     }
 
-    fn run_lfo(&mut self, index: usize, num_frames: usize, rate: f32, depth: f32) {
+    fn run_lfo(
+        &mut self,
+        index: usize,
+        num_frames: usize,
+        rate: f32,
+        delay_range: lfo::DelayRange,
+    ) {
         self.lfo[index].run(
             lfo::Parameters {
                 incr: rate * self.rate_to_incr_scale,
-                depth,
+                delay_range,
             },
             &mut self.lfo_forward[index][..num_frames],
             &mut self.lfo_reverse[index][..num_frames],
@@ -250,21 +263,38 @@ impl Effect {
         extra_depth_scale: f32,
     ) {
         if routing == RoutingSetting::String {
-            self.run_string_lfos(num_frames, rates[0], rates[1], depth, extra_depth_scale);
+            self.run_string_lfos(
+                num_frames,
+                rates[0],
+                rates[1],
+                self.delay_range(depth),
+                self.delay_range(depth * extra_depth_scale),
+            );
         } else if routing == RoutingSetting::Vocoder {
-            self.run_lfo(0, num_frames, rates[0], depth);
-            self.run_lfo(1, num_frames, rates[1], depth);
-            self.run_lfo(2, num_frames, rates[2], depth * extra_depth_scale);
+            let delay_range = self.delay_range(depth);
+            self.run_lfo(0, num_frames, rates[0], delay_range);
+            self.run_lfo(1, num_frames, rates[1], delay_range);
+            self.run_lfo(
+                2,
+                num_frames,
+                rates[2],
+                self.delay_range(depth * extra_depth_scale),
+            );
         } else if routing == RoutingSetting::Vocoder2 {
-            self.run_lfo(0, num_frames, rates[0], depth);
-            self.run_lfo(1, num_frames, rates[1], depth * extra_depth_scale);
+            self.run_lfo(0, num_frames, rates[0], self.delay_range(depth));
+            self.run_lfo(
+                1,
+                num_frames,
+                rates[1],
+                self.delay_range(depth * extra_depth_scale),
+            );
         } else {
-            self.run_lfo(0, num_frames, rates[0], depth);
+            self.run_lfo(0, num_frames, rates[0], self.delay_range(depth));
             if matches!(routing, RoutingSetting::Ens | RoutingSetting::MonoEns) {
                 let depths = Self::ensemble_lfo_depths(routing, depth, extra_depth_scale);
-                self.run_lfo(1, num_frames, rates[1], depths[1]);
-                self.run_lfo(2, num_frames, rates[2], depths[2]);
-                self.run_lfo(3, num_frames, rates[3], depths[3]);
+                self.run_lfo(1, num_frames, rates[1], self.delay_range(depths[1]));
+                self.run_lfo(2, num_frames, rates[2], self.delay_range(depths[2]));
+                self.run_lfo(3, num_frames, rates[3], self.delay_range(depths[3]));
             }
         }
     }
@@ -717,6 +747,7 @@ impl Effect {
         output: &mut impl BufferMut,
         mix: impl Iterator<Item = f32> + Clone,
         highpass_cutoff: HighpassCutoffSetting,
+        center_delay: f32,
     ) {
         self.reset_unused_channels(2);
         let [c_forward, c_reverse, ..] = &mut self.channels;
@@ -724,7 +755,6 @@ impl Effect {
             c_forward.process(input.channel(0).iter().copied(), highpass_cutoff);
         let processed_reverse =
             c_reverse.process(input.channel(0).iter().copied(), highpass_cutoff);
-        let center_delay = self.lfo[0].center_delay();
         let delay_floor = self.delay_floor;
         let delay_ceiling = self.delay_ceiling;
 
@@ -801,6 +831,7 @@ impl Effect {
         output: &mut impl BufferMut,
         mix: impl Iterator<Item = f32> + Clone,
         highpass_cutoff: HighpassCutoffSetting,
+        center_delay: f32,
     ) {
         Self::fill_mono_from_stereo(input, &mut self.mixed[..input.num_frames()]);
         self.reset_unused_channels(2);
@@ -809,7 +840,6 @@ impl Effect {
         let [c_forward, c_reverse, ..] = &mut self.channels;
         let processed_forward = c_forward.process(mixed.iter().copied(), highpass_cutoff);
         let processed_reverse = c_reverse.process(mixed.iter().copied(), highpass_cutoff);
-        let center_delay = self.lfo[0].center_delay();
         let delay_floor = self.delay_floor;
         let delay_ceiling = self.delay_ceiling;
         let mut outputs = channels_mut(output);
@@ -888,10 +918,10 @@ impl Effect {
         num_frames: usize,
         rate: f32,
         rate_2: f32,
-        depth: f32,
-        extra_depth_scale: f32,
+        delay_range: lfo::DelayRange,
+        extra_delay_range: lfo::DelayRange,
     ) {
-        let center_delay = self.lfo[0].center_delay();
+        let center_delay = delay_range.center_delay();
         let delay_floor = self.delay_floor;
         let delay_ceiling = self.delay_ceiling;
         let rate_to_incr_scale = self.rate_to_incr_scale;
@@ -910,14 +940,14 @@ impl Effect {
         lfo_0.run_three_phase_modulation(
             lfo::Parameters {
                 incr: rate * rate_to_incr_scale,
-                depth,
+                delay_range,
             },
             [&mut delay_0[..], &mut delay_120[..], &mut delay_240[..]],
         );
         lfo_1.run_three_phase_modulation(
             lfo::Parameters {
                 incr: rate_2 * rate_to_incr_scale,
-                depth: depth * extra_depth_scale,
+                delay_range: extra_delay_range,
             },
             [&mut extra_0[..], &mut extra_120[..], &mut extra_240[..]],
         );
@@ -1018,6 +1048,7 @@ impl EffectT for Effect {
         let routing = FromPrimitive::from_u32(routing).unwrap_or(RoutingSetting::Synth);
         let mix = pzip!(parameters[numeric "mix"]).map(move |mix| if bypass { 0.0 } else { mix });
         let extra_depth_scale = ens_depth * PERCENT_SCALE;
+        let center_delay = self.delay_range(depth).center_delay();
         self.run_lfos_for_routing(
             input.num_frames(),
             routing,
@@ -1049,7 +1080,7 @@ impl EffectT for Effect {
                     self.process_mono_vocoder(input, output, mix, highpass_cutoff);
                 }
                 RoutingSetting::Vocoder2 => {
-                    self.process_mono_vocoder2(input, output, mix, highpass_cutoff);
+                    self.process_mono_vocoder2(input, output, mix, highpass_cutoff, center_delay);
                 }
             },
             ChannelLayout::Stereo => match routing {
@@ -1086,7 +1117,7 @@ impl EffectT for Effect {
                     self.process_vocoder(input, output, mix, highpass_cutoff);
                 }
                 RoutingSetting::Vocoder2 => {
-                    self.process_vocoder2(input, output, mix, highpass_cutoff);
+                    self.process_vocoder2(input, output, mix, highpass_cutoff, center_delay);
                 }
             },
         }
