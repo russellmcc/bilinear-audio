@@ -166,6 +166,22 @@ const EnsembleSwitch = ({
   switchColor,
   ballHighlightColor,
 }: EnsembleSwitchProps) => {
+  const switchSlider = useCallback(
+    (props: EnumSlider.SliderProps) => (
+      <EnsembleSwitchSlider
+        {...props}
+        switchColor={switchColor}
+        ballHighlightColor={ballHighlightColor}
+      />
+    ),
+    [ballHighlightColor, switchColor],
+  );
+  const switchValueLabel = useCallback(
+    (props: EnumSlider.ValueLabelProps) => (
+      <EnsembleSwitchValueLabel {...props} switchColor={switchColor} />
+    ),
+    [switchColor],
+  );
   const setMode = useCallback(
     (mode: string) => {
       if (mode === "I" || mode === "II") {
@@ -244,16 +260,8 @@ const EnsembleSwitch = ({
         value={value}
         onValue={setMode}
         accessibilityLabel="Ensemble mode"
-        ValueLabel={(props) => (
-          <EnsembleSwitchValueLabel {...props} switchColor={switchColor} />
-        )}
-        Slider={(props) => (
-          <EnsembleSwitchSlider
-            {...props}
-            switchColor={switchColor}
-            ballHighlightColor={ballHighlightColor}
-          />
-        )}
+        ValueLabel={switchValueLabel}
+        Slider={switchSlider}
       />
     </div>
   );

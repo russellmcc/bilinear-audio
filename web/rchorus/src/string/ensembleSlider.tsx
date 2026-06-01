@@ -141,6 +141,16 @@ const EnsembleSlider = ({
   accentColor,
   backgroundColor,
 }: EnsembleSliderProps) => {
+  const ensembleSliderControl = useCallback(
+    (props: EnumSlider.SliderProps) => (
+      <EnsembleSliderControl
+        {...props}
+        accentColor={accentColor}
+        backgroundColor={backgroundColor}
+      />
+    ),
+    [accentColor, backgroundColor],
+  );
   const setMode = useCallback(
     (mode: string) => {
       if (mode === "I" || mode === "II") {
@@ -227,13 +237,7 @@ const EnsembleSlider = ({
           onValue={setMode}
           accessibilityLabel="String ensemble mode"
           ValueLabel={EnsembleSliderValueLabel}
-          Slider={(props) => (
-            <EnsembleSliderControl
-              {...props}
-              accentColor={accentColor}
-              backgroundColor={backgroundColor}
-            />
-          )}
+          Slider={ensembleSliderControl}
         />
       </div>
     </div>
