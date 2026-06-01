@@ -25,6 +25,7 @@ export const ENSEMBLE_PLUS_PRESETS = {
     rate_2: HUMAN_VOICE_CHORUS_RATE_2,
     rate_3: HUMAN_VOICE_DEFAULT_RATE,
     depth: ENSEMBLE_PLUS_LOCKED_DEPTH,
+    delay_scale: 1,
     ens_depth: HUMAN_VOICE_DEFAULT_ENS_DEPTH,
   },
   strings: {
@@ -32,11 +33,15 @@ export const ENSEMBLE_PLUS_PRESETS = {
     rate: 0.12,
     rate_2: 0.19,
     depth: ENSEMBLE_PLUS_LOCKED_DEPTH,
+    delay_scale: 1,
     ens_depth: 0,
   },
 } satisfies Record<
   EnsemblePlusVoiceMode,
-  Pick<Preset, "routing" | "rate" | "rate_2" | "depth" | "ens_depth"> & {
+  Pick<
+    Preset,
+    "routing" | "rate" | "rate_2" | "depth" | "delay_scale" | "ens_depth"
+  > & {
     rate_3?: Preset["rate_3"];
   }
 >;

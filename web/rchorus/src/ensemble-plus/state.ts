@@ -19,6 +19,7 @@ export const useEnsemblePlusState = ({ mode, setMode }: Props) => {
     info: vibratoRateInfo,
   } = useNumericParam("rate_3");
   const { set: setDepthParam } = useNumericParam("depth");
+  const { set: setDelayScaleParam } = useNumericParam("delay_scale");
   const {
     value: ensDepth,
     set: setEnsDepthParam,
@@ -40,6 +41,7 @@ export const useEnsemblePlusState = ({ mode, setMode }: Props) => {
       setRateParam(preset.rate);
       setRate2Param(preset.rate_2);
       setDepthParam(preset.depth);
+      setDelayScaleParam(preset.delay_scale);
       setEnsDepthParam(
         voiceMode === "humanVoice" ? mode.lastEnsDepth : preset.ens_depth,
       );
@@ -49,6 +51,7 @@ export const useEnsemblePlusState = ({ mode, setMode }: Props) => {
     },
     [
       mode,
+      setDelayScaleParam,
       setDepthParam,
       setEnsDepthParam,
       setMode,

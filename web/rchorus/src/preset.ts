@@ -15,6 +15,7 @@ type PresetParamInfos = Pick<
   | "depth"
   | "ens_depth"
   | "mix"
+  | "delay_scale"
   | "highpass_cutoff"
   | "routing"
   | "dimension_same_side_pad"
@@ -51,6 +52,7 @@ export type Preset = {
   mix: ValueOf<"mix">;
   highpass_cutoff: ValueOf<"highpass_cutoff">;
   routing: ValueOf<"routing">;
+  delay_scale: ValueOf<"delay_scale">;
   rate_2?: ValueOf<"rate_2">;
   rate_3?: ValueOf<"rate_3">;
   rate_4?: ValueOf<"rate_4">;
@@ -66,6 +68,7 @@ export const useApplyPreset = () => {
   const depth = useSelectSetter("numeric", "depth");
   const ens_depth = useSelectSetter("numeric", "ens_depth");
   const mix = useSelectSetter("numeric", "mix");
+  const delay_scale = useSelectSetter("numeric", "delay_scale");
   const highpass_cutoff = useSelectSetter("enum", "highpass_cutoff");
   const routing = useSelectSetter("enum", "routing");
   const dimension_same_side_pad = useSelectSetter(
@@ -81,12 +84,14 @@ export const useApplyPreset = () => {
       depth,
       ens_depth,
       mix,
+      delay_scale,
       highpass_cutoff,
       routing,
       dimension_same_side_pad,
     }),
     [
       depth,
+      delay_scale,
       dimension_same_side_pad,
       ens_depth,
       highpass_cutoff,
@@ -106,6 +111,7 @@ export const useApplyPreset = () => {
       setters.mix(preset.mix);
       setters.highpass_cutoff(preset.highpass_cutoff);
       setters.routing(preset.routing);
+      setters.delay_scale(preset.delay_scale);
       if (preset.rate_2 !== undefined) {
         setters.rate_2(preset.rate_2);
       }

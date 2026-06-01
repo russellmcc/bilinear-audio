@@ -11,6 +11,7 @@ export type Props = {
 export const useJu60State = ({ mode, setMode }: Props) => {
   const { set: setRateParam } = useNumericParam("rate");
   const { set: setDepthParam } = useNumericParam("depth");
+  const { set: setDelayScaleParam } = useNumericParam("delay_scale");
   const { set: setRoutingParam } = useEnumParam("routing");
 
   const setButtonMode = useCallback(
@@ -23,9 +24,17 @@ export const useJu60State = ({ mode, setMode }: Props) => {
       setMode({ ...mode, buttonMode });
       setRoutingParam(preset.routing);
       setDepthParam(preset.depth);
+      setDelayScaleParam(preset.delay_scale);
       setRateParam(preset.rate);
     },
-    [mode, setDepthParam, setMode, setRateParam, setRoutingParam],
+    [
+      mode,
+      setDelayScaleParam,
+      setDepthParam,
+      setMode,
+      setRateParam,
+      setRoutingParam,
+    ],
   );
 
   return {

@@ -1,5 +1,6 @@
 use std::array;
 
+use crate::DELAY_SCALE_MAX;
 use crate::compander::{PeakLevelDetector, compress, expand};
 use crate::nonlinearity::nonlinearity;
 use crate::{anti_aliasing_filter::AntiAliasingFilter, lfo, modulated_delay};
@@ -160,7 +161,7 @@ impl Effect {
         if max_delay < min_delay {
             max_delay = min_delay + 1.0;
         }
-        let max_delay_for_buffer = max_delay + (max_delay - min_delay) * 0.5;
+        let max_delay_for_buffer = DELAY_SCALE_MAX * (max_delay + (max_delay - min_delay) * 0.5);
         let max_delay_for_buffer_samples = cast::<f32, usize>(max_delay_for_buffer.ceil()).unwrap();
         Effect {
             lfo: array::from_fn(|_| lfo::Lfo::new()),
@@ -183,10 +184,10 @@ impl Effect {
         }
     }
 
-    fn delay_range(&self, depth: f32) -> lfo::DelayRange {
+    fn delay_range(&self, depth: f32, delay_scale: f32) -> lfo::DelayRange {
         lfo::DelayRange::new(lfo::Options {
-            min: self.min_delay,
-            max: self.max_delay,
+            min: self.min_delay * delay_scale,
+            max: self.max_delay * delay_scale,
             depth,
         })
     }
@@ -261,40 +262,66 @@ impl Effect {
         rates: [f32; NUM_LFOS],
         depth: f32,
         extra_depth_scale: f32,
+        delay_scale: f32,
     ) {
         if routing == RoutingSetting::String {
             self.fill_string_lfos(
                 num_frames,
                 rates[0],
                 rates[1],
-                self.delay_range(depth),
-                self.delay_range(depth * extra_depth_scale),
+                self.delay_range(depth, delay_scale),
+                self.delay_range(depth * extra_depth_scale, delay_scale),
             );
         } else if routing == RoutingSetting::Vocoder {
-            let delay_range = self.delay_range(depth);
+            let delay_range = self.delay_range(depth, delay_scale);
             self.fill_lfo(0, num_frames, rates[0], delay_range);
             self.fill_lfo(1, num_frames, rates[1], delay_range);
             self.fill_lfo(
                 2,
                 num_frames,
                 rates[2],
-                self.delay_range(depth * extra_depth_scale),
+                self.delay_range(depth * extra_depth_scale, delay_scale),
             );
         } else if routing == RoutingSetting::Vocoder2 {
-            self.fill_lfo(0, num_frames, rates[0], self.delay_range(depth));
+            self.fill_lfo(
+                0,
+                num_frames,
+                rates[0],
+                self.delay_range(depth, delay_scale),
+            );
             self.fill_lfo(
                 1,
                 num_frames,
                 rates[1],
-                self.delay_range(depth * extra_depth_scale),
+                self.delay_range(depth * extra_depth_scale, delay_scale),
             );
         } else {
-            self.fill_lfo(0, num_frames, rates[0], self.delay_range(depth));
+            self.fill_lfo(
+                0,
+                num_frames,
+                rates[0],
+                self.delay_range(depth, delay_scale),
+            );
             if matches!(routing, RoutingSetting::Ens | RoutingSetting::MonoEns) {
                 let depths = Self::ensemble_lfo_depths(routing, depth, extra_depth_scale);
-                self.fill_lfo(1, num_frames, rates[1], self.delay_range(depths[1]));
-                self.fill_lfo(2, num_frames, rates[2], self.delay_range(depths[2]));
-                self.fill_lfo(3, num_frames, rates[3], self.delay_range(depths[3]));
+                self.fill_lfo(
+                    1,
+                    num_frames,
+                    rates[1],
+                    self.delay_range(depths[1], delay_scale),
+                );
+                self.fill_lfo(
+                    2,
+                    num_frames,
+                    rates[2],
+                    self.delay_range(depths[2], delay_scale),
+                );
+                self.fill_lfo(
+                    3,
+                    num_frames,
+                    rates[3],
+                    self.delay_range(depths[3], delay_scale),
+                );
             }
         }
     }
@@ -1044,17 +1071,19 @@ impl EffectT for Effect {
             highpass_cutoff,
             routing,
             dimension_same_side_pad,
-        ) = pgrab!(parameters[numeric "rate", numeric "rate_2", numeric "rate_3", numeric "rate_4", numeric "depth", numeric "ens_depth", switch "bypass", enum "highpass_cutoff", enum "routing", numeric "dimension_same_side_pad"]);
+            delay_scale,
+        ) = pgrab!(parameters[numeric "rate", numeric "rate_2", numeric "rate_3", numeric "rate_4", numeric "depth", numeric "ens_depth", switch "bypass", enum "highpass_cutoff", enum "routing", numeric "dimension_same_side_pad", numeric "delay_scale"]);
         let routing = FromPrimitive::from_u32(routing).unwrap_or(RoutingSetting::Synth);
         let mix = pzip!(parameters[numeric "mix"]).map(move |mix| if bypass { 0.0 } else { mix });
         let extra_depth_scale = ens_depth * PERCENT_SCALE;
-        let center_delay = self.delay_range(depth).center_delay();
+        let center_delay = self.delay_range(depth, delay_scale).center_delay();
         self.fill_lfos_for_routing(
             input.num_frames(),
             routing,
             [rate, rate_2, rate_3, rate_4],
             depth,
             extra_depth_scale,
+            delay_scale,
         );
 
         let highpass_cutoff =

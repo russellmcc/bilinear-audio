@@ -16,19 +16,25 @@ export const JU_60_PRESETS = {
   I: {
     routing: "Synth",
     depth: depthFromMilliseconds(4),
+    delay_scale: 1,
     rate: 0.5,
   },
   II: {
     routing: "Synth",
     depth: depthFromMilliseconds(4),
+    delay_scale: 1,
     rate: 0.8,
   },
   III: {
     routing: "Pedal",
     depth: depthFromMilliseconds(0.5),
+    delay_scale: 1,
     rate: 9,
   },
-} satisfies Record<Ju60ButtonMode, Pick<Preset, "routing" | "depth" | "rate">>;
+} satisfies Record<
+  Ju60ButtonMode,
+  Pick<Preset, "routing" | "depth" | "delay_scale" | "rate">
+>;
 
 export const JU_60_DEFAULT_PRESET: Preset = {
   ...JU_60_PRESETS[JU_60_DEFAULT_BUTTON_MODE],

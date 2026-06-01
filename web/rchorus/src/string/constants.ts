@@ -13,7 +13,11 @@ const STRING_FIXED_PARAMS = {
   rate: 0.66,
   rate_2: 6.25,
   depth: 80,
-} satisfies Pick<Preset, "routing" | "rate" | "rate_2" | "depth">;
+  delay_scale: 1,
+} satisfies Pick<
+  Preset,
+  "routing" | "rate" | "rate_2" | "depth" | "delay_scale"
+>;
 
 export const STRING_PRESETS = {
   I: {
@@ -26,7 +30,10 @@ export const STRING_PRESETS = {
   },
 } satisfies Record<
   StringEnsembleMode,
-  Pick<Preset, "routing" | "rate" | "rate_2" | "depth" | "ens_depth">
+  Pick<
+    Preset,
+    "routing" | "rate" | "rate_2" | "depth" | "delay_scale" | "ens_depth"
+  >
 >;
 
 export const STRING_DEFAULT_PRESET: Preset = {

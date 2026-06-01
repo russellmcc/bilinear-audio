@@ -12,6 +12,7 @@ export const useStringState = ({ mode, setMode }: Props) => {
   const { set: setRateParam } = useNumericParam("rate");
   const { set: setRate2Param } = useNumericParam("rate_2");
   const { set: setDepthParam } = useNumericParam("depth");
+  const { set: setDelayScaleParam } = useNumericParam("delay_scale");
   const { set: setEnsDepthParam } = useNumericParam("ens_depth");
   const { set: setRoutingParam } = useEnumParam("routing");
 
@@ -27,10 +28,12 @@ export const useStringState = ({ mode, setMode }: Props) => {
       setRateParam(preset.rate);
       setRate2Param(preset.rate_2);
       setDepthParam(preset.depth);
+      setDelayScaleParam(preset.delay_scale);
       setEnsDepthParam(preset.ens_depth);
     },
     [
       mode,
+      setDelayScaleParam,
       setDepthParam,
       setEnsDepthParam,
       setMode,

@@ -9,6 +9,7 @@ export const SVC_350_PRESET: Preset = {
   rate: 0.25,
   rate_2: 4.5,
   depth: 80,
+  delay_scale: 1,
   ens_depth: 20,
   mix: 100,
   highpass_cutoff: "Low",
