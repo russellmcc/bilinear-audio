@@ -98,7 +98,7 @@ impl Lfo {
         Self::smooth(delay_range.alpha, &mut self.output[0], instant)
     }
 
-    pub fn run(&mut self, params: Parameters, forward: &mut [f32], reverse: &mut [f32]) {
+    pub fn fill(&mut self, params: Parameters, forward: &mut [f32], reverse: &mut [f32]) {
         debug_assert_eq!(forward.len(), reverse.len());
         let point = params.delay_range.point;
         for (forward, reverse) in forward.iter_mut().zip(reverse.iter_mut()) {
@@ -108,7 +108,7 @@ impl Lfo {
         }
     }
 
-    pub fn run_three_phase_modulation(
+    pub fn fill_three_phase_modulation(
         &mut self,
         Parameters { incr, delay_range }: Parameters,
         [phase_0, phase_120, phase_240]: [&mut [f32]; 3],
@@ -165,7 +165,7 @@ mod tests {
         });
         let mut forward = [0.; 10];
         let mut reverse = [0.; 10];
-        lfo.run(
+        lfo.fill(
             Parameters {
                 incr: 0.825,
                 delay_range,
@@ -187,7 +187,7 @@ mod tests {
         });
         let mut forward = [0.; 10];
         let mut reverse = [0.; 10];
-        lfo.run(
+        lfo.fill(
             Parameters {
                 incr: 0.825,
                 delay_range,

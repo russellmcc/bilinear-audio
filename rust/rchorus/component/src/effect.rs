@@ -220,14 +220,14 @@ impl Effect {
         }
     }
 
-    fn run_lfo(
+    fn fill_lfo(
         &mut self,
         index: usize,
         num_frames: usize,
         rate: f32,
         delay_range: lfo::DelayRange,
     ) {
-        self.lfo[index].run(
+        self.lfo[index].fill(
             lfo::Parameters {
                 incr: rate * self.rate_to_incr_scale,
                 delay_range,
@@ -254,7 +254,7 @@ impl Effect {
         }
     }
 
-    fn run_lfos_for_routing(
+    fn fill_lfos_for_routing(
         &mut self,
         num_frames: usize,
         routing: RoutingSetting,
@@ -263,7 +263,7 @@ impl Effect {
         extra_depth_scale: f32,
     ) {
         if routing == RoutingSetting::String {
-            self.run_string_lfos(
+            self.fill_string_lfos(
                 num_frames,
                 rates[0],
                 rates[1],
@@ -272,29 +272,29 @@ impl Effect {
             );
         } else if routing == RoutingSetting::Vocoder {
             let delay_range = self.delay_range(depth);
-            self.run_lfo(0, num_frames, rates[0], delay_range);
-            self.run_lfo(1, num_frames, rates[1], delay_range);
-            self.run_lfo(
+            self.fill_lfo(0, num_frames, rates[0], delay_range);
+            self.fill_lfo(1, num_frames, rates[1], delay_range);
+            self.fill_lfo(
                 2,
                 num_frames,
                 rates[2],
                 self.delay_range(depth * extra_depth_scale),
             );
         } else if routing == RoutingSetting::Vocoder2 {
-            self.run_lfo(0, num_frames, rates[0], self.delay_range(depth));
-            self.run_lfo(
+            self.fill_lfo(0, num_frames, rates[0], self.delay_range(depth));
+            self.fill_lfo(
                 1,
                 num_frames,
                 rates[1],
                 self.delay_range(depth * extra_depth_scale),
             );
         } else {
-            self.run_lfo(0, num_frames, rates[0], self.delay_range(depth));
+            self.fill_lfo(0, num_frames, rates[0], self.delay_range(depth));
             if matches!(routing, RoutingSetting::Ens | RoutingSetting::MonoEns) {
                 let depths = Self::ensemble_lfo_depths(routing, depth, extra_depth_scale);
-                self.run_lfo(1, num_frames, rates[1], self.delay_range(depths[1]));
-                self.run_lfo(2, num_frames, rates[2], self.delay_range(depths[2]));
-                self.run_lfo(3, num_frames, rates[3], self.delay_range(depths[3]));
+                self.fill_lfo(1, num_frames, rates[1], self.delay_range(depths[1]));
+                self.fill_lfo(2, num_frames, rates[2], self.delay_range(depths[2]));
+                self.fill_lfo(3, num_frames, rates[3], self.delay_range(depths[3]));
             }
         }
     }
@@ -913,7 +913,7 @@ impl Effect {
         }
     }
 
-    fn run_string_lfos(
+    fn fill_string_lfos(
         &mut self,
         num_frames: usize,
         rate: f32,
@@ -937,14 +937,14 @@ impl Effect {
         let extra_120 = &mut forward_2[..num_frames];
         let extra_240 = &mut reverse_2[..num_frames];
 
-        lfo_0.run_three_phase_modulation(
+        lfo_0.fill_three_phase_modulation(
             lfo::Parameters {
                 incr: rate * rate_to_incr_scale,
                 delay_range,
             },
             [&mut delay_0[..], &mut delay_120[..], &mut delay_240[..]],
         );
-        lfo_1.run_three_phase_modulation(
+        lfo_1.fill_three_phase_modulation(
             lfo::Parameters {
                 incr: rate_2 * rate_to_incr_scale,
                 delay_range: extra_delay_range,
@@ -1049,7 +1049,7 @@ impl EffectT for Effect {
         let mix = pzip!(parameters[numeric "mix"]).map(move |mix| if bypass { 0.0 } else { mix });
         let extra_depth_scale = ens_depth * PERCENT_SCALE;
         let center_delay = self.delay_range(depth).center_delay();
-        self.run_lfos_for_routing(
+        self.fill_lfos_for_routing(
             input.num_frames(),
             routing,
             [rate, rate_2, rate_3, rate_4],
