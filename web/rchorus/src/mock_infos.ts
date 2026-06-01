@@ -71,6 +71,15 @@ export const typedInfos = {
       units: "%",
     } as const,
   } as const,
+  delay_scale: {
+    title: "Delay Scale",
+    type_specific: {
+      t: "numeric" as const,
+      default: 1,
+      valid_range: [1, 4] satisfies [number, number],
+      units: "x",
+    } as const,
+  } as const,
   highpass_cutoff: {
     title: "Highpass Cutoff",
     type_specific: {

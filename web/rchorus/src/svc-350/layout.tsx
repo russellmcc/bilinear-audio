@@ -4,7 +4,9 @@ import separator from "./assets/separator.svg";
 import scc350 from "./assets/scc-350.svg";
 import titleRule from "./assets/title-rule.svg";
 import vocoder from "./assets/vocoder.svg";
-import { SVC_350_ACCENT_COLOR, SVC_350_BACKGROUND } from "./constants";
+
+const SVC_350_BACKGROUND = "linear-gradient(135deg, #230611 0%, #120309 100%)";
+const SVC_350_ACCENT_COLOR = "#f7717d";
 
 const Layout = () => (
   <div

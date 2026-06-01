@@ -1,7 +1,10 @@
 import { useEnumParam, useNumericParam } from "@conformal/plugin";
 import { useCallback } from "react";
 import type { EnsemblePlusMode } from "../mode";
-import { ENSEMBLE_PLUS_PRESETS, type EnsemblePlusVoiceMode } from "./constants";
+import { ENSEMBLE_PLUS_PRESETS } from "./preset";
+
+export const ENSEMBLE_PLUS_MODES = ["humanVoice", "strings"] as const;
+export type EnsemblePlusVoiceMode = (typeof ENSEMBLE_PLUS_MODES)[number];
 
 export type Props = {
   mode: EnsemblePlusMode;
@@ -19,6 +22,7 @@ export const useEnsemblePlusState = ({ mode, setMode }: Props) => {
     info: vibratoRateInfo,
   } = useNumericParam("rate_3");
   const { set: setDepthParam } = useNumericParam("depth");
+  const { set: setDelayScaleParam } = useNumericParam("delay_scale");
   const {
     value: ensDepth,
     set: setEnsDepthParam,
@@ -40,6 +44,7 @@ export const useEnsemblePlusState = ({ mode, setMode }: Props) => {
       setRateParam(preset.rate);
       setRate2Param(preset.rate_2);
       setDepthParam(preset.depth);
+      setDelayScaleParam(preset.delay_scale);
       setEnsDepthParam(
         voiceMode === "humanVoice" ? mode.lastEnsDepth : preset.ens_depth,
       );
@@ -49,6 +54,7 @@ export const useEnsemblePlusState = ({ mode, setMode }: Props) => {
     },
     [
       mode,
+      setDelayScaleParam,
       setDepthParam,
       setEnsDepthParam,
       setMode,

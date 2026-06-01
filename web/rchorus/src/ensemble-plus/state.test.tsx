@@ -8,7 +8,7 @@ import {
   ENSEMBLE_PLUS_PRESETS,
   HUMAN_VOICE_CHORUS_RATE,
   HUMAN_VOICE_CHORUS_RATE_2,
-} from "./constants";
+} from "./preset";
 import { useEnsemblePlusState } from "./state";
 
 const useEnsemblePlusHarness = () => {

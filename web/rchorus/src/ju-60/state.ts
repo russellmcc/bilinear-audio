@@ -1,7 +1,10 @@
 import { useEnumParam, useNumericParam } from "@conformal/plugin";
 import { useCallback } from "react";
 import type { Ju60Mode } from "../mode";
-import { JU_60_PRESETS, type Ju60ButtonMode } from "./constants";
+import { JU_60_PRESETS } from "./preset";
+
+export const JU_60_BUTTON_MODES = ["I", "II", "III"] as const;
+export type Ju60ButtonMode = (typeof JU_60_BUTTON_MODES)[number];
 
 export type Props = {
   mode: Ju60Mode;
@@ -11,6 +14,7 @@ export type Props = {
 export const useJu60State = ({ mode, setMode }: Props) => {
   const { set: setRateParam } = useNumericParam("rate");
   const { set: setDepthParam } = useNumericParam("depth");
+  const { set: setDelayScaleParam } = useNumericParam("delay_scale");
   const { set: setRoutingParam } = useEnumParam("routing");
 
   const setButtonMode = useCallback(
@@ -23,9 +27,17 @@ export const useJu60State = ({ mode, setMode }: Props) => {
       setMode({ ...mode, buttonMode });
       setRoutingParam(preset.routing);
       setDepthParam(preset.depth);
+      setDelayScaleParam(preset.delay_scale);
       setRateParam(preset.rate);
     },
-    [mode, setDepthParam, setMode, setRateParam, setRoutingParam],
+    [
+      mode,
+      setDelayScaleParam,
+      setDepthParam,
+      setMode,
+      setRateParam,
+      setRoutingParam,
+    ],
   );
 
   return {

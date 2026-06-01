@@ -4,7 +4,7 @@ import { useEnumParam, useNumericParam } from "@conformal/plugin";
 import { RootProviders } from "../Root";
 import type { Mode } from "../mode";
 import { defaultRs79Mode, useMode, useNextMode } from "../mode";
-import { RS_79_PRESETS } from "./constants";
+import { RS_79_PRESETS } from "./preset";
 import { useRs79State } from "./state";
 
 const useRs79Harness = () => {

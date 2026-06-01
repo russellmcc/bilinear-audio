@@ -9,6 +9,7 @@ import StringLayout from "./string/layout";
 import Rs101Layout from "./rs-101/layout";
 import EnsemblePlusLayout from "./ensemble-plus/layout";
 import Svc350Layout from "./svc-350/layout";
+import Cp4Layout from "./cp-4/layout";
 const Router = () => {
   const {
     mode,
@@ -49,6 +50,8 @@ const Router = () => {
       );
     case "svc-350":
       return <Svc350Layout />;
+    case "cp-4":
+      return <Cp4Layout />;
   }
 };
 

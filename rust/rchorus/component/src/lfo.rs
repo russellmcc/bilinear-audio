@@ -2,6 +2,12 @@ use dsp::f32::exp_approx;
 
 #[derive(Clone)]
 pub struct Lfo {
+    phase: f32,
+    output: [Option<f32>; 3],
+}
+
+#[derive(Clone, Copy)]
+pub struct DelayRange {
     point: f32,
     scale: f32,
 
@@ -11,23 +17,20 @@ pub struct Lfo {
     //
     // This is discussed in detail in [Conformal App Note 2](https://www.russellmcc.com/conformal/app_notes/2-bbd-lfo/).
     alpha: f32,
-
-    phase: f32,
-    output: [Option<f32>; 3],
 }
 
 #[derive(Clone, Copy)]
 pub struct Options {
     pub min: f32,
     pub max: f32,
+    pub depth: f32,
 }
 
 #[derive(Clone, Copy)]
 pub struct Parameters {
     pub incr: f32,
 
-    /// In percent
-    pub depth: f32,
+    pub delay_range: DelayRange,
 }
 
 /// Time-constant in samples
@@ -35,8 +38,8 @@ fn alpha_from_time_constant(t: f32) -> f32 {
     1. - exp_approx(-2. / t)
 }
 
-impl Lfo {
-    pub fn new(Options { min, max }: Options) -> Self {
+impl DelayRange {
+    pub fn new(Options { min, max, depth }: Options) -> Self {
         assert!(min < max);
         let point = (max + min) * 0.5;
 
@@ -46,19 +49,26 @@ impl Lfo {
 
         Self {
             point,
-            scale: (max - min) / 100. * 2.,
+            scale: depth * ((max - min) / 100. * 2.),
             alpha,
-            output: [None; 3],
-            phase: 0.,
         }
     }
 
     pub fn center_delay(&self) -> f32 {
         self.point
     }
+}
 
-    fn instant(scale: f32, phase: f32, depth: f32) -> f32 {
-        depth * scale * (if phase > 0.5 { 1. - phase } else { phase } - 0.25)
+impl Lfo {
+    pub fn new() -> Self {
+        Self {
+            output: [None; 3],
+            phase: 0.,
+        }
+    }
+
+    fn instant(scale: f32, phase: f32) -> f32 {
+        scale * (if phase > 0.5 { 1. - phase } else { phase } - 0.25)
     }
 
     fn advance_phase(phase: &mut f32, incr: f32) {
@@ -82,15 +92,15 @@ impl Lfo {
         (*output).unwrap()
     }
 
-    fn run_single(&mut self, Parameters { incr, depth }: Parameters) -> f32 {
-        let instant = Self::instant(self.scale, self.phase, depth);
+    fn run_single(&mut self, Parameters { incr, delay_range }: Parameters) -> f32 {
+        let instant = Self::instant(delay_range.scale, self.phase);
         Self::advance_phase(&mut self.phase, incr);
-        Self::smooth(self.alpha, &mut self.output[0], instant)
+        Self::smooth(delay_range.alpha, &mut self.output[0], instant)
     }
 
-    pub fn run(&mut self, params: Parameters, forward: &mut [f32], reverse: &mut [f32]) {
+    pub fn fill(&mut self, params: Parameters, forward: &mut [f32], reverse: &mut [f32]) {
         debug_assert_eq!(forward.len(), reverse.len());
-        let point = self.point;
+        let point = params.delay_range.point;
         for (forward, reverse) in forward.iter_mut().zip(reverse.iter_mut()) {
             let value = self.run_single(params);
             *forward = point + value;
@@ -98,34 +108,32 @@ impl Lfo {
         }
     }
 
-    pub fn run_three_phase_modulation(
+    pub fn fill_three_phase_modulation(
         &mut self,
-        Parameters { incr, depth }: Parameters,
+        Parameters { incr, delay_range }: Parameters,
         [phase_0, phase_120, phase_240]: [&mut [f32]; 3],
     ) {
         debug_assert_eq!(phase_0.len(), phase_120.len());
         debug_assert_eq!(phase_0.len(), phase_240.len());
 
         let [output_0, output_120, output_240] = &mut self.output;
+        let scale = delay_range.scale;
+        let alpha = delay_range.alpha;
         for ((phase_0, phase_120), phase_240) in phase_0
             .iter_mut()
             .zip(phase_120.iter_mut())
             .zip(phase_240.iter_mut())
         {
-            *phase_0 = Self::smooth(
-                self.alpha,
-                output_0,
-                Self::instant(self.scale, self.phase, depth),
-            );
+            *phase_0 = Self::smooth(alpha, output_0, Self::instant(scale, self.phase));
             *phase_120 = Self::smooth(
-                self.alpha,
+                alpha,
                 output_120,
-                Self::instant(self.scale, Self::wrap_phase(self.phase + 1. / 3.), depth),
+                Self::instant(scale, Self::wrap_phase(self.phase + 1. / 3.)),
             );
             *phase_240 = Self::smooth(
-                self.alpha,
+                alpha,
                 output_240,
-                Self::instant(self.scale, Self::wrap_phase(self.phase + 2. / 3.), depth),
+                Self::instant(scale, Self::wrap_phase(self.phase + 2. / 3.)),
             );
             Self::advance_phase(&mut self.phase, incr);
         }
@@ -141,20 +149,53 @@ impl Lfo {
 mod tests {
     use super::*;
 
+    fn assert_all_approx_eq(actual: &[f32], expected: f32) {
+        for value in actual {
+            assert!((value - expected).abs() < f32::EPSILON);
+        }
+    }
+
     #[test]
     fn alias_surpressed() {
-        let mut lfo = Lfo::new(Options { min: 5., max: 9. });
+        let mut lfo = Lfo::new();
+        let delay_range = DelayRange::new(Options {
+            min: 5.,
+            max: 9.,
+            depth: 100.,
+        });
         let mut forward = [0.; 10];
         let mut reverse = [0.; 10];
-        lfo.run(
+        lfo.fill(
             Parameters {
                 incr: 0.825,
-                depth: 100.,
+                delay_range,
             },
             &mut forward,
             &mut reverse,
         );
-        assert_eq!(forward, [5.; 10]);
-        assert_eq!(reverse, [9.; 10]);
+        assert_all_approx_eq(&forward, 5.);
+        assert_all_approx_eq(&reverse, 9.);
+    }
+
+    #[test]
+    fn delay_range_sets_center_and_scale() {
+        let mut lfo = Lfo::new();
+        let delay_range = DelayRange::new(Options {
+            min: 10.,
+            max: 18.,
+            depth: 100.,
+        });
+        let mut forward = [0.; 10];
+        let mut reverse = [0.; 10];
+        lfo.fill(
+            Parameters {
+                incr: 0.825,
+                delay_range,
+            },
+            &mut forward,
+            &mut reverse,
+        );
+        assert_all_approx_eq(&forward, 10.);
+        assert_all_approx_eq(&reverse, 18.);
     }
 }

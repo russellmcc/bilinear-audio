@@ -7,7 +7,7 @@ import {
   JAZZ_RATE_RANGE,
   JAZZ_VIBRATO_DEPTH,
   JAZZ_VIBRATO_RATE,
-} from "./constants";
+} from "./preset";
 import Knob from "./knob";
 import { JazzChorusMode, useJazzChorusState } from "./state";
 import title from "./assets/funk-chorus-120.svg";

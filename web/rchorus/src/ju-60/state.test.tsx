@@ -4,7 +4,7 @@ import { useEnumParam, useNumericParam } from "@conformal/plugin";
 import { RootProviders } from "../Root";
 import type { Mode } from "../mode";
 import { defaultJu60Mode, useMode, useNextMode } from "../mode";
-import { JU_60_PRESETS } from "./constants";
+import { JU_60_PRESETS } from "./preset";
 import { useJu60State } from "./state";
 
 const useJu60Harness = () => {

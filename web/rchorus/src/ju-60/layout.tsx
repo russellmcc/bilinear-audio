@@ -1,14 +1,13 @@
 import Button from "../components/button";
 import Slider from "../components/slider";
 import type { Ju60Mode } from "../mode";
-import {
-  JU_60_ACCENT_COLOR,
-  JU_60_BACKGROUND,
-  JU_60_BUTTON_MODES,
-  type Ju60ButtonMode,
-} from "./constants";
+import { JU_60_BUTTON_MODES, type Ju60ButtonMode } from "./state";
 import ModeButton from "./modeButton";
 import { useJu60State } from "./state";
+
+const JU_60_ACCENT_COLOR = "#669bbc";
+const JU_60_BACKGROUND =
+  "linear-gradient(-45.38510521241395deg, #312f2f 7.0881%, #3c3b3b 90.779%)";
 
 export type LayoutProps = {
   mode: Ju60Mode;

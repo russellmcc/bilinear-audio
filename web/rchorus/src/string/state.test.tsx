@@ -4,7 +4,7 @@ import { useEnumParam, useNumericParam } from "@conformal/plugin";
 import { RootProviders } from "../Root";
 import type { Mode } from "../mode";
 import { defaultStringMode, useMode, useNextMode } from "../mode";
-import { STRING_PRESETS } from "./constants";
+import { STRING_PRESETS } from "./preset";
 import { useStringState } from "./state";
 
 const useStringHarness = () => {

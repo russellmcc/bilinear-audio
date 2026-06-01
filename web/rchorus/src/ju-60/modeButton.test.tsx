@@ -1,7 +1,7 @@
 import { describe, expect, test, afterEach } from "bun:test";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
-import { JU_60_BUTTON_MODES, type Ju60ButtonMode } from "./constants";
+import { JU_60_BUTTON_MODES, type Ju60ButtonMode } from "./state";
 import ModeButton from "./modeButton";
 
 afterEach(cleanup);

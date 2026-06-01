@@ -4,8 +4,11 @@ use conformal_component::{Component as ComponentT, ProcessingEnvironment};
 
 const DIMENSION_SAME_SIDE_PAD_DB: f32 = -7.5;
 const DIMENSION_SAME_SIDE_MIN_PAD_DB: f32 = -20.0;
+const DELAY_SCALE_DEFAULT: f32 = 1.0;
+const DELAY_SCALE_MIN: f32 = 1.0;
+const DELAY_SCALE_MAX: f32 = 4.0;
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 11] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 12] = [
     InfoRef {
         title: "Rate",
         short_title: "Rate",
@@ -81,6 +84,17 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 11] = [
             default: 100.,
             valid_range: 0f32..=100.,
             units: Some("%"),
+        },
+    },
+    InfoRef {
+        title: "Delay Scale",
+        short_title: "Delay",
+        unique_id: "delay_scale",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Numeric {
+            default: DELAY_SCALE_DEFAULT,
+            valid_range: DELAY_SCALE_MIN..=DELAY_SCALE_MAX,
+            units: Some("x"),
         },
     },
     InfoRef {

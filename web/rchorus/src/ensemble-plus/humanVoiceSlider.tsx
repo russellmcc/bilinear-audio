@@ -1,6 +1,5 @@
 import { Slider as MusicUISlider, useSlider } from "music-ui/kit";
 import { useCallback } from "react";
-import { ENSEMBLE_PLUS_TEXT_COLOR } from "./constants";
 
 const SLIDER_THROW = 120;
 const SLIDER_RAIL_HEIGHT = 121;
@@ -110,7 +109,7 @@ const SliderDisplay = ({
             top: `${HANDLE_LINE_CENTER_Y - 1}px`,
             width: "30px",
             height: "2px",
-            background: ENSEMBLE_PLUS_TEXT_COLOR,
+            background: "currentColor",
           }}
         />
       </div>
@@ -189,7 +188,6 @@ const HumanVoiceSlider = ({
           transform: "translateX(-50%)",
           fontSize: "14px",
           lineHeight: "17px",
-          color: ENSEMBLE_PLUS_TEXT_COLOR,
         }}
       >
         {label}

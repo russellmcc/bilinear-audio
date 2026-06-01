@@ -1,16 +1,14 @@
 import Button from "../components/button";
 import BypassSlider from "../components/slider";
 import type { EnsemblePlusMode } from "../mode";
-import {
-  ENSEMBLE_PLUS_ACCENT_COLOR,
-  ENSEMBLE_PLUS_BACKGROUND,
-  ENSEMBLE_PLUS_MODES,
-  ENSEMBLE_PLUS_TEXT_COLOR,
-} from "./constants";
 import HumanVoiceSliders from "./humanVoiceSliders";
 import VoiceModeButton from "./voiceModeButton";
 import logo from "./assets/ensemble-plus.svg";
-import { useEnsemblePlusState } from "./state";
+import { ENSEMBLE_PLUS_MODES, useEnsemblePlusState } from "./state";
+
+const ENSEMBLE_PLUS_BACKGROUND =
+  "linear-gradient(-45.36034602069856deg, #422433 0%, #62374d 99.379%)";
+const ENSEMBLE_PLUS_ACCENT_COLOR = "#ff8811";
 
 export type LayoutProps = {
   mode: EnsemblePlusMode;
@@ -30,7 +28,7 @@ const Layout = (props: LayoutProps) => {
         margin: "0px",
         background: ENSEMBLE_PLUS_BACKGROUND,
         whiteSpace: "pre-wrap",
-        color: ENSEMBLE_PLUS_TEXT_COLOR,
+        color: "var(--text-color)",
       }}
     >
       <img

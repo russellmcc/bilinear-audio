@@ -3,8 +3,11 @@ import { act, renderHook } from "@testing-library/react";
 import { useNumericParam } from "@conformal/plugin";
 import { RootProviders } from "../Root";
 import { Mode, defaultJazz120Mode, useMode } from "../mode";
-import { JAZZ_CHORUS_DEPTH, JAZZ_CHORUS_RATE } from "./constants";
-import { useJazzChorusState } from "./state";
+import {
+  JAZZ_CHORUS_DEPTH,
+  JAZZ_CHORUS_RATE,
+  useJazzChorusState,
+} from "./state";
 
 const useJazzHarness = () => {
   const mode = useMode();
