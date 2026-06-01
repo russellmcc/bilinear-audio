@@ -19,6 +19,7 @@ import ensemblePlusPreset, {
   HUMAN_VOICE_DEFAULT_RATE,
 } from "./ensemble-plus/preset";
 import svc350Preset from "./svc-350/preset";
+import cp4Preset from "./cp-4/preset";
 
 const c3pSchema = z.object({
   id: z.literal("c3p"),
@@ -69,6 +70,10 @@ const svc350Schema = z.object({
   id: z.literal("svc-350"),
 });
 
+const cp4Schema = z.object({
+  id: z.literal("cp-4"),
+});
+
 export const modeSchema = z.union([
   c3pSchema,
   superDimensionSchema,
@@ -80,6 +85,7 @@ export const modeSchema = z.union([
   rs101Schema,
   ensemblePlusSchema,
   svc350Schema,
+  cp4Schema,
 ]);
 
 export const defaultJazz120Mode: Jazz120Mode = {
@@ -123,6 +129,7 @@ const makeMode = (id: Mode["id"]): Mode => {
     case "ce-2":
     case "rs-101":
     case "svc-350":
+    case "cp-4":
       return { id };
     case "ensemble-plus":
       return {
@@ -272,6 +279,8 @@ const getPresetForMode = (mode: Mode): Preset => {
       return ensemblePlusPreset;
     case "svc-350":
       return svc350Preset;
+    case "cp-4":
+      return cp4Preset;
   }
 };
 
