@@ -1,10 +1,7 @@
 import Button from "../components/button";
 import Slider from "../components/slider";
 import type { Ju60Mode } from "../mode";
-import {
-  JU_60_BUTTON_MODES,
-  type Ju60ButtonMode,
-} from "./state";
+import { JU_60_BUTTON_MODES, type Ju60ButtonMode } from "./state";
 import ModeButton from "./modeButton";
 import { useJu60State } from "./state";
 

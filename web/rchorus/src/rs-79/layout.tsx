@@ -6,8 +6,7 @@ import EnsembleSwitch from "./ensembleSwitch";
 import { useRs79State } from "./state";
 
 const RS_79_PANEL_COLOR = "#2e282a";
-const RS_79_BACKGROUND =
-  `linear-gradient(-45deg, ${RS_79_PANEL_COLOR} 0%, #373032 100%)`;
+const RS_79_BACKGROUND = `linear-gradient(-45deg, ${RS_79_PANEL_COLOR} 0%, #373032 100%)`;
 const RS_79_HIGHLIGHT_COLOR = "#fe5f55";
 const RS_79_SWITCH_COLOR = "var(--text-color)";
 

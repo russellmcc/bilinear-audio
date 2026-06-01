@@ -1,9 +1,6 @@
 import { EnumSlider, useEnumSlider } from "music-ui/kit";
 import { useCallback } from "react";
-import {
-  RS_79_ENSEMBLE_MODES,
-  type Rs79EnsembleMode,
-} from "./state";
+import { RS_79_ENSEMBLE_MODES, type Rs79EnsembleMode } from "./state";
 
 const SWITCH_WIDTH = 20;
 const SWITCH_HEIGHT = 67;

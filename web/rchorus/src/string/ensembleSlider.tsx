@@ -2,10 +2,7 @@ import { EnumSlider, useEnumSlider } from "music-ui/kit";
 import { useCallback } from "react";
 import ensemble from "./assets/ensemble.svg";
 import tickLine from "./assets/tick-line.svg";
-import {
-  STRING_ENSEMBLE_MODES,
-  type StringEnsembleMode,
-} from "./state";
+import { STRING_ENSEMBLE_MODES, type StringEnsembleMode } from "./state";
 
 const STRING_PANEL_BACKGROUND = "#456990";
 const PANEL_WIDTH = 130;
