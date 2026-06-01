@@ -2,7 +2,9 @@ import Button from "../components/button";
 import Slider from "../components/slider";
 import ch1o1 from "./assets/ch-1o1.svg";
 import strings from "./assets/strings.svg";
-import { RS_101_ACCENT_COLOR, RS_101_BACKGROUND } from "./constants";
+
+const RS_101_ACCENT_COLOR = "#ff2c55";
+const RS_101_BACKGROUND = "#100007";
 
 const Layout = () => (
   <div

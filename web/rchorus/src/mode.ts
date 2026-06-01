@@ -6,21 +6,19 @@ import { useApplyPreset } from "./preset";
 import c3pPreset from "./c3p/preset";
 import superDimensionPreset from "./super-dimension/preset";
 import ce2Preset from "./ce-2/preset";
-import jazz120Preset from "./jazz-120/preset";
-import { JAZZ_VIBRATO_DEPTH, JAZZ_VIBRATO_RATE } from "./jazz-120/constants";
+import jazz120Preset, {
+  JAZZ_VIBRATO_DEPTH,
+  JAZZ_VIBRATO_RATE,
+} from "./jazz-120/preset";
 import ju60Preset from "./ju-60/preset";
 import rs79Preset from "./rs-79/preset";
-import { RS_79_DEFAULT_ENSEMBLE_MODE } from "./rs-79/constants";
 import stringPreset from "./string/preset";
-import { STRING_DEFAULT_ENSEMBLE_MODE } from "./string/constants";
 import rs101Preset from "./rs-101/preset";
-import ensemblePlusPreset from "./ensemble-plus/preset";
-import svc350Preset from "./svc-350/preset";
-import {
-  ENSEMBLE_PLUS_DEFAULT_MODE,
+import ensemblePlusPreset, {
   HUMAN_VOICE_DEFAULT_ENS_DEPTH,
   HUMAN_VOICE_DEFAULT_RATE,
-} from "./ensemble-plus/constants";
+} from "./ensemble-plus/preset";
+import svc350Preset from "./svc-350/preset";
 
 const c3pSchema = z.object({
   id: z.literal("c3p"),
@@ -95,15 +93,15 @@ export const defaultJu60Mode: Ju60Mode = {
 };
 
 export const defaultRs79Mode: Rs79Mode = {
-  ensembleMode: RS_79_DEFAULT_ENSEMBLE_MODE,
+  ensembleMode: "I",
 };
 
 export const defaultStringMode: StringMode = {
-  ensembleMode: STRING_DEFAULT_ENSEMBLE_MODE,
+  ensembleMode: "II",
 };
 
 export const defaultEnsemblePlusMode: EnsemblePlusMode = {
-  voiceMode: ENSEMBLE_PLUS_DEFAULT_MODE,
+  voiceMode: "humanVoice",
   lastRate: HUMAN_VOICE_DEFAULT_RATE,
   lastEnsDepth: HUMAN_VOICE_DEFAULT_ENS_DEPTH,
 };
@@ -134,9 +132,7 @@ const makeMode = (id: Mode["id"]): Mode => {
     case "jazz-120":
       return {
         id,
-        chorusMode: "vibrato",
-        lastRate: JAZZ_VIBRATO_RATE,
-        lastDepth: JAZZ_VIBRATO_DEPTH,
+        ...defaultJazz120Mode,
       };
     case "ju-60":
       return {

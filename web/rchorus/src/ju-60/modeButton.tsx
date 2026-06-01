@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import type { Ju60ButtonMode } from "./constants";
+import type { Ju60ButtonMode } from "./state";
 
 const MODE_BUTTON_CONFIG = {
   I: {

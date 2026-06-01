@@ -1,9 +1,11 @@
 import { useNumericParam } from "@conformal/plugin";
 import { useCallback } from "react";
 import type { Jazz120Mode } from "../mode";
-import { JAZZ_CHORUS_DEPTH, JAZZ_CHORUS_RATE } from "./constants";
 
 export type JazzChorusMode = Jazz120Mode["chorusMode"];
+
+export const JAZZ_CHORUS_RATE = 1.5;
+export const JAZZ_CHORUS_DEPTH = 100;
 
 export type Props = {
   mode: Jazz120Mode;

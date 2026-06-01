@@ -3,12 +3,11 @@ import { useCallback } from "react";
 import ensemble from "./assets/ensemble.svg";
 import tickLine from "./assets/tick-line.svg";
 import {
-  STRING_ACCENT_COLOR,
   STRING_ENSEMBLE_MODES,
-  STRING_PANEL_BACKGROUND,
   type StringEnsembleMode,
-} from "./constants";
+} from "./state";
 
+const STRING_PANEL_BACKGROUND = "#456990";
 const PANEL_WIDTH = 130;
 const PANEL_HEIGHT = 180;
 const HANDLE_WIDTH = 68;
@@ -30,6 +29,13 @@ const BOTTOM_LABEL_TOP = BOTTOM_TICK_CENTER - LABEL_HEIGHT / 2;
 export type EnsembleSliderProps = {
   value: StringEnsembleMode;
   onValue: (value: StringEnsembleMode) => void;
+  accentColor: string;
+  backgroundColor: string;
+};
+
+type EnsembleSliderControlProps = EnumSlider.SliderProps & {
+  accentColor: string;
+  backgroundColor: string;
 };
 
 const EnsembleSliderControl = ({
@@ -37,7 +43,9 @@ const EnsembleSliderControl = ({
   count,
   selectIndex,
   onGrabOrRelease,
-}: EnumSlider.SliderProps) => {
+  accentColor,
+  backgroundColor,
+}: EnsembleSliderControlProps) => {
   const { containerRef, ballRef, ball, ...divProps } = useEnumSlider<
     HTMLDivElement,
     HTMLDivElement
@@ -75,7 +83,7 @@ const EnsembleSliderControl = ({
             width: `${HANDLE_WIDTH}px`,
             height: `${HANDLE_HEIGHT}px`,
             borderRadius: `${HANDLE_HEIGHT / 2}px`,
-            background: "#100007",
+            background: backgroundColor,
             boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.45)",
           }}
         >
@@ -87,7 +95,7 @@ const EnsembleSliderControl = ({
               width: `${HANDLE_INNER_WIDTH}px`,
               height: `${HANDLE_INNER_HEIGHT}px`,
               borderRadius: `${HANDLE_INNER_HEIGHT / 2}px`,
-              background: STRING_ACCENT_COLOR,
+              background: accentColor,
             }}
           />
         </div>
@@ -130,7 +138,12 @@ const EnsembleSliderValueLabel = ({
   );
 };
 
-const EnsembleSlider = ({ value, onValue }: EnsembleSliderProps) => {
+const EnsembleSlider = ({
+  value,
+  onValue,
+  accentColor,
+  backgroundColor,
+}: EnsembleSliderProps) => {
   const setMode = useCallback(
     (mode: string) => {
       if (mode === "I" || mode === "II") {
@@ -182,7 +195,7 @@ const EnsembleSlider = ({ value, onValue }: EnsembleSliderProps) => {
             width: `${TRACK_WIDTH}px`,
             height: `${TRACK_HEIGHT}px`,
             borderRadius: `${TRACK_WIDTH / 2}px`,
-            background: "#100007",
+            background: backgroundColor,
           }}
         />
         <img
@@ -217,7 +230,13 @@ const EnsembleSlider = ({ value, onValue }: EnsembleSliderProps) => {
           onValue={setMode}
           accessibilityLabel="String ensemble mode"
           ValueLabel={EnsembleSliderValueLabel}
-          Slider={EnsembleSliderControl}
+          Slider={(props) => (
+            <EnsembleSliderControl
+              {...props}
+              accentColor={accentColor}
+              backgroundColor={backgroundColor}
+            />
+          )}
         />
       </div>
     </div>

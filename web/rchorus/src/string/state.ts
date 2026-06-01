@@ -1,7 +1,10 @@
 import { useEnumParam, useNumericParam } from "@conformal/plugin";
 import { useCallback } from "react";
 import type { StringMode } from "../mode";
-import { STRING_PRESETS, type StringEnsembleMode } from "./constants";
+import { STRING_PRESETS } from "./preset";
+
+export const STRING_ENSEMBLE_MODES = ["I", "II"] as const;
+export type StringEnsembleMode = (typeof STRING_ENSEMBLE_MODES)[number];
 
 export type Props = {
   mode: StringMode;

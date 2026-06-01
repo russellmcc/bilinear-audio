@@ -2,13 +2,14 @@ import Button from "../components/button";
 import Slider from "../components/slider";
 import type { Rs79Mode } from "../mode";
 import title from "./assets/title.svg";
-import {
-  RS_79_BACKGROUND,
-  RS_79_HIGHLIGHT_COLOR,
-  RS_79_SWITCH_COLOR,
-} from "./constants";
 import EnsembleSwitch from "./ensembleSwitch";
 import { useRs79State } from "./state";
+
+const RS_79_PANEL_COLOR = "#2e282a";
+const RS_79_BACKGROUND =
+  `linear-gradient(-45deg, ${RS_79_PANEL_COLOR} 0%, #373032 100%)`;
+const RS_79_HIGHLIGHT_COLOR = "#fe5f55";
+const RS_79_SWITCH_COLOR = "var(--text-color)";
 
 export type LayoutProps = {
   mode: Rs79Mode;
@@ -60,6 +61,8 @@ const Layout = (props: LayoutProps) => {
       <EnsembleSwitch
         value={rs79.ensembleMode}
         onValue={rs79.setEnsembleMode}
+        switchColor={RS_79_SWITCH_COLOR}
+        ballHighlightColor={RS_79_PANEL_COLOR}
       />
       <Slider highlightColor={RS_79_HIGHLIGHT_COLOR} />
       <Button highlightColor={RS_79_HIGHLIGHT_COLOR} />

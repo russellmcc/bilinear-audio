@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import type { EnsemblePlusVoiceMode } from "./constants";
+import type { EnsemblePlusVoiceMode } from "./state";
 
 export type VoiceModeButtonProps = {
   mode: EnsemblePlusVoiceMode;

@@ -1,11 +1,9 @@
 import { EnumSlider, useEnumSlider } from "music-ui/kit";
 import { useCallback } from "react";
 import {
-  RS_79_BALL_HIGHLIGHT_COLOR,
   RS_79_ENSEMBLE_MODES,
-  RS_79_SWITCH_COLOR,
   type Rs79EnsembleMode,
-} from "./constants";
+} from "./state";
 
 const SWITCH_WIDTH = 20;
 const SWITCH_HEIGHT = 67;
@@ -21,14 +19,21 @@ const SWITCH_HIGHLIGHT_WIDTH = SWITCH_WIDTH - 2;
 export type EnsembleSwitchProps = {
   value: Rs79EnsembleMode;
   onValue: (value: Rs79EnsembleMode) => void;
+  switchColor: string;
+  ballHighlightColor: string;
 };
+
+type EnsembleSwitchSliderProps = EnumSlider.SliderProps &
+  Pick<EnsembleSwitchProps, "switchColor" | "ballHighlightColor">;
 
 const EnsembleSwitchSlider = ({
   index,
   count,
   selectIndex,
   onGrabOrRelease,
-}: EnumSlider.SliderProps) => {
+  switchColor,
+  ballHighlightColor,
+}: EnsembleSwitchSliderProps) => {
   const { containerRef, ballRef, ball, ...divProps } = useEnumSlider<
     HTMLDivElement,
     HTMLDivElement
@@ -84,7 +89,7 @@ const EnsembleSwitchSlider = ({
           height={SWITCH_HEIGHT - 1}
           rx="9.5"
           fill="#181516"
-          stroke={RS_79_SWITCH_COLOR}
+          stroke={switchColor}
           strokeWidth="1"
         />
       </svg>
@@ -107,7 +112,7 @@ const EnsembleSwitchSlider = ({
             width: `${SWITCH_HIGHLIGHT_WIDTH}px`,
             height: `${highlightBottom - highlightTop}px`,
             borderRadius: `${SWITCH_HIGHLIGHT_WIDTH / 2}px`,
-            background: RS_79_BALL_HIGHLIGHT_COLOR,
+            background: ballHighlightColor,
           }}
         />
         {ball !== undefined && (
@@ -120,7 +125,7 @@ const EnsembleSwitchSlider = ({
               width: `${SWITCH_BALL_SIZE}px`,
               height: `${SWITCH_BALL_SIZE}px`,
               borderRadius: "7px",
-              background: RS_79_SWITCH_COLOR,
+              background: switchColor,
             }}
           />
         )}
@@ -129,10 +134,14 @@ const EnsembleSwitchSlider = ({
   );
 };
 
+type EnsembleSwitchValueLabelProps = EnumSlider.ValueLabelProps &
+  Pick<EnsembleSwitchProps, "switchColor">;
+
 const EnsembleSwitchValueLabel = ({
   label,
+  switchColor,
   ...props
-}: EnumSlider.ValueLabelProps) => {
+}: EnsembleSwitchValueLabelProps) => {
   const isModeI = label === "I";
   return (
     <div
@@ -143,7 +152,7 @@ const EnsembleSwitchValueLabel = ({
         top: isModeI ? "47px" : "143px",
         transform: "translateX(-50%)",
         width: "32px",
-        color: RS_79_SWITCH_COLOR,
+        color: switchColor,
         fontSize: "18px",
         lineHeight: "21px",
         textAlign: "center",
@@ -154,7 +163,12 @@ const EnsembleSwitchValueLabel = ({
   );
 };
 
-const EnsembleSwitch = ({ value, onValue }: EnsembleSwitchProps) => {
+const EnsembleSwitch = ({
+  value,
+  onValue,
+  switchColor,
+  ballHighlightColor,
+}: EnsembleSwitchProps) => {
   const setMode = useCallback(
     (mode: string) => {
       if (mode === "I" || mode === "II") {
@@ -172,7 +186,7 @@ const EnsembleSwitch = ({ value, onValue }: EnsembleSwitchProps) => {
         top: "115px",
         width: "120px",
         height: "180px",
-        color: RS_79_SWITCH_COLOR,
+        color: switchColor,
       }}
     >
       <div
@@ -182,7 +196,7 @@ const EnsembleSwitch = ({ value, onValue }: EnsembleSwitchProps) => {
           top: "0px",
           width: "1px",
           height: "180px",
-          background: RS_79_SWITCH_COLOR,
+          background: switchColor,
         }}
       />
       <div
@@ -192,7 +206,7 @@ const EnsembleSwitch = ({ value, onValue }: EnsembleSwitchProps) => {
           top: "0px",
           width: "1px",
           height: "180px",
-          background: RS_79_SWITCH_COLOR,
+          background: switchColor,
         }}
       />
       <div
@@ -202,7 +216,7 @@ const EnsembleSwitch = ({ value, onValue }: EnsembleSwitchProps) => {
           top: "31px",
           width: "114px",
           height: "1px",
-          background: RS_79_SWITCH_COLOR,
+          background: switchColor,
         }}
       />
       <div
@@ -212,7 +226,7 @@ const EnsembleSwitch = ({ value, onValue }: EnsembleSwitchProps) => {
           bottom: "0px",
           width: "114px",
           height: "1px",
-          background: RS_79_SWITCH_COLOR,
+          background: switchColor,
         }}
       />
       <div
@@ -233,8 +247,16 @@ const EnsembleSwitch = ({ value, onValue }: EnsembleSwitchProps) => {
         value={value}
         onValue={setMode}
         accessibilityLabel="Ensemble mode"
-        ValueLabel={EnsembleSwitchValueLabel}
-        Slider={EnsembleSwitchSlider}
+        ValueLabel={(props) => (
+          <EnsembleSwitchValueLabel {...props} switchColor={switchColor} />
+        )}
+        Slider={(props) => (
+          <EnsembleSwitchSlider
+            {...props}
+            switchColor={switchColor}
+            ballHighlightColor={ballHighlightColor}
+          />
+        )}
       />
     </div>
   );

@@ -3,9 +3,11 @@ import Slider from "../components/slider";
 import type { StringMode } from "../mode";
 import ch2o2 from "./assets/ch-2o2.svg";
 import titleShell from "./assets/title-shell.svg";
-import { STRING_ACCENT_COLOR, STRING_BACKGROUND } from "./constants";
 import EnsembleSlider from "./ensembleSlider";
 import { useStringState } from "./state";
+
+const STRING_ACCENT_COLOR = "#70a5df";
+const STRING_BACKGROUND = "#100007";
 
 export type LayoutProps = {
   mode: StringMode;
@@ -67,6 +69,8 @@ const Layout = (props: LayoutProps) => {
       <EnsembleSlider
         value={string.ensembleMode}
         onValue={string.setEnsembleMode}
+        accentColor={STRING_ACCENT_COLOR}
+        backgroundColor={STRING_BACKGROUND}
       />
       <Slider highlightColor={STRING_ACCENT_COLOR} />
       <Button highlightColor={STRING_ACCENT_COLOR} />

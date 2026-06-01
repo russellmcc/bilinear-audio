@@ -1,7 +1,10 @@
 import { useEnumParam, useNumericParam } from "@conformal/plugin";
 import { useCallback } from "react";
 import type { EnsemblePlusMode } from "../mode";
-import { ENSEMBLE_PLUS_PRESETS, type EnsemblePlusVoiceMode } from "./constants";
+import { ENSEMBLE_PLUS_PRESETS } from "./preset";
+
+export const ENSEMBLE_PLUS_MODES = ["humanVoice", "strings"] as const;
+export type EnsemblePlusVoiceMode = (typeof ENSEMBLE_PLUS_MODES)[number];
 
 export type Props = {
   mode: EnsemblePlusMode;

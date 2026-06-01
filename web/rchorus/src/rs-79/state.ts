@@ -1,7 +1,10 @@
 import { useEnumParam, useNumericParam } from "@conformal/plugin";
 import { useCallback } from "react";
 import type { Rs79Mode } from "../mode";
-import { RS_79_PRESETS, type Rs79EnsembleMode } from "./constants";
+import { RS_79_PRESETS } from "./preset";
+
+export const RS_79_ENSEMBLE_MODES = ["I", "II"] as const;
+export type Rs79EnsembleMode = (typeof RS_79_ENSEMBLE_MODES)[number];
 
 export type Props = {
   mode: Rs79Mode;

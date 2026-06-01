@@ -1,12 +1,11 @@
+import HumanVoiceSlider from "./humanVoiceSlider";
 import {
-  ENSEMBLE_PLUS_TEXT_COLOR,
   HUMAN_VOICE_DEFAULT_ENS_DEPTH,
   HUMAN_VOICE_DEFAULT_RATE,
-  HUMAN_VOICE_ENS_DEPTH_RANGE,
-  HUMAN_VOICE_RATE_RANGE,
-} from "./constants";
-import HumanVoiceSlider from "./humanVoiceSlider";
+} from "./preset";
 
+const HUMAN_VOICE_RATE_RANGE = [0.7, 7] as const;
+const HUMAN_VOICE_ENS_DEPTH_RANGE = [0, 100] as const;
 const TICK_SVG_TOP = 115;
 const TICK_SVG_HEIGHT = 122;
 const TICK_Y_VALUES = [
@@ -65,7 +64,7 @@ const TickColumn = ({ left, width, variant }: TickColumnProps) => (
           y1={y}
           x2={x2}
           y2={y}
-          stroke={ENSEMBLE_PLUS_TEXT_COLOR}
+          stroke="currentColor"
           strokeWidth={isMajor ? 2 : 1}
         />
       );
