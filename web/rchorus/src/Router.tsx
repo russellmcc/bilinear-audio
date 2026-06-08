@@ -10,6 +10,7 @@ import Rs101Layout from "./rs-101/layout";
 import EnsemblePlusLayout from "./ensemble-plus/layout";
 import Svc350Layout from "./svc-350/layout";
 import Cp4Layout from "./cp-4/layout";
+import Sa09Layout from "./sa-09/layout";
 const Router = () => {
   const {
     mode,
@@ -23,6 +24,8 @@ const Router = () => {
     setStringMode,
     ensemblePlusMode,
     setEnsemblePlusMode,
+    sa09Mode,
+    setSa09Mode,
   } = useMode();
   switch (mode.id) {
     case "c3p":
@@ -52,6 +55,8 @@ const Router = () => {
       return <Svc350Layout />;
     case "cp-4":
       return <Cp4Layout />;
+    case "sa-09":
+      return <Sa09Layout mode={sa09Mode} setMode={setSa09Mode} />;
   }
 };
 
