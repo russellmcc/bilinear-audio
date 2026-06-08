@@ -10,6 +10,7 @@ export const preset: Preset = {
   ens_depth: 40,
   mix: 100,
   highpass_cutoff: "Low",
+  dry_highpass_cutoff: "Low",
   routing: "MonoEns",
 };
 

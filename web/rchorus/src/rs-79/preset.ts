@@ -45,6 +45,7 @@ export const preset: Preset = {
   ...RS_79_PRESETS[RS_79_DEFAULT_ENSEMBLE_MODE],
   mix: 100,
   highpass_cutoff: "Low",
+  dry_highpass_cutoff: "Low",
 };
 
 export default preset;

@@ -40,6 +40,7 @@ export const preset: Preset = {
   ...ENSEMBLE_PLUS_PRESETS[ENSEMBLE_PLUS_DEFAULT_MODE],
   mix: 100,
   highpass_cutoff: "Low",
+  dry_highpass_cutoff: "Low",
 };
 
 export default preset;

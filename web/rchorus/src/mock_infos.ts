@@ -88,6 +88,14 @@ export const typedInfos = {
       values: ["Low", "High"],
     } as const,
   } as const,
+  dry_highpass_cutoff: {
+    title: "Dry Highpass Cutoff",
+    type_specific: {
+      t: "enum" as const,
+      default: "Low",
+      values: ["Low", "High"],
+    } as const,
+  } as const,
   routing: {
     title: "Routing",
     type_specific: {

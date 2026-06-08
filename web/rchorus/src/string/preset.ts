@@ -35,6 +35,7 @@ export const preset: Preset = {
   ...STRING_PRESETS[STRING_DEFAULT_ENSEMBLE_MODE],
   mix: 100,
   highpass_cutoff: "Low",
+  dry_highpass_cutoff: "Low",
 };
 
 export default preset;

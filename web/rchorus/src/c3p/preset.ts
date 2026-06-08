@@ -6,6 +6,7 @@ export const preset: Preset = {
   delay_scale: 1,
   mix: 100,
   highpass_cutoff: "Low",
+  dry_highpass_cutoff: "Low",
   routing: "Synth",
 };
 
