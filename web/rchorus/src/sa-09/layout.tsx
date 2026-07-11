@@ -175,7 +175,7 @@ const Layout = (props: LayoutProps) => {
         displayFormatter={formatRoutingMode}
         topLabel="Mode I"
         left={84}
-        labelWidth={56}
+        labelWidth={49}
       />
       <Slider highlightColor={SA_09_ACCENT} />
       <Button highlightColor={SA_09_ACCENT} />
