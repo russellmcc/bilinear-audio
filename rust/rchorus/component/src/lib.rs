@@ -8,7 +8,7 @@ const DELAY_SCALE_DEFAULT: f32 = 1.0;
 const DELAY_SCALE_MIN: f32 = 1.0;
 const DELAY_SCALE_MAX: f32 = 4.0;
 
-const PARAMETERS: [InfoRef<'static, &'static str>; 12] = [
+const PARAMETERS: [InfoRef<'static, &'static str>; 13] = [
     InfoRef {
         title: "Rate",
         short_title: "Rate",
@@ -101,6 +101,16 @@ const PARAMETERS: [InfoRef<'static, &'static str>; 12] = [
         title: "Highpass Cutoff",
         short_title: "Highpass",
         unique_id: "highpass_cutoff",
+        flags: Flags { automatable: true },
+        type_specific: TypeSpecificInfoRef::Enum {
+            default: 0,
+            values: &["Low", "High"],
+        },
+    },
+    InfoRef {
+        title: "Dry Highpass Cutoff",
+        short_title: "Dry Highpass",
+        unique_id: "dry_highpass_cutoff",
         flags: Flags { automatable: true },
         type_specific: TypeSpecificInfoRef::Enum {
             default: 0,

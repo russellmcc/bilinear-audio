@@ -6,6 +6,7 @@ export const preset: Preset = {
   delay_scale: 2.1,
   mix: 100,
   highpass_cutoff: "High",
+  dry_highpass_cutoff: "Low",
   routing: "Dimension",
   dimension_same_side_pad: -7.5,
 };

@@ -34,6 +34,7 @@ export const preset: Preset = {
   ...JU_60_PRESETS[JU_60_DEFAULT_BUTTON_MODE],
   mix: 100,
   highpass_cutoff: "Low",
+  dry_highpass_cutoff: "Low",
 };
 
 export default preset;

@@ -54,6 +54,15 @@ enum RoutingSetting {
     Vocoder2,
 }
 
+#[derive(Clone, Copy)]
+struct RoutingParameters {
+    routing: RoutingSetting,
+    highpass_cutoff: HighpassCutoffSetting,
+    extra_depth_scale: f32,
+    dimension_same_side_pad: f32,
+    center_delay: f32,
+}
+
 impl DelayChannel {
     fn new(
         lookaround: u16,
@@ -128,6 +137,7 @@ pub struct Effect {
     delay_floor: f32,
     delay_ceiling: f32,
     channels: [DelayChannel; NUM_DELAY_CHANNELS],
+    dry_dc_blocker_high: [DcBlocker; 2],
     lfo_forward: [Vec<f32>; NUM_LFOS],
     lfo_reverse: [Vec<f32>; NUM_LFOS],
     mixed: Vec<f32>,
@@ -142,6 +152,9 @@ impl Processor for Effect {
             }
             for channel in &mut self.channels {
                 channel.reset();
+            }
+            for dc_blocker in &mut self.dry_dc_blocker_high {
+                dc_blocker.reset();
             }
         }
     }
@@ -177,6 +190,9 @@ impl Effect {
                     env.sampling_rate,
                     env.max_samples_per_process_call,
                 )
+            }),
+            dry_dc_blocker_high: array::from_fn(|_| {
+                DcBlocker::new_with_custom_cutoff(env.sampling_rate, DIMENSION_CUTOFF)
             }),
             lfo_forward: array::from_fn(|_| vec![0.; env.max_samples_per_process_call]),
             lfo_reverse: array::from_fn(|_| vec![0.; env.max_samples_per_process_call]),
@@ -218,6 +234,45 @@ impl Effect {
         {
             *ol = il + wet;
             *or = ir - wet;
+        }
+    }
+
+    fn apply_dry_highpass(
+        &mut self,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
+        mix: impl Iterator<Item = f32> + Clone,
+        dry_highpass_cutoff: HighpassCutoffSetting,
+    ) {
+        if dry_highpass_cutoff == HighpassCutoffSetting::Low {
+            for dc_blocker in &mut self.dry_dc_blocker_high {
+                dc_blocker.reset();
+            }
+            return;
+        }
+        let dc_blockers = &mut self.dry_dc_blocker_high;
+        match input.channel_layout() {
+            ChannelLayout::Mono => {
+                dc_blockers[1].reset();
+                for (input, output, mix) in izip!(input.channel(0), output.channel_mut(0), mix) {
+                    *output += (dc_blockers[0].process(*input) - *input) * mix * PERCENT_SCALE;
+                }
+            }
+            ChannelLayout::Stereo => {
+                let [dc_blocker_l, dc_blocker_r] = dc_blockers;
+                let mut outputs = channels_mut(output);
+                let output_l = outputs.next().unwrap();
+                let output_r = outputs.next().unwrap();
+                for (input_l, input_r, output_l, output_r, mix) in
+                    izip!(input.channel(0), input.channel(1), output_l, output_r, mix)
+                {
+                    let dry_hpf_l = dc_blocker_l.process(*input_l);
+                    let dry_hpf_r = dc_blocker_r.process(*input_r);
+                    let dry_hpf_mix = mix * PERCENT_SCALE;
+                    *output_l += (dry_hpf_l - *input_l) * dry_hpf_mix;
+                    *output_r += (dry_hpf_r - *input_r) * dry_hpf_mix;
+                }
+            }
         }
     }
 
@@ -1044,6 +1099,96 @@ impl Effect {
             .map(|(d0, d1, d2, m)| (d0 + d1 + d2) * SUM_3_SCALE * m * PERCENT_SCALE),
         );
     }
+
+    fn process_mono_routing(
+        &mut self,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
+        mix: impl Iterator<Item = f32> + Clone,
+        parameters: RoutingParameters,
+    ) {
+        let RoutingParameters {
+            routing,
+            highpass_cutoff,
+            extra_depth_scale,
+            center_delay,
+            ..
+        } = parameters;
+        match routing {
+            RoutingSetting::Pedal | RoutingSetting::Jazz => {
+                self.process_mono_pedal(input, output, mix, highpass_cutoff);
+            }
+            RoutingSetting::Synth | RoutingSetting::Dimension => {
+                self.process_mono_dual(input, output, mix, highpass_cutoff);
+            }
+            RoutingSetting::Ens => {
+                self.process_mono_ens(input, output, mix, highpass_cutoff, extra_depth_scale);
+            }
+            RoutingSetting::MonoEns => {
+                self.process_mono_forward_ens(input, output, mix, highpass_cutoff);
+            }
+            RoutingSetting::String => {
+                self.process_mono_string(input, output, mix, highpass_cutoff);
+            }
+            RoutingSetting::Vocoder => {
+                self.process_mono_vocoder(input, output, mix, highpass_cutoff);
+            }
+            RoutingSetting::Vocoder2 => {
+                self.process_mono_vocoder2(input, output, mix, highpass_cutoff, center_delay);
+            }
+        }
+    }
+
+    fn process_stereo_routing(
+        &mut self,
+        input: &impl Buffer,
+        output: &mut impl BufferMut,
+        mix: impl Iterator<Item = f32> + Clone,
+        parameters: RoutingParameters,
+    ) {
+        let RoutingParameters {
+            routing,
+            highpass_cutoff,
+            extra_depth_scale,
+            dimension_same_side_pad,
+            center_delay,
+        } = parameters;
+        match routing {
+            RoutingSetting::Synth => {
+                self.process_synth(input, output, mix, highpass_cutoff);
+            }
+            RoutingSetting::Dimension => {
+                self.process_dimension(
+                    input,
+                    output,
+                    mix,
+                    dimension_same_side_gain(dimension_same_side_pad),
+                    highpass_cutoff,
+                );
+            }
+            RoutingSetting::Pedal => {
+                self.process_pedal(input, output, mix, highpass_cutoff);
+            }
+            RoutingSetting::Jazz => {
+                self.process_jazz(input, output, mix, highpass_cutoff);
+            }
+            RoutingSetting::Ens => {
+                self.process_ens(input, output, mix, highpass_cutoff, extra_depth_scale);
+            }
+            RoutingSetting::MonoEns => {
+                self.process_stereo_mono_ens(input, output, mix, highpass_cutoff);
+            }
+            RoutingSetting::String => {
+                self.process_string(input, output, mix, highpass_cutoff);
+            }
+            RoutingSetting::Vocoder => {
+                self.process_vocoder(input, output, mix, highpass_cutoff);
+            }
+            RoutingSetting::Vocoder2 => {
+                self.process_vocoder2(input, output, mix, highpass_cutoff, center_delay);
+            }
+        }
+    }
 }
 
 impl EffectT for Effect {
@@ -1069,10 +1214,11 @@ impl EffectT for Effect {
             ens_depth,
             bypass,
             highpass_cutoff,
+            dry_highpass_cutoff,
             routing,
             dimension_same_side_pad,
             delay_scale,
-        ) = pgrab!(parameters[numeric "rate", numeric "rate_2", numeric "rate_3", numeric "rate_4", numeric "depth", numeric "ens_depth", switch "bypass", enum "highpass_cutoff", enum "routing", numeric "dimension_same_side_pad", numeric "delay_scale"]);
+        ) = pgrab!(parameters[numeric "rate", numeric "rate_2", numeric "rate_3", numeric "rate_4", numeric "depth", numeric "ens_depth", switch "bypass", enum "highpass_cutoff", enum "dry_highpass_cutoff", enum "routing", numeric "dimension_same_side_pad", numeric "delay_scale"]);
         let routing = FromPrimitive::from_u32(routing).unwrap_or(RoutingSetting::Synth);
         let mix = pzip!(parameters[numeric "mix"]).map(move |mix| if bypass { 0.0 } else { mix });
         let extra_depth_scale = ens_depth * PERCENT_SCALE;
@@ -1088,68 +1234,24 @@ impl EffectT for Effect {
 
         let highpass_cutoff =
             FromPrimitive::from_u32(highpass_cutoff).unwrap_or(HighpassCutoffSetting::Low);
+        let dry_highpass_cutoff =
+            FromPrimitive::from_u32(dry_highpass_cutoff).unwrap_or(HighpassCutoffSetting::Low);
+        let routing_parameters = RoutingParameters {
+            routing,
+            highpass_cutoff,
+            extra_depth_scale,
+            dimension_same_side_pad,
+            center_delay,
+        };
         match input.channel_layout() {
-            ChannelLayout::Mono => match routing {
-                RoutingSetting::Pedal | RoutingSetting::Jazz => {
-                    self.process_mono_pedal(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::Synth | RoutingSetting::Dimension => {
-                    self.process_mono_dual(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::Ens => {
-                    self.process_mono_ens(input, output, mix, highpass_cutoff, extra_depth_scale);
-                }
-                RoutingSetting::MonoEns => {
-                    self.process_mono_forward_ens(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::String => {
-                    self.process_mono_string(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::Vocoder => {
-                    self.process_mono_vocoder(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::Vocoder2 => {
-                    self.process_mono_vocoder2(input, output, mix, highpass_cutoff, center_delay);
-                }
-            },
-            ChannelLayout::Stereo => match routing {
-                RoutingSetting::Synth => {
-                    self.process_synth(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::Dimension => {
-                    let dimension_same_side_gain =
-                        dimension_same_side_gain(dimension_same_side_pad);
-                    self.process_dimension(
-                        input,
-                        output,
-                        mix,
-                        dimension_same_side_gain,
-                        highpass_cutoff,
-                    );
-                }
-                RoutingSetting::Pedal => {
-                    self.process_pedal(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::Jazz => {
-                    self.process_jazz(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::Ens => {
-                    self.process_ens(input, output, mix, highpass_cutoff, extra_depth_scale);
-                }
-                RoutingSetting::MonoEns => {
-                    self.process_stereo_mono_ens(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::String => {
-                    self.process_string(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::Vocoder => {
-                    self.process_vocoder(input, output, mix, highpass_cutoff);
-                }
-                RoutingSetting::Vocoder2 => {
-                    self.process_vocoder2(input, output, mix, highpass_cutoff, center_delay);
-                }
-            },
+            ChannelLayout::Mono => {
+                self.process_mono_routing(input, output, mix.clone(), routing_parameters);
+            }
+            ChannelLayout::Stereo => {
+                self.process_stereo_routing(input, output, mix.clone(), routing_parameters);
+            }
         }
+        self.apply_dry_highpass(input, output, mix, dry_highpass_cutoff);
     }
 }
 
@@ -1221,6 +1323,57 @@ mod tests {
         assert!((dimension_same_side_gain(-20.0) - 0.070_710_674).abs() < 1e-6);
         assert!((dimension_same_side_gain(DIMENSION_SAME_SIDE_PAD_DB) - 0.298_184_04).abs() < 1e-6);
         assert!((dimension_same_side_gain(0.0) - SUM_2_SCALE).abs() < 1e-6);
+    }
+
+    #[test]
+    fn dry_highpass_cutoff_is_blended_by_mix() {
+        let mix_0_params = params_for_overrides([
+            ("mix", InternalValue::Numeric(0.0)),
+            (
+                "dry_highpass_cutoff",
+                InternalValue::Enum(HighpassCutoffSetting::High as u32),
+            ),
+        ]);
+        let (mix_0_input, mix_0_output) = process_stereo(&mix_0_params);
+        let mut max_mix_0_delta = 0.0f32;
+        for (il, ir, ol, or) in izip!(
+            mix_0_input.channel(0),
+            mix_0_input.channel(1),
+            mix_0_output.channel(0),
+            mix_0_output.channel(1)
+        ) {
+            max_mix_0_delta = max_mix_0_delta.max((il - ol).abs());
+            max_mix_0_delta = max_mix_0_delta.max((ir - or).abs());
+        }
+        assert!(max_mix_0_delta < 1e-6);
+
+        let low_params = params_for_overrides([
+            ("mix", InternalValue::Numeric(100.0)),
+            (
+                "dry_highpass_cutoff",
+                InternalValue::Enum(HighpassCutoffSetting::Low as u32),
+            ),
+        ]);
+        let high_params = params_for_overrides([
+            ("mix", InternalValue::Numeric(100.0)),
+            (
+                "dry_highpass_cutoff",
+                InternalValue::Enum(HighpassCutoffSetting::High as u32),
+            ),
+        ]);
+        let (_, low_output) = process_stereo(&low_params);
+        let (_, high_output) = process_stereo(&high_params);
+        let mut max_full_mix_delta = 0.0f32;
+        for (low_l, low_r, high_l, high_r) in izip!(
+            low_output.channel(0),
+            low_output.channel(1),
+            high_output.channel(0),
+            high_output.channel(1)
+        ) {
+            max_full_mix_delta = max_full_mix_delta.max((low_l - high_l).abs());
+            max_full_mix_delta = max_full_mix_delta.max((low_r - high_r).abs());
+        }
+        assert!(max_full_mix_delta > 1e-3);
     }
 
     #[test]
